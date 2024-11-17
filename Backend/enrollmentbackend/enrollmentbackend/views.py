@@ -4,4 +4,4 @@ from rest_framework.response import Response
 
 class ExampleView(APIView):
     def get(self, request):
-        return Response({"message": "Hello, React!"})
+        return Response({"message": "Hello, React! I am from Django"})
