@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework', # For creating REST APIs.
+    'corsheaders', # to handle Cross-Origin Resource Sharing (CORS).
 ]
 
 MIDDLEWARE = [
@@ -47,6 +49,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # middlewares for COR
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", # React's default dev server
 ]
 
 ROOT_URLCONF = 'enrollmentbackend.urls'
