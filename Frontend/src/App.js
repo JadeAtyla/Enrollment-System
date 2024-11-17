@@ -1,23 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import LoginCard from './components/LoginCard';
+import StudentTypeSelection from './components/StudentTypeSelection';
+import RegisterForm from './components/RegisterForm';
 
 function App() {
+  const [currentStep, setCurrentStep] = useState('login'); // Tracks the current screen
+  const [formData, setFormData] = useState({}); // Holds form data
+
+  const handleRegisterClick = () => {
+    setCurrentStep('studentType'); // Switch to StudentTypeSelection
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      {currentStep === 'login' && (
+        <LoginCard onRegisterClick={handleRegisterClick} />
+      )}
+      {currentStep === 'studentType' && (
+        <StudentTypeSelection
+          setFormData={setFormData}
+          onNext={() => setCurrentStep('registerForm')}
+        />
+      )}
+      {currentStep === 'registerForm' && (
+        <RegisterForm 
+          formData={formData} 
+          setFormData={setFormData} 
+          setCurrentStep={setCurrentStep} 
+        />
+      )}
     </div>
   );
 }
