@@ -14,7 +14,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+    "start": "react-scripts start",
+    "start-both": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
     "start-backend": "cd ../backend/enrollmentbackend && python manage.py runserver",
     "start-frontend": "react-scripts start",
     "build": "react-scripts build",
