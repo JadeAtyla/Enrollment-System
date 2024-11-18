@@ -1,0 +1,4 @@
+create app:
+python manage.py startapp your_app_name
+setup client:
+pip install mysqlclient
