@@ -33,7 +33,7 @@ const LoginCard = ({ onRegisterClick }) => {
       {/* Student Number */}
       <input
         type="text"
-        placeholder="STUDENT NUMBER"
+        placeholder={userType === "Student" ? "STUDENT NUMBER" : "USERNAME"}
         className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md text-gray-700 focus:ring-blue-500 focus:border-blue-500"
       />
 
