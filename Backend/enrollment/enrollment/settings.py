@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'app.apps.AppConfig', # Register the app
     'django.contrib.admin',
     # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
@@ -43,7 +44,6 @@ INSTALLED_APPS = [
     'corsheaders', # COR Headers
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'app.apps.AppConfig', # Register the app
 ]
 
 MIDDLEWARE = [
@@ -118,11 +118,13 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 # Change engine and other component for mysql compatability
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'enrollmentsystem',
-        'USER': 'root',
-        'HOST': 'localhost',
-        'PASSWORD': '',
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'enrollmentsystem',
+        # 'USER': 'root',
+        # 'HOST': 'localhost',
+        # 'PASSWORD': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
 
