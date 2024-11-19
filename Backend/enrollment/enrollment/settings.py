@@ -65,7 +65,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'base.authentication.CookiesJWTAuthentication',
+        'app.authentication.CookiesJWTAuthentication', # Changed
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
