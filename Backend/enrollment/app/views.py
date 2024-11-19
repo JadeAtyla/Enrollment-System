@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from .models import Account # from model.py import Account class
+# from model.py import model classes
+from .models import Address, Course, Enrollment, Grade, Instructor, Permission, Program, Role, RolePermission, Schedule, Student, User
 from django.http import JsonResponse # for Json responses
 
 # # Create your views here to render in the frontend.
@@ -12,5 +13,5 @@ from django.http import JsonResponse # for Json responses
 
 # Retrieve data in JSON format
 def data(request):
-    accounts = Account.objects.all().values()  # Retrieve all data as a dictionary
-    return JsonResponse(list(accounts), safe=False)  # Convert to JSON and return
+    enrollment = Enrollment.objects.all().values()  # Retrieve all data as a dictionary
+    return JsonResponse(list(enrollment), safe=False)  # Convert to JSON and return

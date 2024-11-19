@@ -32,11 +32,14 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework', # Django Rest Framework
+    'corsheaders', # COR Headers
     'app.apps.AppConfig', # Register the app
 ]
 
@@ -48,6 +51,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # CORS middlware
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React's default dev server
 ]
 
 ROOT_URLCONF = 'enrollment.urls'
@@ -78,7 +86,7 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test',
+        'NAME': 'enrollmentsystem',
         'USER': 'root',
         'HOST': 'localhost',
         'PASSWORD': '',
