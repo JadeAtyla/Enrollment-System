@@ -1,0 +1,21 @@
+/* Tailwind Base and Utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom container styling */
+body {
+  @apply bg-gray-100 flex items-center justify-center min-h-screen;
+}
+
+button:focus, input:focus, select:focus {
+  outline: none;
+  @apply ring-2 ring-blue-500;
+}
+
+/* Ensures consistent width and responsiveness */
+.container {
+  @apply w-[350px] sm:w-[400px];
+}
+
+
