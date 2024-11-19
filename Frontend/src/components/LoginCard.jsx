@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importing eye icons
-import universityLogo from '../images/universityLogo.svg';
+import React, { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Importing eye icons
+import universityLogo from "../images/universityLogo.svg";
 
-const LoginCard = ({ onLogin, onRegisterClick }) => {
+const LoginCard = ({ onLogin, onRegisterClick, setUserType, userType }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [studentNumber, setStudentNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const [studentNumber, setStudentNumber] = useState(""); // Student number state
+  const [password, setPassword] = useState(""); // Password state
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
+  const handleUserTypeChange = (event) => {
+    setUserType(event.target.value);
+  };
+
   const handleLoginClick = () => {
-    onLogin(studentNumber, password); // Pass studentNumber and password to App.js for validation
+    // Call the onLogin function passed from App.js with the entered credentials
+    onLogin(studentNumber, password);
   };
 
   return (
@@ -20,22 +25,33 @@ const LoginCard = ({ onLogin, onRegisterClick }) => {
       <h1 className="text-center text-lg font-bold">CAVITE STATE UNIVERSITY</h1>
       <h2 className="text-center text-sm text-gray-600 mb-6">BACOOR CAMPUS</h2>
 
-      {/* Student Number */}
+      {/* Dropdown */}
+      <select
+        id="user-type"
+        className="block w-full text-center bg-transparent border-none text-gray-800 font-semibold text-lg mb-6 cursor-pointer"
+        value={userType}
+        onChange={handleUserTypeChange}
+      >
+        <option value="Student">STUDENT LOGIN</option>
+        <option value="Officer">OFFICER LOGIN</option>
+      </select>
+
+      {/* Student Number or Username */}
       <input
         type="text"
-        placeholder="Student Number"
         value={studentNumber}
         onChange={(e) => setStudentNumber(e.target.value)}
+        placeholder={userType == "Student" ? "STUDENT NUMBER" : "USERNAME"}
         className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md text-gray-700 focus:ring-blue-500 focus:border-blue-500"
       />
 
       {/* Password */}
       <div className="relative w-full mb-4">
         <input
-          type={passwordVisible ? 'text' : 'password'}
-          placeholder="PASSWORD"
+          type={passwordVisible ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="PASSWORD"
           className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-700 focus:ring-blue-500 focus:border-blue-500"
         />
         <button
@@ -51,6 +67,25 @@ const LoginCard = ({ onLogin, onRegisterClick }) => {
         </button>
       </div>
 
+      {/* Links */}
+      <div className="flex justify-between w-full text-sm mb-6">
+        <a href="#" className="text-blue-600 hover:underline">
+          Forgot Password?
+        </a>
+        {userType === "Student" && (
+          <span>
+            Don't have an account?{" "}
+            <a
+              href="#"
+              className="font-semibold text-blue-600 hover:underline"
+              onClick={onRegisterClick}
+            >
+              Register
+            </a>
+          </span>
+        )}
+      </div>
+
       {/* Login Button */}
       <button
         onClick={handleLoginClick}
@@ -58,17 +93,6 @@ const LoginCard = ({ onLogin, onRegisterClick }) => {
       >
         Login
       </button>
-
-      {/* Register Link */}
-      <div className="flex justify-between w-full text-sm mt-6">
-        <a href="#" className="text-blue-600 hover:underline">Forgot Password?</a>
-        <span>
-          Don't have an account?{' '}
-          <a href="#" className="font-semibold text-blue-600 hover:underline" onClick={onRegisterClick}>
-            Register
-          </a>
-        </span>
-      </div>
     </div>
   );
 };
