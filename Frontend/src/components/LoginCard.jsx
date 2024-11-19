@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importing eye icons
 import universityLogo from '../images/universityLogo.svg';
 
-const LoginCard = ({ onRegisterClick }) => {
+const LoginCard = ({ onLogin, onRegisterClick }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [userType, setUserType] = useState('Student'); // Default to 'Student'
+  const [studentNumber, setStudentNumber] = useState('');
+  const [password, setPassword] = useState('');
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleUserTypeChange = (event) => {
-    setUserType(event.target.value);
+  const handleLoginClick = () => {
+    onLogin(studentNumber, password); // Pass studentNumber and password to App.js for validation
   };
 
   return (
@@ -19,21 +20,12 @@ const LoginCard = ({ onRegisterClick }) => {
       <h1 className="text-center text-lg font-bold">CAVITE STATE UNIVERSITY</h1>
       <h2 className="text-center text-sm text-gray-600 mb-6">BACOOR CAMPUS</h2>
 
-      {/* Dropdown */}
-      <select
-        id="user-type"
-        className="block w-full text-center bg-transparent border-none text-gray-800 font-semibold text-lg mb-6 cursor-pointer"
-        value={userType}
-        onChange={handleUserTypeChange}
-      >
-        <option value="Student">STUDENT LOGIN</option>
-        <option value="Officer">OFFICER LOGIN</option>
-      </select>
-
       {/* Student Number */}
       <input
         type="text"
-        placeholder={userType === "Student" ? "STUDENT NUMBER" : "USERNAME"}
+        placeholder="Student Number"
+        value={studentNumber}
+        onChange={(e) => setStudentNumber(e.target.value)}
         className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md text-gray-700 focus:ring-blue-500 focus:border-blue-500"
       />
 
@@ -42,6 +34,8 @@ const LoginCard = ({ onRegisterClick }) => {
         <input
           type={passwordVisible ? 'text' : 'password'}
           placeholder="PASSWORD"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-700 focus:ring-blue-500 focus:border-blue-500"
         />
         <button
@@ -57,27 +51,24 @@ const LoginCard = ({ onRegisterClick }) => {
         </button>
       </div>
 
-      {/* Links */}
-      <div className="flex justify-between w-full text-sm mb-6">
-        <a href="#" className="text-blue-600 hover:underline">Forgot Password?</a>
-        {userType === 'Student' && (
-          <span>
-            Don't have an account?{' '}
-            <a
-              href="#"
-              className="font-semibold text-blue-600 hover:underline"
-              onClick={onRegisterClick}
-            >
-              Register
-            </a>
-          </span>
-        )}
-      </div>
-
       {/* Login Button */}
-      <button className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200">
+      <button
+        onClick={handleLoginClick}
+        className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200"
+      >
         Login
       </button>
+
+      {/* Register Link */}
+      <div className="flex justify-between w-full text-sm mt-6">
+        <a href="#" className="text-blue-600 hover:underline">Forgot Password?</a>
+        <span>
+          Don't have an account?{' '}
+          <a href="#" className="font-semibold text-blue-600 hover:underline" onClick={onRegisterClick}>
+            Register
+          </a>
+        </span>
+      </div>
     </div>
   );
 };
