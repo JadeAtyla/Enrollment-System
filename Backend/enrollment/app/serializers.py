@@ -87,7 +87,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 
-class UserTokenSerializer(serializers.ModelSerializer):
+class UserRegisterSerializer(serializers.ModelSerializer):
     token = serializers.CharField(allow_blank=True, read_only=True)
 
     class Meta:
