@@ -13,14 +13,3 @@ admin.site.register(Grade)
 admin.site.register(Permission)
 admin.site.register(Role)
 admin.site.register(RolePermission)
-
-
-# admin.site.index_title = "Enrollment System"
-# admin.site.site_header = "Enrollment System Admin"
-# admin.site.site_title = "Enrollment System Admin" 
-
-#  # Just added
-# class RegistrarArea(admin.AdminSite):
-#     site_header = 'Registrar Area'
-# registrar = RegistrarArea(name='Registrar')
-# registrar.register(Enrollment)
