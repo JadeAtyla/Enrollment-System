@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import UserRegisterSerializer, UserSerializer, CourseSerializer, EnrollmentSerializer
+from .serializers import *
 from .models import Address, Course, Enrollment, Grade, Instructor, Permission, Program, Role, RolePermission, Schedule, Student, User
 from datetime import datetime
 from django.http import JsonResponse# for Json responses
@@ -19,8 +19,15 @@ from django.shortcuts import get_object_or_404
 
 # Retrieve data in JSON format
 def data(request):
-    enrollment = Enrollment.objects.all().values()  # Retrieve all data as a dictionary
+    enrollment = Role.objects.all().values()  # Retrieve all data as a dictionary
     return JsonResponse(list(enrollment), safe=False)  # Convert to JSON and return
+
+# Sample GET serializer from Role
+class RoleAPIView(APIView):
+    def get(self, request):
+        roles = Roles.objects.all() # Role table
+        serializer = RoleSerializer(roles, many=True) # Created serializer
+        return Response(serializer.data) # Return serialized data
 
 
 # Register View: Handle user registration

@@ -17,10 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from app import views # from app folder import views.py
-# from app.admin import registrar # Just added
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('registrar/', registrar.urls), # Just added
-    path('', views.data), # from views.py render function/def data
+    path('', views.RoleAPIView.as_view(), name='role-list'), # from views.py render function/def data
+    
+    path('register/', views.register, name='register'),
+    path('login/', views.CustomTokenObtainPairView.as_view(), name='login'),  # Token obtain and refresh endpoints
+    path('refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
+    path('logout/', views.logout, name='logout'),
+    path('data/', views.data, name='data'),
+    path('courses/<str:program_id>/', views.list_courses_by_program, name='list_courses_by_program'),
+    path('enroll/<int:student_id>/<str:course_code>/', views.enroll_student, name='enroll_student'),
 ]
