@@ -97,6 +97,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')
+        
 
         # Perform validation (check username and password)
         user = User.objects.filter(username=username).first()

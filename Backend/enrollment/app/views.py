@@ -25,7 +25,7 @@ def data(request):
 # Sample GET serializer from Role
 class RoleAPIView(APIView):
     def get(self, request):
-        roles = Roles.objects.all() # Role table
+        roles = Role.objects.all() # Role table
         serializer = RoleSerializer(roles, many=True) # Created serializer
         return Response(serializer.data) # Return serialized data
 
