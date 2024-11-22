@@ -1,6 +1,8 @@
 # Put you backend codes here
-pip install django djangorestframework
-pip install django-cors-headers
-pip install djangorestframework-simplejwt
-pip install mysqlclient
-pip install python-dotenv
+pipenv install django djangorestframework
+pipenv install django-cors-headers
+pipenv install djangorestframework-simplejwt
+pipenv install pymongo
+pipenv install python-dotenv
+
+pipenv shell # to activate enviroment

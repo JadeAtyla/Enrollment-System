@@ -15,11 +15,27 @@ from datetime import timedelta
 from dotenv import load_dotenv # imports env
 import os # helps to access environment variables
 
+# from pymongo.mongo_client import MongoClient
+# from pymongo.server_api import ServerApi
+
 load_dotenv() # initialize env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# # MongoDB connection string for a cluster
+# MONGO_URI = "mongodb+srv://enrollment_system:hbjfIRkgXTeBo9QU@cluster0.trbyp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+# # Create a new client and connect to the server
+# client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
+# db = client.get_database('enrollment_system')
+
+# # Send a ping to confirm a successful connection
+# try:
+#     client.admin.command('ping')
+#     print("Pinged your deployment. You successfully connected to MongoDB!")
+# except Exception as e:
+#     print(e)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -127,6 +143,7 @@ DATABASES = {
         'USER': os.environ.get('DB_USER'),
         'HOST': os.environ.get('DB_HOST'),
         'PASSWORD': os.environ.get('DB_PASS'),
+        'PORT': os.environ.get('DB_PORT'),
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'data.sqlite3',
     }
