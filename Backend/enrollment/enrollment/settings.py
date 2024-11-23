@@ -15,33 +15,16 @@ from datetime import timedelta
 from dotenv import load_dotenv # imports env
 import os # helps to access environment variables
 
-# from pymongo.mongo_client import MongoClient
-# from pymongo.server_api import ServerApi
-
 load_dotenv() # initialize env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# # MongoDB connection string for a cluster
-# MONGO_URI = "mongodb+srv://enrollment_system:hbjfIRkgXTeBo9QU@cluster0.trbyp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-# # Create a new client and connect to the server
-# client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
-# db = client.get_database('enrollment_system')
-
-# # Send a ping to confirm a successful connection
-# try:
-#     client.admin.command('ping')
-#     print("Pinged your deployment. You successfully connected to MongoDB!")
-# except Exception as e:
-#     print(e)
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rc0ljpof7owdbfd2ic_6f&bq=)2p65r^8af7vyawf^3-*!(9k0'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -52,7 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'app.apps.AppConfig', # Register the app
+    'api.apps.AppConfig', # Register the app
     'django.contrib.admin',
     # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
@@ -85,7 +68,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'app.authentication.CookiesJWTAuthentication', # Changed
+        'api.authentication.CookiesJWTAuthentication', # Changed
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -116,7 +99,7 @@ ROOT_URLCONF = 'enrollment.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'templates'], # Folder Directory for templates
+        'DIRS': [BASE_DIR/'Frontend/src'], # Folder Directory for templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
