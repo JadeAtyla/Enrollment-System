@@ -4,7 +4,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import *
-from .models import Address, Course, Enrollment, Grade, Instructor, Permission, Program, Role, RolePermission, Schedule, Student, User
+from .forms import (
+    AddressForm, CourseForm, EnrollmentForm, GradeForm,
+    InstructorForm, PermissionForm, ProgramForm, RoleForm,
+    RolePermissionForm, ScheduleForm, StudentForm, UserForm
+)
+from .models import (
+    Address, Course, Enrollment, Grade, Instructor,
+    Permission, Program, Role, RolePermission, Schedule,
+    Student, User
+)
 from datetime import datetime
 from django.http import JsonResponse# for Json responses
 from django.shortcuts import get_object_or_404 
