@@ -1,0 +1,15 @@
+
+
+<div class="form-container">
+    <h1>Student Form</h1>
+    <br/><br/>
+    {% if submitted %}
+        <p>Your Form was Submitted Successfully!</p>
+    {% else %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit">
+        </form>
+    {% endif %}
+</div>
