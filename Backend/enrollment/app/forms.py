@@ -1,23 +1,24 @@
 from django import forms
+from django.forms import ModelForm
 from .models import (
     Address, Course, Enrollment, Grade, Instructor,
     Permission, Program, Role, RolePermission, Schedule,
     Student, User
 )
 
-class AddressForm(forms.ModelForm):
+class AddressForm(ModelForm):
     class Meta:
         model = Address
         fields = '__all__'
 
 
-class CourseForm(forms.ModelForm):
+class CourseForm(ModelForm):
     class Meta:
         model = Course
         fields = '__all__'
 
 
-class EnrollmentForm(forms.ModelForm):
+class EnrollmentForm(ModelForm):
     class Meta:
         model = Enrollment
         fields = '__all__'
@@ -29,49 +30,49 @@ class GradeForm(forms.ModelForm):
         fields = '__all__'
 
 
-class InstructorForm(forms.ModelForm):
+class InstructorForm(ModelForm):
     class Meta:
         model = Instructor
         fields = '__all__'
 
 
-class PermissionForm(forms.ModelForm):
+class PermissionForm(ModelForm):
     class Meta:
         model = Permission
         fields = '__all__'
 
 
-class ProgramForm(forms.ModelForm):
+class ProgramForm(ModelForm):
     class Meta:
         model = Program
         fields = '__all__'
 
 
-class RoleForm(forms.ModelForm):
+class RoleForm(ModelForm):
     class Meta:
         model = Role
         fields = '__all__'
 
 
-class RolePermissionForm(forms.ModelForm):
+class RolePermissionForm(ModelForm):
     class Meta:
         model = RolePermission
         fields = '__all__'
 
 
-class ScheduleForm(forms.ModelForm):
+class ScheduleForm(ModelForm):
     class Meta:
         model = Schedule
         fields = '__all__'
 
 
-class StudentForm(forms.ModelForm):
+class StudentForm(ModelForm):
     class Meta:
         model = Student
         fields = '__all__'
 
 
-class UserForm(forms.ModelForm):
+class UserForm(ModelForm):
     class Meta:
         model = User
         fields = '__all__'

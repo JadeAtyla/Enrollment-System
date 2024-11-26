@@ -1,3 +1,5 @@
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -164,3 +166,19 @@ def enroll_student(request, student_id, course_code):
     enrollment.save()
 
     return Response({'detail': 'Student successfully enrolled in the course.'})
+
+
+###########STUDENT FORM##################
+ 
+def student_form(request):
+    submitted = False
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/student_form?submitted=True')
+    else:
+        form = StudentForm
+        if 'submitted' in request.GET:
+            submitted = True
+    return render(request, 'enrollment/student_form.html', {'form':form , 'submitted':submitted})

@@ -30,4 +30,5 @@ urlpatterns = [
     path('data/', views.data, name='data'),
     path('courses/<str:program_id>/', views.list_courses_by_program, name='list_courses_by_program'),
     path('enroll/<int:student_id>/<str:course_code>/', views.enroll_student, name='enroll_student'),
+    path('student_form', views.student_form, name= "Student-Form"),
 ]
