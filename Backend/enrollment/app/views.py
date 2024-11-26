@@ -1,10 +1,21 @@
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import UserRegisterSerializer, UserSerializer, CourseSerializer, EnrollmentSerializer
-from .models import Address, Course, Enrollment, Grade, Instructor, Permission, Program, Role, RolePermission, Schedule, Student, User
+from .serializers import *
+from .forms import (
+    AddressForm, CourseForm, EnrollmentForm, GradeForm,
+    InstructorForm, PermissionForm, ProgramForm, RoleForm,
+    RolePermissionForm, ScheduleForm, StudentForm, UserForm
+)
+from .models import (
+    Address, Course, Enrollment, Grade, Instructor,
+    Permission, Program, Role, RolePermission, Schedule,
+    Student, User
+)
 from datetime import datetime
 from django.http import JsonResponse# for Json responses
 from django.shortcuts import get_object_or_404 
@@ -19,8 +30,15 @@ from django.shortcuts import get_object_or_404
 
 # Retrieve data in JSON format
 def data(request):
-    enrollment = Enrollment.objects.all().values()  # Retrieve all data as a dictionary
+    enrollment = Role.objects.all().values()  # Retrieve all data as a dictionary
     return JsonResponse(list(enrollment), safe=False)  # Convert to JSON and return
+
+# Sample GET serializer from Role
+class RoleAPIView(APIView):
+    def get(self, request):
+        roles = Role.objects.all() # Role table
+        serializer = RoleSerializer(roles, many=True) # Created serializer
+        return Response(serializer.data) # Return serialized data
 
 
 # Register View: Handle user registration
@@ -148,3 +166,19 @@ def enroll_student(request, student_id, course_code):
     enrollment.save()
 
     return Response({'detail': 'Student successfully enrolled in the course.'})
+
+
+###########STUDENT FORM##################
+ 
+def student_form(request):
+    submitted = False
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/student_form?submitted=True')
+    else:
+        form = StudentForm
+        if 'submitted' in request.GET:
+            submitted = True
+    return render(request, 'enrollment/student_form.html', {'form':form , 'submitted':submitted})

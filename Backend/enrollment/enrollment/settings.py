@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv # imports env
+import os # helps to access environment variables
+
+load_dotenv() # initialize env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'app.apps.AppConfig', # Register the app
     'django.contrib.admin',
     # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
@@ -43,7 +48,6 @@ INSTALLED_APPS = [
     'corsheaders', # COR Headers
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'app.apps.AppConfig', # Register the app
 ]
 
 MIDDLEWARE = [
@@ -119,10 +123,12 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'enrollmentsystem',
-        'USER': 'root',
-        'HOST': 'localhost',
-        'PASSWORD': '',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
 
