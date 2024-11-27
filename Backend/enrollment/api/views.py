@@ -28,19 +28,6 @@ from django.shortcuts import get_object_or_404
 #     }
 #     return render(request, 'index.html', context) # request, redering file, content (for html ready)
 
-# Retrieve data in JSON format
-def data(request):
-    enrollment = Role.objects.all().values()  # Retrieve all data as a dictionary
-    return JsonResponse(list(enrollment), safe=False)  # Convert to JSON and return
-
-# Sample GET serializer from Role
-class RoleAPIView(APIView):
-    def get(self, request):
-        roles = Role.objects.all() # Role table
-        serializer = RoleSerializer(roles, many=True) # Created serializer
-        return Response(serializer.data) # Return serialized data
-
-
 # Register View: Handle user registration
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -141,7 +128,7 @@ def logout(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_courses_by_program(request, program_id):
-    program = get_object_or_404(Program, pk=program_id) 
+    program = get_object_or_404(Course, pk=program_id) 
     courses = Course.objects.filter(program=program)  
     serializer = CourseSerializer(courses, many=True)
     return Response(serializer.data)
@@ -168,8 +155,7 @@ def enroll_student(request, student_id, course_code):
     return Response({'detail': 'Student successfully enrolled in the course.'})
 
 
-###########STUDENT FORM##################
- 
+# STUDENT FORM
 def student_form(request):
     submitted = False
     if request.method == "POST":

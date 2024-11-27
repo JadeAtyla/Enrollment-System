@@ -7,7 +7,7 @@ db.createCollection("user", {
       bsonType: "object",
       required: ["_id", "username", "password", "role_id"],
       properties: {
-        _id: { bsonType: "string", pattern: "^USER\d+$"},
+        _id: { bsonType: "string"},
         first_name: { bsonType: "string" },
         last_name: { bsonType: "string" },
         middle_name: { bsonType: "string" },
@@ -44,7 +44,7 @@ db.createCollection("address", {
       bsonType: "object",
       required: ["_id", "city", "province"],
       properties: {
-        _id: { bsonType: "string", pattern: "^ADDR\d+$" },
+        _id: { bsonType: "string"},
         street: { bsonType: "string" },
         barangay: { bsonType: "string" },
         city: { bsonType: "string" },
@@ -68,8 +68,8 @@ db.createCollection("student", {
         suffix: { bsonType: "string" },
         year_level: { bsonType: "int" },
         section: { bsonType: "int" },
-        program_id: { bsonType: "string", pattern: "^PROG\d+$" },
-        address_id: { bsonType: "string", pattern: "^ADDR\d+$" },
+        program_id: { bsonType: "string"},
+        address_id: { bsonType: "string"},
         old_or_new: { bsonType: "string", enum: ["OLD", "NEW"] },
         classification: { bsonType: "string", enum: ["REGULAR", "IRREGULAR", "TRANSFEREE", "RETURNEE", "NEW_STUDENT"] },
         birth_date: { bsonType: "date" },
@@ -88,7 +88,7 @@ db.createCollection("instrutor", {
       bsonType: "object",
       required: ["_id", "first_name", "last_name"],
       properties: {
-        _id: { bsonType: "string", pattern: "^INST\d+$" },
+        _id: { bsonType: "string"},
         first_name: { bsonType: "string" },
         last_name: { bsonType: "string" },
         middle_name: { bsonType: "string" },

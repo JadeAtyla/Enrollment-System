@@ -1,26 +1,6 @@
-DROP DATABASE IF EXISTS enrollment_system;
-CREATE DATABASE IF NOT EXISTS enrollment_system;
-USE enrollment_system;
-
-CREATE TABLE IF NOT EXISTS `User` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `first_name` varchar(55),
-  `last_name` varchar(55),
-  `middle_name` varchar(55),
-  `suffix` varchar(55),
-  `email` varchar(55),
-  `contact_number` varchar(55),
-  `username` varchar(55) UNIQUE NOT NULL COMMENT 'Student will use their student number for username. Registrar, Admin and Department has different format for username',
-  `password` varchar(55) NOT NULL,
-  `role_id` int NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS `Program` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `abbreviation` varchar(55) NOT NULL,
-  `description` text NOT NULL
-);
-
+DROP DATABASE IF EXISTS `enrollment_system`;
+CREATE DATABASE IF NOT EXISTS `enrollment_system`;
+USE `enrollment_system`;
 CREATE TABLE IF NOT EXISTS `Address` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `street` varchar(55),
@@ -40,12 +20,12 @@ CREATE TABLE IF NOT EXISTS `Student` (
   `date_of_birth` date,
   `gender` ENUM ('MALE', 'FEMALE', 'PREFER_NOT_TO_SAY') NOT NULL DEFAULT 'PREFER_NOT_TO_SAY',
   `contact_number` varchar(55),
-  `status` ENUM ('REGULAR', 'IRREGULAR', 'TRANSFEREE', 'RETURNEE', 'NEW_STUDENT') NOT NULL DEFAULT 'REGULAR',
+  `status` ENUM ('REGULAR', 'IRREGULAR', 'TRANSFEREE', 'RETURNEE', 'NEW_STUDENT') NOT NULL DEFAULT 'Regular',
   `section` int NOT NULL,
   `year_level` int NOT NULL,
   `academic_year` varchar(55),
-  `category` ENUM ('OLD', 'NEW') NOT NULL DEFAULT 'OLD',
-  `program_id` int NOT NULL
+  `category` ENUM ('OLD', 'NEW') NOT NULL DEFAULT 'Old',
+  `program` ENUM ('NO_PROGRAM_YET', 'BSIT', 'BSCS')
 );
 
 CREATE TABLE IF NOT EXISTS `Schedule` (
@@ -70,15 +50,16 @@ CREATE TABLE IF NOT EXISTS `Instructor` (
 );
 
 CREATE TABLE IF NOT EXISTS `Course` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `code` varchar(55) NOT NULL,
   `title` varchar(55) NOT NULL,
   `lab_units` int,
   `lec_units` int,
+  `contact_hr_lab` int,
+  `contact_hr_lec` int,
   `year_level` int NOT NULL,
   `semester` int NOT NULL,
-  `program_id` int,
-  PRIMARY KEY (`id`, `code`)
+  `program` ENUM ('NO_PROGRAM_YET', 'BSIT', 'BSCS')
 );
 
 CREATE TABLE IF NOT EXISTS `Pre_Requisite` (
@@ -93,8 +74,7 @@ CREATE TABLE IF NOT EXISTS `Enrollment` (
   `student_id` bigint NOT NULL,
   `enrollment_date` timestamp NOT NULL,
   `status` ENUM ('ENROLLED', 'WAITLISTED') NOT NULL,
-  `school_year` date NOT NULL,
-  `released_by` int NOT NULL COMMENT 'Role must be Registrar'
+  `school_year` date NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS `Grade` (
@@ -103,25 +83,7 @@ CREATE TABLE IF NOT EXISTS `Grade` (
   `course_id` int NOT NULL,
   `grade` decimal(5,2) COMMENT '1.00 to 5.00 scale',
   `instructor_id` int NOT NULL,
-  `remarks` ENUM ('PASSED', 'FAILED', 'INCOMPOLETE', 'UNCONDITIONAL_FAILURE', 'NOT_GRADED_YET') DEFAULT 'NOT_GRADED_YET'
-);
-
-CREATE TABLE IF NOT EXISTS `Permission` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `permission` varchar(55) NOT NULL,
-  `description` text NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS `Role` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `role` ENUM ('ADMIN', 'REGISTRAR', 'DEPARTMENT', 'STUDENT') NOT NULL COMMENT 'Registrar, Admin, Department and Student',
-  `description` text NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS `Role_Permission` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `permission_id` int NOT NULL,
-  `role_id` int NOT NULL
+  `remarks` ENUM ('PASSED', 'FAILED', 'INCOMPOLETE', 'UNCONDITIONAL_FAILURE', 'NOT_GRADED_YET') DEFAULT 'Not_Graded_Yet'
 );
 
 CREATE TABLE IF NOT EXISTS `Billing` (
@@ -132,25 +94,19 @@ CREATE TABLE IF NOT EXISTS `Billing` (
   `student_id` bigint NOT NULL
 );
 
-CREATE UNIQUE INDEX `Schedule_index_0` ON `Schedule` (`course_id`, `instructor_id`, `category`, `day`, `from_time`, `to_time`);
+CREATE UNIQUE INDEX `Schedule_index_0` ON `Schedule` (`course_id`, `category`, `day`, `from_time`, `to_time`);
 
-CREATE UNIQUE INDEX `Enrollment_index_1` ON `Enrollment` (`course_id`, `student_id`);
+CREATE UNIQUE INDEX `Course_index_1` ON `Course` (`code`, `program`);
 
-CREATE UNIQUE INDEX `Grade_index_2` ON `Grade` (`student_id`, `course_id`);
+CREATE UNIQUE INDEX `Enrollment_index_2` ON `Enrollment` (`course_id`, `student_id`);
 
-CREATE UNIQUE INDEX `Role_Permission_index_3` ON `Role_Permission` (`permission_id`, `role_id`);
-
-ALTER TABLE `User` ADD FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE UNIQUE INDEX `Grade_index_3` ON `Grade` (`student_id`, `course_id`);
 
 ALTER TABLE `Student` ADD FOREIGN KEY (`address_id`) REFERENCES `Address` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE `Student` ADD FOREIGN KEY (`program_id`) REFERENCES `Program` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Schedule` ADD FOREIGN KEY (`course_id`) REFERENCES `Course` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Schedule` ADD FOREIGN KEY (`instructor_id`) REFERENCES `Instructor` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE `Course` ADD FOREIGN KEY (`program_id`) REFERENCES `Program` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Pre_Requisite` ADD FOREIGN KEY (`pre_requisite`) REFERENCES `Course` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -160,16 +116,10 @@ ALTER TABLE `Enrollment` ADD FOREIGN KEY (`course_id`) REFERENCES `Course` (`id`
 
 ALTER TABLE `Enrollment` ADD FOREIGN KEY (`student_id`) REFERENCES `Student` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE `Enrollment` ADD FOREIGN KEY (`released_by`) REFERENCES `User` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
-
 ALTER TABLE `Grade` ADD FOREIGN KEY (`student_id`) REFERENCES `Student` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Grade` ADD FOREIGN KEY (`course_id`) REFERENCES `Course` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Grade` ADD FOREIGN KEY (`instructor_id`) REFERENCES `Instructor` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE `Role_Permission` ADD FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE `Role_Permission` ADD FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `Billing` ADD FOREIGN KEY (`student_id`) REFERENCES `Student` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
