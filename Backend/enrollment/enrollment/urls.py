@@ -21,18 +21,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< HEAD
     path('', views.RoleAPIView.as_view(), name='role-list'), # from views.py render function/def data
-    
-    path('register/', views.register, name='register'),
-    path('login/', views.CustomTokenObtainPairView.as_view(), name='login'),  # Token obtain and refresh endpoints
-    path('refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
-    path('logout/', views.logout, name='logout'),
-    path('data/', views.data, name='data'),
-    path('courses/<str:program_id>/', views.list_courses_by_program, name='list_courses_by_program'),
-    path('enroll/<int:student_id>/<str:course_code>/', views.enroll_student, name='enroll_student'),
-    path('student_form', views.student_form, name= "Student-Form"),
-=======
-    path('api/', include('api.urls')),
->>>>>>> 2ece8eba529f22accbd315909952c65c88daf9a5
+    path ('api/', include('api.urls')), # includes api url links
 ]

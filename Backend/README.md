@@ -1,12 +1,12 @@
 # Put you backend codes here
-pipenv install django djangorestframework
-pipenv install django-cors-headers
-pipenv install djangorestframework-simplejwt
-pipenv install pymongo
-pipenv install python-dotenv
+pip install django djangorestframework
+pip install django-cors-headers
+pip install djangorestframework-simplejwt
+pip install 
+pip install python-dotenv
 
 # NOTE: must run this to use dependencies installed for backend
-pipenv shell # to activate enviroment
+pip shell # to activate enviroment
 
 # If hosted database will be use change this in .env
 DB_HOST=briaraujvkkiast9gz9o-mysql.services.clever-cloud.com
