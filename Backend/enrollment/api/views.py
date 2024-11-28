@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import *
 from .forms import (
@@ -152,6 +153,37 @@ def enroll_student(request, student_id, course_code):
     enrollment.save()
 
     return Response({'detail': 'Student successfully enrolled in the course.'})
+
+class CourseAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access this view.
+
+    def get(self, request):
+        courses = Course.objects.all()
+        serializer = CourseSerializer(courses, many=True)
+        return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = CourseSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success': True, 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+        serializer = CourseSerializer(course, data=request.data, partial=True)  # Use `partial=True` for partial updates
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Delete a course by ID
+    def delete(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+        course.delete()
+        return Response({'success': True, 'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
+
+
 
 
 # STUDENT FORM

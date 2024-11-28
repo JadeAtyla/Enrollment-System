@@ -17,10 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from api import views # from app folder import views.py
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.RoleAPIView.as_view(), name='role-list'), # from views.py render function/def data
+    path('', views.CourseAPIView.as_view(), name='role-list'), # from views.py render function/def data
     path ('api/', include('api.urls')), # includes api url links
 ]
