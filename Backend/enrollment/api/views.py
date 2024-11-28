@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,14 +8,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import *
 from .forms import (
-    AddressForm, CourseForm, EnrollmentForm, GradeForm,
-    InstructorForm, PermissionForm, ProgramForm, RoleForm,
-    RolePermissionForm, ScheduleForm, StudentForm, UserForm
+    AddressForm, CourseForm, EnrollmentForm, GradeForm, PreRequisiteForm,
+    InstructorForm, Billing, ScheduleForm, StudentForm, UserForm
 )
 from .models import (
-    Address, Course, Enrollment, Grade, Instructor,
-    Permission, Program, Role, RolePermission, Schedule,
-    Student, User
+    Address, Course, Enrollment, Grade, Instructor, Billing, Schedule, PreRequisite,
+    Student
 )
 from datetime import datetime
 from django.http import JsonResponse# for Json responses
