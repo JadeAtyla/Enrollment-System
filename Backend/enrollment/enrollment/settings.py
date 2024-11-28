@@ -121,14 +121,14 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 # Change engine and other component for mysql compatability
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PASSWORD': os.environ.get('DB_PASS'),
-        'PORT': os.environ.get('DB_PORT'),
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'data.sqlite3',
+        #'ENGINE': 'django.db.backends.mysql',
+        #'NAME': os.environ.get('DB_NAME'),
+       # 'USER': os.environ.get('DB_USER'),
+        #'HOST': os.environ.get('DB_HOST'),
+        #'PASSWORD': os.environ.get('DB_PASS'),
+       # 'PORT': os.environ.get('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
 

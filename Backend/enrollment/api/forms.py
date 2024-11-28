@@ -1,9 +1,10 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.forms import ModelForm
 from .models import (
     Address, Course, Enrollment, Grade, Instructor,
-    Permission, Program, Role, RolePermission, Schedule,
-    Student, User
+    PreRequisite, Billing, Schedule,
+    Student
 )
 
 class AddressForm(ModelForm):
@@ -36,27 +37,15 @@ class InstructorForm(ModelForm):
         fields = '__all__'
 
 
-class PermissionForm(ModelForm):
+class PreRequisiteForm(ModelForm):
     class Meta:
-        model = Permission
+        model = PreRequisite
         fields = '__all__'
 
 
-class ProgramForm(ModelForm):
+class BillingForm(ModelForm):
     class Meta:
-        model = Program
-        fields = '__all__'
-
-
-class RoleForm(ModelForm):
-    class Meta:
-        model = Role
-        fields = '__all__'
-
-
-class RolePermissionForm(ModelForm):
-    class Meta:
-        model = RolePermission
+        model = Billing
         fields = '__all__'
 
 
