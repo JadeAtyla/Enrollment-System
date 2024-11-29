@@ -3,9 +3,11 @@ module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     fontFamily: {
-      primary: ['Orbitron', 'sans-serif'], // Use for headings
-      secondary: ['Rajdhani', 'sans-serif'], // Use for body text
-      tertiary: ['Aldrich', 'sans-serif'], // Use for special elements
+      primary: ['Orbitron', 'sans-serif'], // For headings
+      secondary: ['Rajdhani', 'sans-serif'], // For body text
+      tertiary: ['Aldrich', 'sans-serif'], // For special elements
+      inter: ['Inter', 'sans-serif'], // For specific elements
+      spline: ['Spline Sans', 'sans-serif'], // Added Spline Sans for custom use
     },
     container: {
       padding: {
@@ -20,18 +22,18 @@ module.exports = {
     },
     extend: {
       colors: {
-        primary: '#0a0a0a', // Black color for text and icons
+        primary: '#0a0a0a', // Black for text and icons
         accent: '#B809C3', // Accent color used for buttons or highlights
       },
       backgroundImage: {
-        site: "url('./assets/site-bg.webp')", // Background for site if needed
+        site: "url('./assets/site-bg.webp')", // Optional site background
         about: "url('./assets/about.webp')", // Background for specific sections
       },
       spacing: {
-        18: '4.5rem', // Custom spacing value for padding/margin adjustments
+        18: '4.5rem', // Custom spacing for padding/margin
       },
       boxShadow: {
-        custom: '0px 4.42184px 107.23px rgba(255, 86, 246, 0.51)', // Custom shadow for buttons or cards
+        custom: '0px 4.42184px 107.23px rgba(255, 86, 246, 0.51)', // Custom shadow for cards or buttons
       },
     },
   },
