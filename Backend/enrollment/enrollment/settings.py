@@ -20,12 +20,11 @@ load_dotenv() # initialize env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rc0ljpof7owdbfd2ic_6f&bq=)2p65r^8af7vyawf^3-*!(9k0'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -36,7 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'app.apps.AppConfig', # Register the app
+    'api.apps.AppConfig', # Register the app
     'django.contrib.admin',
     # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
@@ -62,14 +61,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React's default dev server
+    "http://localhost:8000",  # React's default dev server
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'app.authentication.CookiesJWTAuthentication', # Changed
+        'api.authentication.CookiesJWTAuthentication', # Changed
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -77,7 +76,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -100,7 +99,7 @@ ROOT_URLCONF = 'enrollment.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'templates'], # Folder Directory for templates
+        'DIRS': [BASE_DIR/'Frontend/src'], # Folder Directory for templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,7 +126,8 @@ DATABASES = {
         'USER': os.environ.get('DB_USER'),
         'HOST': os.environ.get('DB_HOST'),
         'PASSWORD': os.environ.get('DB_PASS'),
-        # 'ENGINE': 'django.db.backends.sqlite3',
+        'PORT': os.environ.get('DB_PORT'),
+       # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
