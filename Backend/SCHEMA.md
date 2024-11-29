@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS `Schedule` (
   `instructor_id` int NOT NULL,
   `from_time` time,
   `to_time` time,
+  `year_level` int,
+  `section` int,
   `category` ENUM ('LAB', 'LEC'),
   `day` ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'),
   `room` varchar(55)

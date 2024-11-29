@@ -94,6 +94,8 @@ class Schedule(models.Model):
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
     from_time = models.TimeField(blank=True, null=True)
     to_time = models.TimeField(blank=True, null=True)
+    year_level = models.IntegerField()
+    section = models.IntegerField()
     category = models.CharField(max_length=3, choices=LAB_OR_LEC.choices, blank=True, null=True)
     day = models.CharField(max_length=9, choices=SCHEDULE_DAY.choices, blank=True, null=True)
     room = models.CharField(max_length=55, blank=True, null=True)

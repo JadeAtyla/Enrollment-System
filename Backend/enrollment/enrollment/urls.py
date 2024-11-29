@@ -20,6 +20,6 @@ from api import views # from app folder import views.py
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.CourseAPIView.as_view(), name='role-list'), # from views.py render function/def data
-    path ('api/', include('api.urls')), # includes api url links
+    path('', views.CourseAPIView.as_view(), name='course'), # from views.py render function/def data
+    path('api/', include('api.urls')), # includes api url links
 ]

@@ -7,10 +7,6 @@ pip install djangorestframework-simplejwt
 pip install mysqlclient
 pip install python-dotenv
 
-# NOTE: must run this to use dependencies installed for backend
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass # to bypass
-.\env\Scripts\activate # to activate enviroment
-
 # If hosted database will be use change this in .env
 DB_HOST=briaraujvkkiast9gz9o-mysql.services.clever-cloud.com
 DB_NAME=briaraujvkkiast9gz9o

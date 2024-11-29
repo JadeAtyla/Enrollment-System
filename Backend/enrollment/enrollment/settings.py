@@ -61,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React's default dev server
+    "http://localhost:8000",  # React's default dev server
 ]
 
 CORS_ALLOW_CREDENTIALS = True
