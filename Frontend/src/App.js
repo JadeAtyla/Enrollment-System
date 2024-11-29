@@ -1,86 +1,126 @@
 import React, { useState } from "react";
-import LoginCard from "./components/LoginCard";
-import StudentTypeSelection from "./components/StudentTypeSelection";
-import RegisterForm from "./components/RegisterForm";
-import Dashboard from "./components/Dashboard";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import StudentLoginCard from "./components/Student/StudentLoginCard";
+import Dashboard from "./components/Student/Dashboard";
+import RegisterForm from "./components/Student/RegisterForm";
+import COR from "./components/Student/COR";
+import Checklist from "./components/Student/Checklist";
+import StudentProfile from "./components/Student/StudentProfile"; // Import StudentProfile
+import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard"; // Import RegistrarLoginCard
+import RegisterDashboard from "./components/Registrar/Dashboard";
 
 function App() {
-  const [currentStep, setCurrentStep] = useState("login");
-  const [formData, setFormData] = useState({});
-  const [user, setUser] = useState(null); // State to manage logged-in user
-  const [loading, setLoading] = useState(false); // State to manage loading
-  const [userType, setUserType] = useState("Student"); // State to manage user type
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
-  const handleRegisterClick = () => {
-    setCurrentStep("studentType");
-  };
-
-  const handleLogin = (studentNumber, password) => {
-    if (!studentNumber || !password) {
-      alert("Please enter both student number and password");
+  const handleLogin = (identifier, password) => {
+    if (!identifier || !password) {
+      alert("Please enter both ID and password");
       return;
     }
 
-    setLoading(true); // Show loading state
-
-    // Simulate user authentication (e.g., check against a predefined list of users)
     const sampleUsers = [
-      { studentNumber: "12345", password: "password123" },
-      { studentNumber: "67890", password: "password456" },
+      { identifier: "123", password: "password123", role: "student" },
+      { identifier: "456", password: "password456", role: "registrar" },
     ];
 
-    setTimeout(() => {
-      // Credentials only apply to student login
-      if (userType === "Student") {
-        const matchedUser = sampleUsers.find(
-          (user) =>
-            user.studentNumber === studentNumber && user.password === password
-        );
+    const matchedUser = sampleUsers.find(
+      (user) => user.identifier === identifier && user.password === password
+    );
 
-        if (matchedUser) {
-          setUser(matchedUser); // Set the user in state
-          setCurrentStep("dashboard"); // Navigate to dashboard
-        } else {
-          alert("Invalid student number or password");
-        }
-      } else {
-        alert("Non-student users cannot log in with student credentials.");
-      }
-
-      setLoading(false); // Hide loading state after authentication
-    }, 1000); // Simulate a delay for the authentication process
+    if (matchedUser) {
+      setUser(matchedUser);
+      setRole(matchedUser.role);
+    } else {
+      alert("Invalid credentials");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      {currentStep === "login" && (
-        <LoginCard
-          onLogin={handleLogin}
-          onRegisterClick={handleRegisterClick}
-          setUserType={setUserType}
-          userType={userType} // Pass userType to LoginCard
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/student" />} />
+
+        {/* Student Routes */}
+        <Route path="/register" element={<RegisterForm />} />
+        <Route
+          path="/student"
+          element={
+            user && role === "student" ? (
+              <Navigate to="/student/dashboard" />
+            ) : (
+              <StudentLoginCard onLogin={handleLogin} />
+            )
+          }
         />
-      )}
-      {currentStep === "studentType" && (
-        <StudentTypeSelection
-          setFormData={setFormData}
-          onNext={() => setCurrentStep("registerForm")}
+        <Route
+          path="/student/dashboard"
+          element={
+            user && role === "student" ? (
+              <Dashboard />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
         />
-      )}
-      {currentStep === "registerForm" && (
-        <RegisterForm
-          formData={formData}
-          setFormData={setFormData}
-          setCurrentStep={setCurrentStep}
+        <Route
+          path="/student/profile"
+          element={
+            user && role === "student" ? (
+              <StudentProfile user={user} />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
         />
-      )}
-      {currentStep === "dashboard" && <Dashboard user={user} />}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 bg-gray-500 z-10">
-          <div className="text-white">Loading...</div>
-        </div>
-      )}
-    </div>
+        <Route
+          path="/student/cor"
+          element={
+            user && role === "student" ? <COR /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/checklist"
+          element={
+            user && role === "student" ? (
+              <Checklist />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
+        />
+
+        {/* Registrar Routes */}
+
+        <Route
+          path="/registrar"
+          element={
+            user && role === "registrar" ? (
+              <Navigate to="/registrar/dashboard" />
+            ) : (
+              <RegistrarLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/registrar/dashboard"
+          element={
+            user && role === "registrar" ? (
+              <RegisterDashboard /> // Replaced with actual Registrar dashboard component
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+      </Routes>
+    </Router>
   );
 }
 
