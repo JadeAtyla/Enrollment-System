@@ -1,93 +1,101 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import MissionIcon from "../../images/DashboardIcons/Mission.svg";
+import VisionIcon from "../../images/DashboardIcons/Vision.svg";
+import ProfileIcon from "../../images/DashboardIcons/ProfileIcon.svg";
 
 const Dashboard = () => {
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-gray-100 to-yellow-50 relative">
+    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] font-spline-sans">
+      {/* Sidebar */}
+      <Sidebar />
+
       {/* Header */}
       <Header />
 
-      {/* Welcome Section */}
-      <div className="flex justify-between items-center px-16 mt-6">
-        <h2 className="text-gray-800 font-semibold text-xl sm:text-2xl">
-          Welcome! [Student First Name]
-        </h2>
-        <p className="text-gray-600 text-lg sm:text-xl">Enrollment Status: Enrolled</p>
-      </div>
+      {/* Main Content */}
+      <div className="flex flex-col justify-center items-center max-h-screen px-8">
+        {/* Space between Header and Welcome Section */}
+        <div className="mt-10" />
 
-      {/* Student Info Card */}
-      <div className="bg-white rounded-xl shadow-lg mx-auto mt-6 p-6 w-[700px] flex justify-between items-center">
-        <div>
-          <h3 className="text-black font-bold text-xl">[STUDENT NAME]</h3>
-          <p className="text-gray-600 text-md">[Course]</p>
-          <p className="text-gray-600 text-md">[Student Number]</p>
-        </div>
-        <p className="text-gray-500 font-medium text-md">Status: Regular</p>
-      </div>
-
-      {/* Mission and Vision Cards */}
-      <div className="flex justify-center gap-10 mt-10">
-        {/* Mission Card */}
-        <div className="bg-white shadow-md rounded-xl p-6 w-[350px]">
-          <div className="flex justify-center items-center bg-gray-200 p-3 rounded-full">
-            <svg
-              className="h-8 w-8 text-gray-600"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m9-11.03a9.0006 9.0006 0 01-18 0"
-              />
-            </svg>
-          </div>
-          <h3 className="text-gray-800 font-bold text-lg mt-4 text-center">
-            CVSU MISSION
-          </h3>
-          <p className="text-gray-600 text-sm mt-2 text-center">
-            Cavite State University shall provide excellent, equitable, and
-            relevant educational opportunities in the arts, sciences, and
-            technology through quality instruction and responsive research and
-            development activities.
+        {/* Welcome Section */}
+        <div className="flex justify-between items-center w-full max-w-[1000px] mb-6">
+          <h2 className="text-[#333] font-bold text-[22px]">
+            Welcome! <span className="font-regular">[Student First Name]</span>
+          </h2>
+          <p className="text-[#555] text-[16px] font-regular">
+            Enrollment Status: <span className="font-bold">Enrolled</span>
           </p>
         </div>
 
-        {/* Vision Card */}
-        <div className="bg-white shadow-md rounded-xl p-6 w-[350px]">
-          <div className="flex justify-center items-center bg-gray-200 p-3 rounded-full">
-            <svg
-              className="h-8 w-8 text-gray-600"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4.5v15m7.5-7.5H4.5"
-              />
-            </svg>
+        {/* Space between Welcome Section and Student Info Card */}
+        <div className="mt-4" />
+
+        {/* Student Info Card */}
+        <div className="bg-white rounded-[34px] shadow-lg w-[1000px] h-[140px] flex items-center justify-between p-6 mb-8">
+          <div className="flex items-center">
+            <img
+              src={ProfileIcon}
+              alt="Profile Icon"
+              className="h-[90px] w-[90px] mr-6"
+            />
+            <div>
+              <h3 className="text-[#222] font-bold text-[22px]">
+                [STUDENT NAME]
+              </h3>
+              <p className="text-[#666] text-[16px] font-regular">[Course]</p>
+              <p className="text-[#666] text-[16px] font-regular">
+                [Student Number]
+              </p>
+            </div>
           </div>
-          <h3 className="text-gray-800 font-bold text-lg mt-4 text-center">
-            CVSU VISION
-          </h3>
-          <p className="text-gray-600 text-sm mt-2 text-center">
-            Cavite State University aspires to be a globally recognized
-            research university that provides excellent and relevant education
-            for the sustainable development of individuals and communities.
-          </p>
+          <div className="self-start mt-[50px]">
+            <p className="text-[#888] text-[16px] font-regular">
+              Status: <span className="font-bold">Regular</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Mission and Vision Cards */}
+        <div className="flex justify-between gap-8 w-full max-w-[1000px]">
+          {/* Mission Card */}
+          <div className="bg-white shadow-lg rounded-[34px] p-8 w-[480px] h-[380px] text-center flex flex-col items-center">
+            <img
+              src={MissionIcon}
+              alt="Mission Icon"
+              className="h-[70px] w-[70px] mb-6"
+            />
+            <h3 className="text-[#222] font-bold text-[20px] mb-4">
+              CVSU MISSION
+            </h3>
+            <p className="text-[#555] text-[15px] font-regular leading-relaxed">
+              Cavite State University shall provide excellent, equitable, and
+              relevant educational opportunities in the arts, sciences, and
+              technology through quality instruction and responsive research and
+              development activities. It shall produce professional, skilled,
+              and morally upright individuals for global competitiveness.
+            </p>
+          </div>
+
+          {/* Vision Card */}
+          <div className="bg-white shadow-lg rounded-[34px] p-8 w-[480px] h-[380px] text-center flex flex-col items-center">
+            <img
+              src={VisionIcon}
+              alt="Vision Icon"
+              className="h-[70px] w-[70px] mb-6"
+            />
+            <h3 className="text-[#222] font-bold text-[20px] mb-4">
+              CVSU VISION
+            </h3>
+            <p className="text-[#555] text-[15px] font-regular leading-relaxed">
+              Cavite State University aspires to be a globally recognized
+              research university that provides excellent and relevant education
+              for the sustainable development of individuals and communities.
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Sidebar */}
-      <Sidebar />
     </div>
   );
 };

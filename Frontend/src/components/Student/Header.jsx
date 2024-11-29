@@ -8,8 +8,8 @@ const Header = () => {
       {/* University Logo and Title */}
       <div className="flex items-center">
         <img src={universityLogo} alt="University Logo" className="h-10" />
-        <h1 className="text-lg font-bold ml-4">
-          CAVITE STATE UNIVERSITY - BACOOR
+        <h1 className="text-lg font-bold ml-4 uppercase">
+          Cavite State University - Bacoor
         </h1>
       </div>
 
