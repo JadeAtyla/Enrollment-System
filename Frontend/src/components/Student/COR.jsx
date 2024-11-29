@@ -27,7 +27,7 @@ const COR = ({ onLogout }) => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
+    <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
       <Header onLogout={onLogout} />
       <div className="flex justify-center items-center bg-[#e4ecfa] py-3">
         <h1 className="text-[36px] font-extrabold text-[#000000] uppercase tracking-wide mt-5">
