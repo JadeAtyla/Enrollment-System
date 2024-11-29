@@ -1,12 +1,18 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import StudentLoginCard from "./components/Student/StudentLoginCard";
 import Dashboard from "./components/Student/Dashboard";
 import RegisterForm from "./components/Student/RegisterForm";
-import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import COR from "./components/Student/COR";
 import Checklist from "./components/Student/Checklist";
 import StudentProfile from "./components/Student/StudentProfile"; // Import StudentProfile
+import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard"; // Import RegistrarLoginCard
+import RegisterDashboard from "./components/Registrar/Dashboard";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,8 +25,8 @@ function App() {
     }
 
     const sampleUsers = [
-      { identifier: "12345", password: "password123", role: "student" },
-      { identifier: "67890", password: "password456", role: "registrar" },
+      { identifier: "123", password: "password123", role: "student" },
+      { identifier: "456", password: "password456", role: "registrar" },
     ];
 
     const matchedUser = sampleUsers.find(
@@ -39,6 +45,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/student" />} />
+
+        {/* Student Routes */}
+        <Route path="/register" element={<RegisterForm />} />
         <Route
           path="/student"
           element={
@@ -72,11 +81,7 @@ function App() {
         <Route
           path="/student/cor"
           element={
-            user && role === "student" ? (
-              <COR />
-            ) : (
-              <Navigate to="/student" />
-            )
+            user && role === "student" ? <COR /> : <Navigate to="/student" />
           }
         />
         <Route
@@ -89,8 +94,30 @@ function App() {
             )
           }
         />
-        <Route path="/register" element={<RegisterForm />} />
-        <Route path="/registrar" element={<RegistrarLoginCard />} />
+
+        {/* Registrar Routes */}
+
+        <Route
+          path="/registrar"
+          element={
+            user && role === "registrar" ? (
+              <Navigate to="/registrar/dashboard" />
+            ) : (
+              <RegistrarLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/registrar/dashboard"
+          element={
+            user && role === "registrar" ? (
+              <RegisterDashboard /> // Replaced with actual Registrar dashboard component
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
     </Router>

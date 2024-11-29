@@ -1,9 +1,9 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import MissionIcon from "../../images/DashboardIcons/Mission.svg";
-import VisionIcon from "../../images/DashboardIcons/Vision.svg";
-import ProfileIcon from "../../images/DashboardIcons/ProfileIcon.svg";
+import MissionIcon from "../../images/Student/DashboardIcons/Mission.svg";
+import VisionIcon from "../../images/Student/DashboardIcons/Vision.svg";
+import ProfileIcon from "../../images/Student/DashboardIcons/ProfileIcon.svg";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 
 const Dashboard = () => {
