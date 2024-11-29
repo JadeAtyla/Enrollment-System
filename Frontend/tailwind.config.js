@@ -33,7 +33,8 @@ module.exports = {
         18: '4.5rem', // Custom spacing for padding/margin
       },
       boxShadow: {
-        custom: '0px 4.42184px 107.23px rgba(255, 86, 246, 0.51)', // Custom shadow for cards or buttons
+        login: '20px 20px 20px rgba(0, 0, 0, 0.5)', // For login cards
+        custom: '15px 15px 12px rgba(0, 0, 0, 0.2)', // For content cards
       },
     },
   },

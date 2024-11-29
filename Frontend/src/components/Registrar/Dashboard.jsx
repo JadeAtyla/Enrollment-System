@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import MissionIcon from "../../images/Student/DashboardIcons/Mission.svg";
 import VisionIcon from "../../images/Student/DashboardIcons/Vision.svg";
-import ProfileIcon from "../../images/Student/DashboardIcons/ProfileIcon.svg";
+import ProfileIcon from "../../images/Registrar/DashboardIcons/ProfileIcon.svg";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 
 const Dashboard = () => {
@@ -12,16 +12,16 @@ const Dashboard = () => {
   const handleNavigate = (section) => {
     switch (section) {
       case "dashboard":
-        navigate("/student/dashboard");
+        navigate("/registrar/dashboard");
         break;
       case "profile":
-        navigate("/student/profile");
+        navigate("/registrar/profile");
         break;
       case "cor":
-        navigate("/student/cor");
+        navigate("/registrar/cor");
         break;
       case "checklist":
-        navigate("/student/checklist");
+        navigate("/registrar/checklist");
         break;
       default:
         break;
@@ -42,11 +42,8 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="flex justify-between items-center w-full max-w-[1000px] mb-6">
           <h2 className="text-[#333] font-bold text-[22px]">
-            Welcome! <span className="font-regular">[Student First Name]</span>
+            Welcome! <span className="font-regular">[Name]</span>
           </h2>
-          <p className="text-[#555] text-[16px] font-regular">
-            Enrollment Status: <span className="font-bold">Enrolled</span>
-          </p>
         </div>
 
         {/* Space between Welcome Section and Student Info Card */}
