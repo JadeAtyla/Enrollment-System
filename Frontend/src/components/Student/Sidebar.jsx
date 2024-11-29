@@ -4,63 +4,49 @@ import ProfileIcon from "../../images/SidebarIcons/ProfileIcon.svg";
 import CORIcon from "../../images/SidebarIcons/CORIcon.svg";
 import ChecklistIcon from "../../images/SidebarIcons/ChecklistIcon.svg";
 
-const Sidebar = () => {
+const Sidebar = ({ onNavigate }) => {
+  if (typeof onNavigate !== "function") {
+    console.error("onNavigate is not a function");
+    return null; // Prevent rendering Sidebar if `onNavigate` is not provided
+  }
+
   return (
-    <div
-      className="fixed flex flex-col items-center bg-[#28324B] shadow-lg"
-      style={{
-        width: "60px",
-        height: "400px",
-        top: "50%",
-        right: "30px",
-        transform: "translateY(-50%)",
-        borderRadius: "30px",
-      }}
-    >
-      {/* Sidebar Buttons */}
+    <div className="fixed flex flex-col items-center bg-[#28324B] shadow-lg w-[60px] h-[400px] top-1/2 right-[30px] -translate-y-1/2 rounded-[30px]">
       <div className="flex flex-col justify-around h-full">
+        {/* Dashboard Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Dashboard"
+          onClick={() => onNavigate("dashboard")}
         >
-          <img
-            src={DashboardIcon}
-            alt="Dashboard Icon"
-            className="w-6 h-6"
-          />
+          <img src={DashboardIcon} alt="Dashboard Icon" className="w-6 h-6" />
         </button>
 
+        {/* Profile Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Profile"
+          onClick={() => onNavigate("profile")}
         >
-          <img
-            src={ProfileIcon}
-            alt="Profile Icon"
-            className="w-6 h-6"
-          />
+          <img src={ProfileIcon} alt="Profile Icon" className="w-6 h-6" />
         </button>
 
+        {/* COR Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="COR"
+          onClick={() => onNavigate("cor")}
         >
-          <img
-            src={CORIcon}
-            alt="COR Icon"
-            className="w-6 h-6"
-          />
+          <img src={CORIcon} alt="COR Icon" className="w-6 h-6" />
         </button>
 
+        {/* Checklist Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Checklist"
+          onClick={() => onNavigate("checklist")}
         >
-          <img
-            src={ChecklistIcon}
-            alt="Checklist Icon"
-            className="w-6 h-6"
-          />
+          <img src={ChecklistIcon} alt="Checklist Icon" className="w-6 h-6" />
         </button>
       </div>
     </div>
