@@ -1,78 +1,99 @@
 import React, { useState } from "react";
-import LoginCard from "./components/Student/StudentLoginCard";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import StudentLoginCard from "./components/Student/StudentLoginCard";
 import Dashboard from "./components/Student/Dashboard";
 import RegisterForm from "./components/Student/RegisterForm";
-import Sidebar from "./components/Student/Sidebar";
-import StudentProfile from "./components/Student/StudentProfile";
-import Checklist from "./components/Student/Checklist";
+import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import COR from "./components/Student/COR";
+import Checklist from "./components/Student/Checklist";
+import StudentProfile from "./components/Student/StudentProfile"; // Import StudentProfile
 
 function App() {
-  const [currentStep, setCurrentStep] = useState("login");
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
-  // Initialize form data for the RegisterForm
-  const [formData, setFormData] = useState({
-    studentNumber: "",
-    password: "",
-    confirmPassword: "",
-    course: "",
-    yearLevel: "",
-    email: "",
-    section: "",
-  });
-
-  const handleLogin = (studentNumber, password) => {
-    if (!studentNumber || !password) {
-      alert("Please enter both student number and password");
+  const handleLogin = (identifier, password) => {
+    if (!identifier || !password) {
+      alert("Please enter both ID and password");
       return;
     }
 
-    // Simulate authentication
     const sampleUsers = [
-      { studentNumber: "12345", password: "password123" },
-      { studentNumber: "67890", password: "password456" },
+      { identifier: "12345", password: "password123", role: "student" },
+      { identifier: "67890", password: "password456", role: "registrar" },
     ];
 
     const matchedUser = sampleUsers.find(
-      (user) => user.studentNumber === studentNumber && user.password === password
+      (user) => user.identifier === identifier && user.password === password
     );
 
     if (matchedUser) {
-      setUser(matchedUser); // Save the user state
-      setCurrentStep("dashboard"); // Navigate to dashboard
+      setUser(matchedUser);
+      setRole(matchedUser.role);
     } else {
-      alert("Invalid student number or password");
+      alert("Invalid credentials");
     }
   };
 
-  const handleNavigation = (step) => {
-    setCurrentStep(step); // Navigate to the selected step
-  };
-
   return (
-    <div className="flex">
-      {user && <Sidebar onNavigate={handleNavigation} />} {/* Ensure `onNavigate` is passed */}
-      <div className="flex-grow">
-        {currentStep === "login" && (
-          <LoginCard
-            onLogin={handleLogin}
-            onRegisterClick={() => setCurrentStep("registerForm")}
-          />
-        )}
-        {currentStep === "registerForm" && (
-          <RegisterForm
-            formData={formData}
-            setFormData={setFormData}
-            setCurrentStep={setCurrentStep}
-          />
-        )}
-        {currentStep === "dashboard" && <Dashboard user={user} />}
-        {currentStep === "profile" && <StudentProfile user={user} />}
-        {currentStep === "checklist" && <Checklist />}
-        {currentStep === "cor" && <COR />}
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/student" />} />
+        <Route
+          path="/student"
+          element={
+            user && role === "student" ? (
+              <Navigate to="/student/dashboard" />
+            ) : (
+              <StudentLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/student/dashboard"
+          element={
+            user && role === "student" ? (
+              <Dashboard />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            user && role === "student" ? (
+              <StudentProfile user={user} />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
+        />
+        <Route
+          path="/student/cor"
+          element={
+            user && role === "student" ? (
+              <COR />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
+        />
+        <Route
+          path="/student/checklist"
+          element={
+            user && role === "student" ? (
+              <Checklist />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
+        />
+        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/registrar" element={<RegistrarLoginCard />} />
+        <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+      </Routes>
+    </Router>
   );
 }
 

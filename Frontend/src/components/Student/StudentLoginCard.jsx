@@ -1,21 +1,31 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import universityLogo from "../../images/universityLogo.svg"; // University Logo
-import loginIcon from "../../images/loginIcon.svg";
+import universityLogo from "../../images/universityLogo.svg"; // Corrected path
+import loginIcon from "../../images/loginIcon.svg"; // Corrected path
+import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 
-const LoginCard = ({ onLogin, onRegisterClick }) => {
+const StudentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [studentNumber, setStudentNumber] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate for routing
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleLoginClick = () => onLogin(studentNumber, password);
+  const handleLoginClick = () => {
+    // Call onLogin function passed as a prop
+    onLogin(studentNumber, password);
+    // Redirect to dashboard after successful login
+    navigate("/student/dashboard");
+  };
+
+  const handleRegisterClick = () => {
+    // Navigate to the register page
+    navigate("/register");
+  };
 
   return (
-    <div
-      className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900"
-    >
+    <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
       {/* Main Container */}
       <div className="relative flex rounded-[32px] shadow-lg overflow-hidden w-[1027px] h-[641px]">
         {/* Left Section (White) */}
@@ -91,7 +101,7 @@ const LoginCard = ({ onLogin, onRegisterClick }) => {
             <p>
               Don’t have an account?{" "}
               <button
-                onClick={onRegisterClick}
+                onClick={handleRegisterClick} // Navigate to the register page
                 className="text-blue-600 font-semibold hover:underline"
               >
                 Register
@@ -112,4 +122,4 @@ const LoginCard = ({ onLogin, onRegisterClick }) => {
   );
 };
 
-export default LoginCard;
+export default StudentLoginCard;

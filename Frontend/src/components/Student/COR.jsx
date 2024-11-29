@@ -4,12 +4,33 @@ import Header from "./Header";
 import MissionIcon from "../../images/DashboardIcons/Mission.svg";
 import VisionIcon from "../../images/DashboardIcons/Vision.svg";
 import ProfileIcon from "../../images/DashboardIcons/ProfileIcon.svg";
+import { useNavigate } from "react-router-dom";
 
 const COR = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (section) => {
+    switch (section) {
+      case "dashboard":
+        navigate("/student/dashboard");
+        break;
+      case "profile":
+        navigate("/student/profile");
+        break;
+      case "cor":
+        navigate("/student/cor");
+        break;
+      case "checklist":
+        navigate("/student/checklist");
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] font-spline-sans">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
+      <Sidebar onNavigate={handleNavigate} />
 
       {/* Header */}
       <Header />

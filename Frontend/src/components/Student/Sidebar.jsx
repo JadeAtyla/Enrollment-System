@@ -4,16 +4,10 @@ import ProfileIcon from "../../images/SidebarIcons/ProfileIcon.svg";
 import CORIcon from "../../images/SidebarIcons/CORIcon.svg";
 import ChecklistIcon from "../../images/SidebarIcons/ChecklistIcon.svg";
 
-const Sidebar = ({ onNavigate }) => {
-  if (typeof onNavigate !== "function") {
-    console.error("onNavigate is not a function");
-    return null; // Prevent rendering Sidebar if `onNavigate` is not provided
-  }
-
+const Sidebar = ({ onNavigate = () => {} }) => {
   return (
     <div className="fixed flex flex-col items-center bg-[#28324B] shadow-lg w-[60px] h-[400px] top-1/2 right-[30px] -translate-y-1/2 rounded-[30px]">
       <div className="flex flex-col justify-around h-full">
-        {/* Dashboard Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Dashboard"
@@ -21,8 +15,6 @@ const Sidebar = ({ onNavigate }) => {
         >
           <img src={DashboardIcon} alt="Dashboard Icon" className="w-6 h-6" />
         </button>
-
-        {/* Profile Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Profile"
@@ -30,8 +22,6 @@ const Sidebar = ({ onNavigate }) => {
         >
           <img src={ProfileIcon} alt="Profile Icon" className="w-6 h-6" />
         </button>
-
-        {/* COR Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="COR"
@@ -39,8 +29,6 @@ const Sidebar = ({ onNavigate }) => {
         >
           <img src={CORIcon} alt="COR Icon" className="w-6 h-6" />
         </button>
-
-        {/* Checklist Button */}
         <button
           className="p-3 hover:bg-gray-400 rounded-full transition"
           title="Checklist"
