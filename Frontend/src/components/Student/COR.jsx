@@ -1,9 +1,7 @@
 import React from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import MissionIcon from "../../images/DashboardIcons/Mission.svg";
-import VisionIcon from "../../images/DashboardIcons/Vision.svg";
-import ProfileIcon from "../../images/DashboardIcons/ProfileIcon.svg";
+import Header from "./Header"; // Custom Header
+import Sidebar from "./Sidebar"; // Custom Sidebar
+import UniversityLogo from "../../images/universityLogo.svg"; // Path to your university logo
 import { useNavigate } from "react-router-dom";
 
 const COR = () => {
@@ -29,91 +27,111 @@ const COR = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
-      <Sidebar onNavigate={handleNavigate} />
-
+    <div className="w-screen h-screen bg-gradient-to-b bg-cover from-[#e4ecfa] to-[#fefae0] flex flex-col">
       {/* Header */}
       <Header />
 
+      {/* "Certificate of Registration" Text */}
+      <div className="flex justify-center items-center bg-[#e4ecfa] py-3">
+        <h1 className="text-[36px] font-extrabold text-[#000000] uppercase tracking-wide mt-5">
+          CERTIFICATE OF REGISTRATION
+        </h1>
+      </div>
+
       {/* Main Content */}
-      <div className="flex flex-col justify-center items-center max-h-screen px-8">
-        {/* Space between Header and Welcome Section */}
-        <div className="mt-10" />
+      <div className="flex flex-1 justify-center items-center w-full h-auto pb-14"> {/* Added pb-8 for bottom padding */}
+        {/* Sidebar */}
+        <Sidebar onNavigate={handleNavigate} />
 
-        {/* Welcome Section */}
-        <div className="flex justify-between items-center w-full max-w-[1000px] mb-6">
-          <h2 className="text-[#333] font-bold text-[22px]">
-            cor! <span className="font-regular">[Student First Name]</span>
-          </h2>
-          <p className="text-[#555] text-[16px] font-regular">
-            Enrollment Status: <span className="font-bold">Enrolled</span>
-          </p>
-        </div>
-
-        {/* Space between Welcome Section and Student Info Card */}
-        <div className="mt-4" />
-
-        {/* Student Info Card */}
-        <div className="bg-white rounded-[34px] shadow-lg w-[1000px] h-[140px] flex items-center justify-between p-6 mb-8">
-          <div className="flex items-center">
+        <div className="bg-white max-w-[57rem] w-full rounded-[20px] mt-10 shadow-lg p-8 relative">
+          {/* University Logo and Title */}
+          <div className="text-center mb-6">
             <img
-              src={ProfileIcon}
-              alt="Profile Icon"
-              className="h-[90px] w-[90px] mr-6"
+              src={UniversityLogo}
+              alt="University Logo"
+              className="h-16 mx-auto mb-4"
             />
+            <h2 className="text-[20px] font-bold uppercase">
+              Cavite State University
+            </h2>
+            <p className="text-[16px] font-medium">Bacoor Campus</p>
+            <h3 className="text-[18px] font-bold mt-4">Registration Form</h3>
+          </div>
+
+          {/* Student Info */}
+          <div className="grid grid-cols-2 gap-4 mb-6 text-[14px]">
             <div>
-              <h3 className="text-[#222] font-bold text-[22px]">
-                [STUDENT NAME]
-              </h3>
-              <p className="text-[#666] text-[16px] font-regular">[Course]</p>
-              <p className="text-[#666] text-[16px] font-regular">
-                [Student Number]
-              </p>
+              <p><strong>Student Number:</strong> [20######]</p>
+              <p><strong>Student Name:</strong> [Last Name], [First Name] [Middle Name]</p>
+              <p><strong>Course:</strong> BSCS</p>
+              <p><strong>Year:</strong> 2nd Year</p>
+              <p><strong>Address:</strong> [Address]</p>
+            </div>
+            <div>
+              <p><strong>Semester:</strong> 1st Semester</p>
+              <p><strong>Date:</strong> [dd-mm-yyyy]</p>
+              <p><strong>Section:</strong> [BSCS {`{Year}`} - {`{Section}`}]</p>
+              <p><strong>School Year:</strong> [2024-2025]</p>
             </div>
           </div>
-          <div className="self-start mt-[50px]">
-            <p className="text-[#888] text-[16px] font-regular">
-              Status: <span className="font-bold">Regular</span>
-            </p>
-          </div>
-        </div>
 
-        {/* Mission and Vision Cards */}
-        <div className="flex justify-between gap-8 w-full max-w-[1000px]">
-          {/* Mission Card */}
-          <div className="bg-white shadow-lg rounded-[34px] p-8 w-[480px] h-[380px] text-center flex flex-col items-center">
-            <img
-              src={MissionIcon}
-              alt="Mission Icon"
-              className="h-[70px] w-[70px] mb-6"
-            />
-            <h3 className="text-[#222] font-bold text-[20px] mb-4">
-              CVSU MISSION
-            </h3>
-            <p className="text-[#555] text-[15px] font-regular leading-relaxed">
-              Cavite State University shall provide excellent, equitable, and
-              relevant educational opportunities in the arts, sciences, and
-              technology through quality instruction and responsive research and
-              development activities. It shall produce professional, skilled,
-              and morally upright individuals for global competitiveness.
-            </p>
+          {/* Course Table */}
+          <table className="w-full text-left border-collapse mb-6 text-[14px]">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border p-2">COURSE CODE</th>
+                <th className="border p-2">COURSE TITLE</th>
+                <th className="border p-2">UNITS</th>
+                <th className="border p-2">TIME</th>
+                <th className="border p-2">DAY</th>
+                <th className="border p-2">ROOM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border p-2">COSC 000</td>
+                <td className="border p-2">NAKAKA STRESS KA SIR HAHAHAHA</td>
+                <td className="border p-2">3</td>
+                <td className="border p-2">7:30 AM</td>
+                <td className="border p-2">MONDAY</td>
+                <td className="border p-2">COMLAB 1</td>
+              </tr>
+              {[...Array(5)].map((_, index) => (
+                <tr key={index}>
+                  <td className="border p-2">&nbsp;</td>
+                  <td className="border p-2">&nbsp;</td>
+                  <td className="border p-2">&nbsp;</td>
+                  <td className="border p-2">&nbsp;</td>
+                  <td className="border p-2">&nbsp;</td>
+                  <td className="border p-2">&nbsp;</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Additional Info */}
+          <div className="grid grid-cols-2 gap-4 text-[14px] mb-6">
+            <div>
+              <p><strong>Old/New Student:</strong> Old Student</p>
+              <p><strong>Registration Status:</strong> Transferee</p>
+              <p><strong>Date of Birth:</strong> [Month Day, Year]</p>
+            </div>
+            <div>
+              <p><strong>Gender:</strong> Non-Binary</p>
+              <p><strong>Contact Number:</strong> [09#########]</p>
+              <p><strong>Email Address:</strong> [Email@Email.com]</p>
+            </div>
           </div>
 
-          {/* Vision Card */}
-          <div className="bg-white shadow-lg rounded-[34px] p-8 w-[480px] h-[380px] text-center flex flex-col items-center">
-            <img
-              src={VisionIcon}
-              alt="Vision Icon"
-              className="h-[70px] w-[70px] mb-6"
-            />
-            <h3 className="text-[#222] font-bold text-[20px] mb-4">
-              CVSU VISION
-            </h3>
-            <p className="text-[#555] text-[15px] font-regular leading-relaxed">
-              Cavite State University aspires to be a globally recognized
-              research university that provides excellent and relevant education
-              for the sustainable development of individuals and communities.
-            </p>
+          {/* Signature */}
+          <div className="flex justify-between items-center">
+            <p><strong>Student's Signature:</strong> ___________________________</p>
+            <button
+              className="bg-blue-900 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+              onClick={() => console.log("Export PDF")}
+            >
+              EXPORT AS PDF
+            </button>
           </div>
         </div>
       </div>
