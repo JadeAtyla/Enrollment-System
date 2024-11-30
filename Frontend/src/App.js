@@ -1,17 +1,12 @@
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import StudentLoginCard from "./components/Student/StudentLoginCard";
 import Dashboard from "./components/Student/Dashboard";
 import RegisterForm from "./components/Student/RegisterForm";
 import COR from "./components/Student/COR";
 import Checklist from "./components/Student/Checklist";
-import StudentProfile from "./components/Student/StudentProfile"; // Import StudentProfile
-import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard"; // Import RegistrarLoginCard
+import StudentProfile from "./components/Student/StudentProfile";
+import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import RegisterDashboard from "./components/Registrar/Dashboard";
 
 function App() {
@@ -41,6 +36,11 @@ function App() {
     }
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    setRole(null);
+  };
+
   return (
     <Router>
       <Routes>
@@ -62,7 +62,7 @@ function App() {
           path="/student/dashboard"
           element={
             user && role === "student" ? (
-              <Dashboard />
+              <Dashboard onLogout={handleLogout} />
             ) : (
               <Navigate to="/student" />
             )
@@ -72,7 +72,7 @@ function App() {
           path="/student/profile"
           element={
             user && role === "student" ? (
-              <StudentProfile user={user} />
+              <StudentProfile onLogout={handleLogout} />
             ) : (
               <Navigate to="/student" />
             )
@@ -81,14 +81,18 @@ function App() {
         <Route
           path="/student/cor"
           element={
-            user && role === "student" ? <COR /> : <Navigate to="/student" />
+            user && role === "student" ? (
+              <COR onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/student" />
+            )
           }
         />
         <Route
           path="/student/checklist"
           element={
             user && role === "student" ? (
-              <Checklist />
+              <Checklist onLogout={handleLogout} />
             ) : (
               <Navigate to="/student" />
             )
@@ -96,7 +100,6 @@ function App() {
         />
 
         {/* Registrar Routes */}
-
         <Route
           path="/registrar"
           element={
@@ -111,7 +114,7 @@ function App() {
           path="/registrar/dashboard"
           element={
             user && role === "registrar" ? (
-              <RegisterDashboard /> // Replaced with actual Registrar dashboard component
+              <RegisterDashboard onLogout={handleLogout} />
             ) : (
               <Navigate to="/registrar" />
             )

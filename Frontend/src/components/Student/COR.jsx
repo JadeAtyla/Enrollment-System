@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar"; // Custom Sidebar
 import UniversityLogo from "../../images/universityLogo.svg"; // Path to your university logo
 import { useNavigate } from "react-router-dom";
 
-const COR = () => {
+const COR = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const handleNavigate = (section) => {
@@ -27,24 +27,16 @@ const COR = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b bg-cover from-[#e4ecfa] to-[#fefae0] flex flex-col">
-      {/* Header */}
-      <Header />
-
-      {/* "Certificate of Registration" Text */}
+    <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
+      <Header onLogout={onLogout} />
       <div className="flex justify-center items-center bg-[#e4ecfa] py-3">
         <h1 className="text-[36px] font-extrabold text-[#000000] uppercase tracking-wide mt-5">
-          CERTIFICATE OF REGISTRATION
+          Certificate of Registration
         </h1>
       </div>
-
-      {/* Main Content */}
-      <div className="flex flex-1 justify-center items-center w-full h-auto pb-14"> {/* Added pb-8 for bottom padding */}
-        {/* Sidebar */}
+      <div className="flex flex-1 justify-center items-center w-full h-auto pb-14">
         <Sidebar onNavigate={handleNavigate} />
-
         <div className="bg-white max-w-[57rem] w-full rounded-[20px] mt-10 shadow-lg p-8 relative">
-          {/* University Logo and Title */}
           <div className="text-center mb-6">
             <img
               src={UniversityLogo}
@@ -57,8 +49,6 @@ const COR = () => {
             <p className="text-[16px] font-medium">Bacoor Campus</p>
             <h3 className="text-[18px] font-bold mt-4">Registration Form</h3>
           </div>
-
-          {/* Student Info */}
           <div className="grid grid-cols-2 gap-4 mb-6 text-[14px]">
             <div>
               <p><strong>Student Number:</strong> [20######]</p>
@@ -74,8 +64,6 @@ const COR = () => {
               <p><strong>School Year:</strong> [2024-2025]</p>
             </div>
           </div>
-
-          {/* Course Table */}
           <table className="w-full text-left border-collapse mb-6 text-[14px]">
             <thead>
               <tr className="bg-gray-200">
@@ -108,8 +96,6 @@ const COR = () => {
               ))}
             </tbody>
           </table>
-
-          {/* Additional Info */}
           <div className="grid grid-cols-2 gap-4 text-[14px] mb-6">
             <div>
               <p><strong>Old/New Student:</strong> Old Student</p>
@@ -122,8 +108,6 @@ const COR = () => {
               <p><strong>Email Address:</strong> [Email@Email.com]</p>
             </div>
           </div>
-
-          {/* Signature */}
           <div className="flex justify-between items-center">
             <p><strong>Student's Signature:</strong> ___________________________</p>
             <button
