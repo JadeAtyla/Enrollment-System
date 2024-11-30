@@ -103,7 +103,7 @@ class Schedule(models.Model):
     class Meta:
      
         db_table = 'schedule'
-        unique_together = (('course', 'category', 'day', 'from_time', 'to_time'),)
+        unique_together = (('course', 'category', 'day', 'section', 'year_level', 'from_time', 'to_time'),)
 
 
 class Student(models.Model):

@@ -71,7 +71,8 @@ REST_FRAMEWORK = {
         'api.authentication.CookiesJWTAuthentication', # Changed
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny', # this is for trial only, need to chane in isAuthenticated when deployed
     ]
 }
 
