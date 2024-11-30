@@ -8,19 +8,18 @@ class Address(models.Model):
     province = models.CharField(max_length=55)
 
     class Meta:
-        managed = False
+        
         db_table = 'address'
 
 
 class Billing(models.Model):
-    id = models.IntegerField(primary_key=True)
     type = models.CharField(max_length=55)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.CharField(max_length=10)
     student = models.ForeignKey('Student', on_delete=models.CASCADE)
 
     class Meta:
-        managed = False
+        
         db_table = 'billing'
 
 
@@ -33,10 +32,9 @@ class Course(models.Model):
     contact_hr_lec = models.IntegerField(blank=True, null=True)
     year_level = models.IntegerField()
     semester = models.IntegerField()
-    program = models.CharField(max_length=14, blank=True, null=True)
+    program = models.CharField(max_length=14, choices=PROGRAM.choices, default='NO_PROGRAM_YET')
 
     class Meta:
-        managed = False
         db_table = 'course'
         unique_together = (('code', 'program'),)
 
@@ -49,7 +47,7 @@ class Enrollment(models.Model):
     school_year = models.DateField()
 
     class Meta:
-        managed = False
+        
         db_table = 'enrollment'
         unique_together = (('course', 'student'),)
 
@@ -57,12 +55,12 @@ class Enrollment(models.Model):
 class Grade(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    grade = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, db_comment='1.00 to 5.00 scale')
+    grade = models.CharField(max_length=4, blank=True, null=True, db_comment='1.00 to 5.00 or S scale')
     instructor = models.ForeignKey('Instructor', on_delete=models.CASCADE)
     remarks = models.CharField(max_length=21, blank=True, null=True, choices=GRADE_REMARKS.choices)
 
     class Meta:
-        managed = False
+        
         db_table = 'grade'
         unique_together = (('student', 'course'),)
 
@@ -72,11 +70,13 @@ class Instructor(models.Model):
     last_name = models.CharField(max_length=55)
     middle_name = models.CharField(max_length=55, blank=True, null=True)
     suffix = models.CharField(max_length=55, blank=True, null=True)
+    gender = models.CharField(max_length=17, choices=STUDENT_GENDER.choices)
     email = models.CharField(max_length=55, blank=True, null=True)
     contact_number = models.CharField(max_length=55, blank=True, null=True)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE)
 
     class Meta:
-        managed = False
+        
         db_table = 'instructor'
 
 
@@ -85,7 +85,7 @@ class PreRequisite(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='prerequisite_course_set')
 
     class Meta:
-        managed = False
+        
         db_table = 'pre_requisite'
 
 
@@ -101,7 +101,7 @@ class Schedule(models.Model):
     room = models.CharField(max_length=55, blank=True, null=True)
 
     class Meta:
-        managed = False
+     
         db_table = 'schedule'
         unique_together = (('course', 'category', 'day', 'from_time', 'to_time'),)
 
@@ -122,8 +122,8 @@ class Student(models.Model):
     year_level = models.IntegerField()
     academic_year = models.CharField(max_length=55, blank=True, null=True)
     category = models.CharField(max_length=3, choices=OLD_OR_NEW_STUDENT.choices)
-    program = models.CharField(max_length=14, choices=PROGRAM.choices, blank=True, null=True)
+    program = models.CharField(max_length=14, choices=PROGRAM.choices, default='NO_PROGRAM_YET')
 
     class Meta:
-        managed = False
+     
         db_table = 'student'
