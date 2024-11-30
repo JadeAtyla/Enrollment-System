@@ -28,6 +28,66 @@ from django.shortcuts import get_object_or_404
 #     }
 #     return render(request, 'index.html', context) # request, redering file, content (for html ready)
 
+class AddressListView(APIView):
+    def get(self, request):
+        addresses = Address.objects.all()
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data)
+
+class CourseListView(APIView):
+    def get(self, request):
+        courses = Course.objects.all()
+        serializer = CourseSerializer(courses, many=True)
+        return Response(serializer.data)
+
+class EnrollmentListView(APIView):
+    def get(self, request):
+        enrollments = Enrollment.objects.all()
+        serializer = EnrollmentSerializer(enrollments, many=True)
+        return Response(serializer.data)
+
+class GradeListView(APIView):
+    def get(self, request):
+        grades = Grade.objects.all()
+        serializer = GradeSerializer(grades, many=True)
+        return Response(serializer.data)
+
+class InstructorListView(APIView):
+    def get(self, request):
+        instructors = Instructor.objects.all()
+        serializer = InstructorSerializer(instructors, many=True)
+        return Response(serializer.data)
+
+class ScheduleListView(APIView):
+    def get(self, request):
+        schedules = Schedule.objects.all()
+        serializer = ScheduleSerializer(schedules, many=True)
+        return Response(serializer.data)
+
+class StudentListView(APIView):
+    def get(self, request):
+        students = Student.objects.all()
+        serializer = StudentSerializer(students, many=True)
+        return Response(serializer.data)
+
+class BillingListView(APIView):
+    def get(self, request):
+        billings = Billing.objects.all()
+        serializer = BillingSerializer(billings, many=True)
+        return Response(serializer.data)
+
+class PreRequisiteListView(APIView):
+    def get(self, request):
+        pre_requisites = PreRequisite.objects.all()
+        serializer = PreRequisiteSerializer(pre_requisites, many=True)
+        return Response(serializer.data)
+
+class UserListView(APIView):
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
 # Register View: Handle user registration
 @api_view(['POST'])
 @permission_classes([AllowAny])

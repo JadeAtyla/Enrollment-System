@@ -39,14 +39,16 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = '__all__'
 
-class BillingSerializer(serializers.ModelSerializer):
+# Fixed BillingSerializer
+class BillingSerializer(serializers.ModelSerializer):  # Model should be Billing
     class Meta:
-        model = Student
+        model = Billing
         fields = '__all__'
 
-class PreRequisiteSerializer(serializers.ModelSerializer):
+# Fixed PreRequisiteSerializer
+class PreRequisiteSerializer(serializers.ModelSerializer):  # Model should be PreRequisite
     class Meta:
-        model = Student
+        model = PreRequisite
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,6 +60,8 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     token = serializers.CharField(allow_blank=True, read_only=True)

@@ -10,4 +10,16 @@ urlpatterns = [
     # path('data/', views.data, name='data'),
     path('courses/<str:program_id>/', views.list_courses_by_program, name='list_courses_by_program'),
     path('enroll/<int:student_id>/<str:course_code>/', views.enroll_student, name='enroll_student'),
+
+    # Sample Fethcing of Data
+    path('address/', views.AddressListView.as_view(), name='address-list'),
+    path('course/', views.CourseListView.as_view(), name='course-list'),
+    path('enrollment/', views.EnrollmentListView.as_view(), name='enrollment-list'),
+    path('grade/', views.GradeListView.as_view(), name='grade-list'),
+    path('instructor/', views.InstructorListView.as_view(), name='instructor-list'),
+    path('schedule/', views.ScheduleListView.as_view(), name='schedule-list'),
+    path('student/', views.StudentListView.as_view(), name='student-list'),
+    path('billing/', views.BillingListView.as_view(), name='billing-list'),
+    path('pre-requisite/', views.PreRequisiteListView.as_view(), name='pre-requisite-list'),
+    path('user/', views.UserListView.as_view(), name='user-list'),
 ]
