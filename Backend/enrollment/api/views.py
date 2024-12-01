@@ -246,16 +246,26 @@ class CourseAPIView(APIView):
 
 
 
-# STUDENT FORM
-def student_form(request):
+# HANDLER OF FORMS
+def generic_form_view(request, form_class, template_name, success_url=None):
     submitted = False
     if request.method == "POST":
-        form = StudentForm(request.POST)
+        form = form_class(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect('/student_form?submitted=True')
+            if success_url is None:
+                success_url = request.path + "?submitted=True"
+            return HttpResponseRedirect(success_url)
     else:
-        form = StudentForm
+        form = form_class()
         if 'submitted' in request.GET:
             submitted = True
-    return render(request, 'enrollment/student_form.html', {'form':form , 'submitted':submitted})
+    return render(request, template_name, {'form': form, 'submitted': submitted})
+
+# Validation During Course Enrollment
+def check_prerequisites(student, course):
+    prerequisites = PreRequisite.objects.filter(course=course)
+    for prereq in prerequisites:
+        if not student.courses_completed.filter(id=prereq.pre_requisite.id).exists():
+            return False
+    return True
