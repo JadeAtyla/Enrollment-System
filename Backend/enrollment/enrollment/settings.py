@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders', # COR Headers
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_seed', # Seeder for models
 ]
 
 MIDDLEWARE = [

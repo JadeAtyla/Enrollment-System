@@ -6,6 +6,7 @@ pip install django-cors-headers
 pip install djangorestframework-simplejwt
 pip install mysqlclient
 pip install python-dotenv
+pip install django-seed
 
 # If hosted database will be use change this in .env
 DB_HOST=briaraujvkkiast9gz9o-mysql.services.clever-cloud.com

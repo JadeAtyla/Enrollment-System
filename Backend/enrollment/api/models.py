@@ -13,10 +13,14 @@ class Address(models.Model):
 
 
 class Billing(models.Model):
-    type = models.CharField(max_length=55)
+    name = models.CharField(max_length=55)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.CharField(max_length=10)
+    category = models.CharField(max_length=55, choices=BILLING_CATEGORY.choices)
+    year_level = models.IntegerField()
+    semester = models.IntegerField()
     student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    billing_date = models.DateField()
+    status = models.CharField(max_length=15, choices=PAYMENT_STATUS.choices)
 
     class Meta:
         
@@ -25,14 +29,14 @@ class Billing(models.Model):
 
 class Course(models.Model):
     code = models.CharField(max_length=55)
-    title = models.CharField(max_length=55)
+    title = models.CharField(max_length=255)
     lab_units = models.IntegerField(blank=True, null=True)
     lec_units = models.IntegerField(blank=True, null=True)
     contact_hr_lab = models.IntegerField(blank=True, null=True)
     contact_hr_lec = models.IntegerField(blank=True, null=True)
     year_level = models.IntegerField()
     semester = models.IntegerField()
-    program = models.CharField(max_length=14, choices=PROGRAM.choices, default='NO_PROGRAM_YET')
+    program = models.CharField(max_length=14, choices=PROGRAM.choices)
 
     class Meta:
         db_table = 'course'
@@ -44,7 +48,7 @@ class Enrollment(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE)
     enrollment_date = models.DateTimeField()
     status = models.CharField(max_length=10, choices=ENROLLMENT_STATUS.choices)
-    school_year = models.DateField()
+    school_year = models.CharField(max_length=55)
 
     class Meta:
         
@@ -83,7 +87,7 @@ class Instructor(models.Model):
 class PreRequisite(models.Model):
     pre_requisite = models.ForeignKey(Course, on_delete=models.CASCADE, db_column='pre_requisite')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='prerequisite_course_set')
-
+    program = models.CharField(max_length=14, choices=PROGRAM.choices)
     class Meta:
         
         db_table = 'pre_requisite'
@@ -122,7 +126,7 @@ class Student(models.Model):
     year_level = models.IntegerField()
     academic_year = models.CharField(max_length=55, blank=True, null=True)
     category = models.CharField(max_length=3, choices=OLD_OR_NEW_STUDENT.choices)
-    program = models.CharField(max_length=14, choices=PROGRAM.choices, default='NO_PROGRAM_YET')
+    program = models.CharField(max_length=14, choices=PROGRAM.choices)
 
     class Meta:
      
