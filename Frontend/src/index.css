@@ -5,7 +5,7 @@
 
 /* Custom container styling */
 body {
-  @apply bg-gray-100 flex items-center justify-center min-h-screen;
+  @apply bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex items-center justify-center min-h-screen;
 }
 
 button:focus, input:focus, select:focus {
@@ -17,5 +17,3 @@ button:focus, input:focus, select:focus {
 .container {
   @apply w-[350px] sm:w-[400px];
 }
-
-

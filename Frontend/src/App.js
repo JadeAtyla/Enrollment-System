@@ -8,10 +8,14 @@ import Checklist from "./components/Student/Checklist";
 import StudentProfile from "./components/Student/StudentProfile";
 import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import RegistrarDashboard from "./components/Registrar/RegistrarDashboard";
-import EnrollStudent from "./components/Registrar/EnrollStudent";
+import EnrollmentList from "./components/Registrar/EnrollmentList"; 
 import ListOfStudents from "./components/Registrar/ListOfStudents";
 import RegistrarAccounts from "./components/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./components/Registrar/RegistrarRegisterForm";
+import EvaluateStudent from "./components/Registrar/EvaluateStudent"; 
+import EnrollStudent from "./components/Registrar/EnrollStudent"; 
+import Billing from "./components/Registrar/Billing";  // Correct import path
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -127,7 +131,27 @@ function App() {
           }
         />
         <Route
-          path="/registrar/enroll"
+          path="/registrar/enrollmentList"
+          element={
+            user && role === "registrar" ? (
+              <EnrollmentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/evaluate-student" // Added route for EnrollStudent
+          element={
+            user && role === "registrar" ? (
+              <EvaluateStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/enroll-student" // Added route for EnrollStudent
           element={
             user && role === "registrar" ? (
               <EnrollStudent onLogout={handleLogout} />
@@ -137,7 +161,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/list"
+          path="/registrar/studentList"
           element={
             user && role === "registrar" ? (
               <ListOfStudents onLogout={handleLogout} />
@@ -161,6 +185,16 @@ function App() {
           element={
             user && role === "registrar" ? (
               <RegistrarRegisterForm />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/billing"
+          element={
+            user && role === "registrar" ? (
+              <Billing />
             ) : (
               <Navigate to="/registrar" />
             )
