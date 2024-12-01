@@ -7,7 +7,11 @@ import COR from "./components/Student/COR";
 import Checklist from "./components/Student/Checklist";
 import StudentProfile from "./components/Student/StudentProfile";
 import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
-import RegisterDashboard from "./components/Registrar/Dashboard";
+import RegistrarDashboard from "./components/Registrar/RegistrarDashboard";
+import EnrollStudent from "./components/Registrar/EnrollStudent";
+import ListOfStudents from "./components/Registrar/ListOfStudents";
+import RegistrarAccounts from "./components/Registrar/RegistrarAccounts";
+import RegistrarRegisterForm from "./components/Registrar/RegistrarRegisterForm";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -39,11 +43,13 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setRole(null);
+    localStorage.removeItem("authToken"); // Clear token or session storage (optional)
   };
 
   return (
     <Router>
       <Routes>
+        {/* Redirect root to Student Login */}
         <Route path="/" element={<Navigate to="/student" />} />
 
         {/* Student Routes */}
@@ -114,13 +120,54 @@ function App() {
           path="/registrar/dashboard"
           element={
             user && role === "registrar" ? (
-              <RegisterDashboard onLogout={handleLogout} />
+              <RegistrarDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/enroll"
+          element={
+            user && role === "registrar" ? (
+              <EnrollStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/list"
+          element={
+            user && role === "registrar" ? (
+              <ListOfStudents onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/account"
+          element={
+            user && role === "registrar" ? (
+              <RegistrarAccounts onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/register"
+          element={
+            user && role === "registrar" ? (
+              <RegistrarRegisterForm />
             ) : (
               <Navigate to="/registrar" />
             )
           }
         />
 
+        {/* Catch-all Route for 404 */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
     </Router>
