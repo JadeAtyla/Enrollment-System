@@ -1,6 +1,7 @@
 from django.shortcuts import render
+from django.db.models import Q
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -19,6 +20,8 @@ from .models import (
 from datetime import datetime
 from django.http import JsonResponse# for Json responses
 from django.shortcuts import get_object_or_404 
+from django.core.paginator import Paginator
+import csv  # For exporting to Excel (CSV)
 
 # # Create your views here to render in the frontend.
 # def index(request):
@@ -246,7 +249,7 @@ class CourseAPIView(APIView):
 
 
 
-# HANDLER OF FORMS
+# HANDLER OF FORMS  
 def generic_form_view(request, form_class, template_name, success_url=None):
     submitted = False
     if request.method == "POST":
@@ -269,3 +272,142 @@ def check_prerequisites(student, course):
         if not student.courses_completed.filter(id=prereq.pre_requisite.id).exists():
             return False
     return True
+
+# LIST View Funtions
+def enrollment_list_view(request):
+    # Get all students from DB
+    students = Student.objects.all()
+
+    # Search and filter functionality
+    search_query = request.GET.get('search', '')
+    year_level = request.GET.get('year_level', '')
+    course = request.GET.get('course', '')
+
+    if search_query:
+        students = students.filter(
+            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+        )
+    
+    if year_level:
+        students = students.filter(year_level=year_level)
+    
+    if course:
+        students = students.filter(program=course)  # Filter by program (course)
+
+    paginator = Paginator(students, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Export to Excel (CSV)
+    if 'export' in request.GET:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="enrollment_list.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Student Number', 'Student Name', 'Program', 'Year Level', 'Section', 'Status', 'Enrollment Status'])
+        for student in students:
+            writer.writerow([
+                student.id,
+                f'{student.first_name} {student.last_name}',  # Combine first and last name
+                student.program,
+                student.year_level,
+                student.section,
+                student.status,
+                student.enrollment_status  # Assuming this field exists
+            ])
+
+        return response
+
+    return render(request, 'enrollment_list.html', {
+        'page_obj': page_obj,  # For pagination
+        'search_query': search_query,
+        'year_level': year_level,
+        'course': course,
+    })  
+
+def instructor_list_view(request):
+    # Get all instructors from DB
+    instructors = Instructor.objects.all()
+
+    search_query = request.GET.get('search', '')
+    if search_query:
+        instructors = instructors.filter(
+            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+        )
+
+    paginator = Paginator(instructors, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Export to Excel (CSV)
+    if 'export' in request.GET:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="instructor_list.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Instructor ID', 'Instructor Name', 'Email', 'Contact No.', 'Address'])
+        for instructor in instructors:
+            writer.writerow([
+                instructor.id,
+                f'{instructor.first_name} {instructor.last_name}', 
+                instructor.email,
+                instructor.contact_number,
+                f'{instructor.address.street}, {instructor.address.barangay}, {instructor.address.city}, {instructor.address.province}'  # Format address
+            ])
+
+        return response
+
+    # Render the template
+    return render(request, 'instructor_list.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+    })
+
+def schedule_list_view(request):
+    # Get all schedules from DB
+    schedules = Schedule.objects.select_related('course', 'instructor').all()
+
+    search_query = request.GET.get('search', '')
+    program_filter = request.GET.get('program', '')
+    year_level_filter = request.GET.get('year_level', '')
+
+    if search_query:
+        schedules = schedules.filter(course__code__icontains=search_query)
+    if program_filter:
+        schedules = schedules.filter(course__program=program_filter)
+    if year_level_filter:
+        schedules = schedules.filter(year_level=year_level_filter)
+
+    paginator = Paginator(schedules, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    #Export to Excel (CSV)
+    if 'export' in request.GET:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="schedule_list.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Course Code', 'Year Level', 'Section', 'Day', 'From Time', 'To Time', 'Room', 'Program', 'Instructor'])
+        for schedule in schedules:
+            writer.writerow([
+                schedule.course.code,
+                schedule.year_level,
+                schedule.section,
+                schedule.day,
+                schedule.from_time,
+                schedule.to_time,
+                schedule.room,
+                schedule.course.program,
+                f"{schedule.instructor.first_name} {schedule.instructor.last_name}" 
+            ])
+
+        return response
+
+    # Render the template
+    return render(request, 'schedule_list.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'program_filter': program_filter,
+        'year_level_filter': year_level_filter,
+    })
