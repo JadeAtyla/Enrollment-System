@@ -23,6 +23,9 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 import csv  # For exporting to Excel (CSV)
 
+from django.contrib.auth import authenticate
+
+
 # # Create your views here to render in the frontend.
 # def index(request):
 #     account = Account.objects.all() # retrive all data from the table
@@ -434,3 +437,21 @@ def instructor_list_view(request):
             'address'
             ]
     )
+
+# Student Log in
+
+@api_view(['POST'])
+def login_user(request):
+    username = request.data.get('student_number')  # Assuming student number is the username
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response({"error": "Both fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        request.session['student_id'] = user.id  # Store student ID in the session
+        return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
