@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import StudentLoginCard from "./components/Student/StudentLoginCard";
 import Dashboard from "./components/Student/Dashboard";
 import RegisterForm from "./components/Student/RegisterForm";
 import COR from "./components/Student/COR";
 import Checklist from "./components/Student/Checklist";
 import StudentProfile from "./components/Student/StudentProfile";
+
 import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import RegistrarDashboard from "./components/Registrar/RegistrarDashboard";
 import EnrollmentList from "./components/Registrar/EnrollmentList";
@@ -17,7 +19,8 @@ import EnrollStudent from "./components/Registrar/EnrollStudent";
 import Billing from "./components/Registrar/Billing";  // Correct import path
 import EvaluatePayment from "./components/Registrar/EvaluatePayment";
 
-
+import DepartmentLoginCard from "./components/Department/DepartmentLoginCard";
+import DepartmentDashboard from "./components/Department/DepartmentDashboard";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -32,6 +35,7 @@ function App() {
     const sampleUsers = [
       { identifier: "123", password: "password123", role: "student" },
       { identifier: "456", password: "password456", role: "registrar" },
+      { identifier: "789", password: "password789", role: "department" },
     ];
 
     const matchedUser = sampleUsers.find(
@@ -210,6 +214,110 @@ function App() {
               <EvaluatePayment />
             ) : (
               <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        {/* Department Routes */}
+        <Route
+          path="/department"
+          element={
+            user && role === "department" ? (
+              <Navigate to="/department/dashboard" />
+            ) : (
+              <DepartmentLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/department/dashboard"
+          element={
+            user && role === "department" ? (
+              <DepartmentDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/enrollmentList"
+          element={
+            user && role === "department" ? (
+              <EnrollmentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/evaluate-student" // Added route for EnrollStudent
+          element={
+            user && role === "department" ? (
+              <EvaluateStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/enroll-student" // Added route for EnrollStudent
+          element={
+            user && role === "department" ? (
+              <EnrollStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/studentList"
+          element={
+            user && role === "department" ? (
+              <ListOfStudents onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/account"
+          element={
+            user && role === "department" ? (
+              <RegistrarAccounts onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/register"
+          element={
+            user && role === "department" ? (
+              <RegistrarRegisterForm />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/billing"
+          element={
+            user && role === "department" ? (
+              <Billing />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/evaluate-payment"
+          element={
+            user && role === "department" ? (
+              <EvaluatePayment />
+            ) : (
+              <Navigate to="/department" />
             )
           }
         />
