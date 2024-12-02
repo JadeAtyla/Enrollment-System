@@ -23,6 +23,9 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 import csv  # For exporting to Excel (CSV)
 
+from django.contrib.auth import authenticate
+
+
 # # Create your views here to render in the frontend.
 # def index(request):
 #     account = Account.objects.all() # retrive all data from the table
@@ -274,29 +277,29 @@ def check_prerequisites(student, course):
     return True
 
 # LIST View Funtions
+
 def generalized_list_view(
-    request, 
-    model, 
-    template_name, 
-    search_fields=None, 
-    filter_fields=None, 
-    export_headers=None, 
-    export_fields=None
+    request,
+    model,
+    search_fields=None,
+    filter_fields=None,
+    export_headers=None,
+    export_fields=None,
 ):
     """
-    Generalized list view for any model.
+    Generalized list view for any model, designed for React integration.
 
     :param request: The HTTP request object.
     :param model: The Django model to query.
-    :param template_name: The template to render.
     :param search_fields: Fields to search for (list of field names).
     :param filter_fields: Fields to filter by (dict of field name -> query parameter key).
     :param export_headers: Headers for the CSV export.
-    :param export_fields: Fields to include in the CSV export (in the same order as headers).
+    :param export_fields: Fields to include in the CSV export.
     """
-    # Get all records from DB
+    # Querying the model
     queryset = model.objects.all()
 
+    # Handling search
     search_query = request.GET.get('search', '')
     if search_query and search_fields:
         search_conditions = Q()
@@ -304,40 +307,51 @@ def generalized_list_view(
             search_conditions |= Q(**{f"{field}__icontains": search_query})
         queryset = queryset.filter(search_conditions)
 
-    # filtering by specified fields
+    # Handling filters
     if filter_fields:
         for field, param in filter_fields.items():
             value = request.GET.get(param, '')
             if value:
                 queryset = queryset.filter(**{field: value})
 
-    paginator = Paginator(queryset, 10) 
-    page_number = request.GET.get('page')
+    # Pagination
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(queryset, 10)
     page_obj = paginator.get_page(page_number)
 
-    if 'export' in request.GET and export_headers and export_fields:
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
+    # Preparing data for response
+    data = []
+    for obj in page_obj:
+        if export_fields:
+            record = {}
+            for field in export_fields:
+                if '.' in field:
+                    related_field, sub_field = field.split('.', 1)
+                    value = getattr(getattr(obj, related_field, None), sub_field, '')
+                elif isinstance(field, tuple):  # Special case for multiple fields in one column
+                    related_obj = getattr(obj, field[0], None)
+                    value = f"{getattr(related_obj, field[1], '')} {getattr(related_obj, field[2], '')}".strip()
+                else:
+                    value = getattr(obj, field, '')
+                record[field] = value
+            data.append(record)
 
-        writer = csv.writer(response)
-        writer.writerow(export_headers)  
-        for obj in queryset:
-            writer.writerow([getattr(obj, field, '') for field in export_fields])
+    # Response data
+    response_data = {
+        'data': data,
+        'pagination': {
+            'current_page': page_obj.number,
+            'total_pages': paginator.num_pages,
+            'total_items': paginator.count,
+        },
+    }
 
-        return response
-
-    # Render the template with context
-    return render(request, template_name, {
-        'page_obj': page_obj,
-        'search_query': search_query,
-        'filter_params': request.GET, 
-    })
+    return JsonResponse(response_data)
 
 def student_list_view(request):
     return generalized_list_view(
         request,
         model=Student,
-        template_name='student_list.html',
         search_fields=['first_name', 'last_name'],
         filter_fields={'year_level': 'year_level', 'program': 'course'},  
         export_headers=[
@@ -363,7 +377,6 @@ def schedule_list_view(request):
     return generalized_list_view(
         request,
         model=Schedule, 
-        template_name='schedule_list.html',
         search_fields=['course__code'],
         filter_fields={
             'course__program': 'program',
@@ -391,7 +404,6 @@ def enrollment_list_view(request):
     return generalized_list_view(
         request,
         model=Enrollment,
-        template_name='enrollment_list.html',
         search_fields=['student__first_name', 'student__last_name'],
         filter_fields={
             'student__year_level': 'year_level',
@@ -416,7 +428,6 @@ def instructor_list_view(request):
     return generalized_list_view(
         request,
         model=Instructor,
-        template_name='instructor_list.html',
         search_fields=['first_name', 'last_name'],  # Search by first and last name
         filter_fields={},  # Add filters if needed
         export_headers=[
@@ -434,3 +445,41 @@ def instructor_list_view(request):
             'address'
             ]
     )
+
+# Student Log in
+@api_view(['POST'])
+def login_user(request):
+    username = request.data.get('student_number')  # Assuming student number is the username
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response({"error": "Both fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        request.session['student_id'] = user.id  # Store student ID in the session
+        return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+
+# Student Dashboard
+@api_view(['GET'])
+def get_student_data(request):
+    student_id = request.session.get("student_id")
+    if not student_id:
+        return Response({"error": "Unauthorized"}, status=401)
+
+    try:
+        student = Student.objects.get(id=student_id)
+        data = {
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "program": student.program,
+            "student_id": student.id,
+            "enrollment_status": "Enrolled" if student.status == "active" else "Not Enrolled",
+            "category": student.category,
+        }
+        return Response(data)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
