@@ -249,32 +249,51 @@ class CourseAPIView(APIView):
         course.delete()
         return Response({'success': True, 'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
 
-
-
-
 # HANDLER OF FORMS  
-def generic_form_view(request, form_class, template_name, success_url=None):
-    submitted = False
-    if request.method == "POST":
-        form = form_class(request.POST)
+@api_view(['POST'])
+def generic_form_api_view(request, form_class, instance=None):
+    """
+    A reusable API view for handling forms.
+
+    :param request: The HTTP request object (expects JSON data).
+    :param form_class: The form class to use for this view.
+    :param instance: An optional model instance for updating existing data (if editing).
+    :return: JSON response indicating success or failure.
+    """
+    if request.method == 'POST':
+        # Bind form with POST data (and optionally an instance for updates).
+        form = form_class(request.data, instance=instance)  # Use request.data for JSON input
+        
         if form.is_valid():
             form.save()
-            if success_url is None:
-                success_url = request.path + "?submitted=True"
-            return HttpResponseRedirect(success_url)
-    else:
-        form = form_class()
-        if 'submitted' in request.GET:
-            submitted = True
-    return render(request, template_name, {'form': form, 'submitted': submitted})
+            return Response({'message': 'Form submitted successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'message': 'Invalid method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 # Validation During Course Enrollment
 def check_prerequisites(student, course):
+    # Get the prerequisites for the given course
     prerequisites = PreRequisite.objects.filter(course=course)
+    
+    # If there are no prerequisites, the course can be taken freely
+    if not prerequisites.exists():
+        return True
+    
+    # Check if the student has completed all required prerequisites
     for prereq in prerequisites:
-        if not student.courses_completed.filter(id=prereq.pre_requisite.id).exists():
-            return False
+        # Check if the student has a grade for the prerequisite course
+        grade = Grade.objects.filter(student=student, course=prereq.pre_requisite).first()
+        
+        # If the student has no grade or the grade is not passing, return False
+        if not grade or grade.grade not in ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00']:
+            return False  # The student hasn't completed the prerequisite with a passing grade
+    
+    # If all prerequisites are met
     return True
+
 
 # LIST View Funtions
 
@@ -287,7 +306,7 @@ def generalized_list_view(
     export_fields=None,
 ):
     """
-    Generalized list view for any model, designed for React integration.
+    Generalized list view for any model.
 
     :param request: The HTTP request object.
     :param model: The Django model to query.
@@ -318,6 +337,14 @@ def generalized_list_view(
     page_number = request.GET.get('page', 1)
     paginator = Paginator(queryset, 10)
     page_obj = paginator.get_page(page_number)
+
+    if 'export' in request.GET and export_headers and export_fields:
+    # Generate CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(export_headers)  # Write headers first
 
     # Preparing data for response
     data = []
