@@ -16,10 +16,11 @@ import RegistrarAccounts from "./components/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./components/Registrar/RegistrarRegisterForm";
 import EvaluateStudent from "./components/Registrar/EvaluateStudent";
 import EnrollStudent from "./components/Registrar/EnrollStudent";
-import Billing from "./components/Registrar/Billing";
+import Billing from "./components/Registrar/Billing";  // Correct import path
 import EvaluatePayment from "./components/Registrar/EvaluatePayment";
 
-
+import DepartmentLoginCard from "./components/Department/DepartmentLoginCard";
+import DepartmentDashboard from "./components/Department/DepartmentDashboard";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -146,7 +147,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/evaluate-student"
+          path="/registrar/evaluate-student" // Added route for EnrollStudent
           element={
             user && role === "registrar" ? (
               <EvaluateStudent onLogout={handleLogout} />
@@ -156,7 +157,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/enroll-student"
+          path="/registrar/enroll-student" // Added route for EnrollStudent
           element={
             user && role === "registrar" ? (
               <EnrollStudent onLogout={handleLogout} />
@@ -205,6 +206,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/registrar/evaluate-payment"
           element={
@@ -212,6 +214,28 @@ function App() {
               <EvaluatePayment />
             ) : (
               <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        {/* Department Routes */}
+        <Route
+          path="/department"
+          element={
+            user && role === "department" ? (
+              <Navigate to="/department/dashboard" />
+            ) : (
+              <DepartmentLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/department/dashboard"
+          element={
+            user && role === "department" ? (
+              <DepartmentDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
             )
           }
         />
