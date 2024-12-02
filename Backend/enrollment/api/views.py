@@ -274,140 +274,163 @@ def check_prerequisites(student, course):
     return True
 
 # LIST View Funtions
-def enrollment_list_view(request):
-    # Get all students from DB
-    enrollment = Enrollment.objects.all()
+def generalized_list_view(
+    request, 
+    model, 
+    template_name, 
+    search_fields=None, 
+    filter_fields=None, 
+    export_headers=None, 
+    export_fields=None
+):
+    """
+    Generalized list view for any model.
 
-    # Search and filter functionality
+    :param request: The HTTP request object.
+    :param model: The Django model to query.
+    :param template_name: The template to render.
+    :param search_fields: Fields to search for (list of field names).
+    :param filter_fields: Fields to filter by (dict of field name -> query parameter key).
+    :param export_headers: Headers for the CSV export.
+    :param export_fields: Fields to include in the CSV export (in the same order as headers).
+    """
+    # Get all records from DB
+    queryset = model.objects.all()
+
     search_query = request.GET.get('search', '')
-    year_level = request.GET.get('year_level', '')
-    course = request.GET.get('course', '')
+    if search_query and search_fields:
+        search_conditions = Q()
+        for field in search_fields:
+            search_conditions |= Q(**{f"{field}__icontains": search_query})
+        queryset = queryset.filter(search_conditions)
 
-    if search_query:
-        enrollment = student.filter(
-            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
-        )
-    
-    if year_level:
-        enrollment = student.filter(year_level=year_level)
-    
-    if course:
-        enrollment = student.filter(program=course)  # Filter by program (course)
+    # filtering by specified fields
+    if filter_fields:
+        for field, param in filter_fields.items():
+            value = request.GET.get(param, '')
+            if value:
+                queryset = queryset.filter(**{field: value})
 
-    paginator = Paginator(enrollment, 10)
+    paginator = Paginator(queryset, 10) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Export to Excel (CSV)
-    if 'export' in request.GET:
+    if 'export' in request.GET and export_headers and export_fields:
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="enrollment_list.csv"'
+        response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(['Student Number', 'Student Name', 'Program', 'Year Level', 'Section', 'Status', 'Enrollment Status'])
-        for student in enrollment:
-            writer.writerow([
-                student.id,
-                f'{student.first_name} {student.last_name}',  # Combine first and last name
-                student.program,
-                student.year_level,
-                student.section,
-                student.status,
-                student.enrollment_status  # Assuming this field exists
-            ])
+        writer.writerow(export_headers)  
+        for obj in queryset:
+            writer.writerow([getattr(obj, field, '') for field in export_fields])
 
         return response
 
-    return render(request, 'enrollment_list.html', {
-        'page_obj': page_obj,  # For pagination
-        'search_query': search_query,
-        'year_level': year_level,
-        'course': course,
-    })  
-
-def instructor_list_view(request):
-    # Get all instructors from DB
-    instructors = Instructor.objects.all()
-
-    search_query = request.GET.get('search', '')
-    if search_query:
-        instructors = instructors.filter(
-            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
-        )
-
-    paginator = Paginator(instructors, 10) 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    # Export to Excel (CSV)
-    if 'export' in request.GET:
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="instructor_list.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['Instructor ID', 'Instructor Name', 'Email', 'Contact No.', 'Address'])
-        for instructor in instructors:
-            writer.writerow([
-                instructor.id,
-                f'{instructor.first_name} {instructor.last_name}', 
-                instructor.email,
-                instructor.contact_number,
-                f'{instructor.address.street}, {instructor.address.barangay}, {instructor.address.city}, {instructor.address.province}'  # Format address
-            ])
-
-        return response
-
-    # Render the template
-    return render(request, 'instructor_list.html', {
+    # Render the template with context
+    return render(request, template_name, {
         'page_obj': page_obj,
         'search_query': search_query,
+        'filter_params': request.GET, 
     })
+
+def student_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Student,
+        template_name='student_list.html',
+        search_fields=['first_name', 'last_name'],
+        filter_fields={'year_level': 'year_level', 'program': 'course'},  
+        export_headers=[
+            'Student Number', 
+            'Student Name', 
+            'Program', 
+            'Year Level', 
+            'Section', 
+            'Status'
+            ],
+        export_fields=[
+            'id', 
+            'full_name', 
+            'program', 
+            'year_level', 
+            'section', 
+            'status'
+            ]
+
+    )
 
 def schedule_list_view(request):
-    # Get all schedules from DB
-    schedules = Schedule.objects.select_related('course', 'instructor').all()
+    return generalized_list_view(
+        request,
+        model=Schedule, 
+        template_name='schedule_list.html',
+        search_fields=['course__code'],
+        filter_fields={
+            'course__program': 'program',
+            'year_level': 'year_level',
+        },
+        export_headers=[
+            'Course Code', 'Year Level', 'Section', 'Day', 'From Time',
+            'To Time', 'Room', 'Program', 'Instructor'
+        ],
+        export_fields=[
+            'course.code',
+            'year_level',
+            'section',
+            'day',
+            'from_time',
+            'to_time',
+            'room',
+            'course.program',
+            'Instructor.full_name',  
+        ]
 
-    search_query = request.GET.get('search', '')
-    program_filter = request.GET.get('program', '')
-    year_level_filter = request.GET.get('year_level', '')
+    )
 
-    if search_query:
-        schedules = schedules.filter(course__code__icontains=search_query)
-    if program_filter:
-        schedules = schedules.filter(course__program=program_filter)
-    if year_level_filter:
-        schedules = schedules.filter(year_level=year_level_filter)
+def enrollment_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Enrollment,
+        template_name='enrollment_list.html',
+        search_fields=['student__first_name', 'student__last_name'],
+        filter_fields={
+            'student__year_level': 'year_level',
+            'course__code': 'course',
+        },
+        export_headers=[
+            'Student Number', 'Student Name', 'Program', 'Year Level', 
+            'Section', 'Status', 'Enrollment Status'
+        ],
+        export_fields=[
+            'student.id',
+            'student.full_name', 
+            'student.program',
+            'student.year_level',
+            'student.section',
+            'student.status',
+            'status' 
+        ]
+    )
 
-    paginator = Paginator(schedules, 10) 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    #Export to Excel (CSV)
-    if 'export' in request.GET:
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="schedule_list.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['Course Code', 'Year Level', 'Section', 'Day', 'From Time', 'To Time', 'Room', 'Program', 'Instructor'])
-        for schedule in schedules:
-            writer.writerow([
-                schedule.course.code,
-                schedule.year_level,
-                schedule.section,
-                schedule.day,
-                schedule.from_time,
-                schedule.to_time,
-                schedule.room,
-                schedule.course.program,
-                f"{schedule.instructor.first_name} {schedule.instructor.last_name}" 
-            ])
-
-        return response
-
-    # Render the template
-    return render(request, 'schedule_list.html', {
-        'page_obj': page_obj,
-        'search_query': search_query,
-        'program_filter': program_filter,
-        'year_level_filter': year_level_filter,
-    })
+def instructor_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Instructor,
+        template_name='instructor_list.html',
+        search_fields=['first_name', 'last_name'],  # Search by first and last name
+        filter_fields={},  # Add filters if needed
+        export_headers=[
+            'Instructor ID', 
+            'Instructor Name', 
+            'Email', 
+            'Contact No.', 
+            'Address'
+            ],
+        export_fields=[
+            'id', 
+            'full_name', 
+            'email', 
+            'contact_number', 
+            'address'
+            ]
+    )

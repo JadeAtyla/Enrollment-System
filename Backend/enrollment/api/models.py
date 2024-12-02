@@ -79,6 +79,9 @@ class Instructor(models.Model):
     contact_number = models.CharField(max_length=55, blank=True, null=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
 
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     class Meta:
         
         db_table = 'instructor'
