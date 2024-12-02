@@ -14,10 +14,9 @@ import RegistrarAccounts from "./components/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./components/Registrar/RegistrarRegisterForm";
 import EvaluateStudent from "./components/Registrar/EvaluateStudent";
 import EnrollStudent from "./components/Registrar/EnrollStudent";
-import Billing from "./components/Registrar/Billing";  // Correct import path
+import Billing from "./components/Registrar/Billing";
 import EvaluatePayment from "./components/Registrar/EvaluatePayment";
-
-
+import CertificateOfRegistration from "./components/Registrar/CertificateOfRegistration"; // Import Certificate of COR component
 
 function App() {
   const [user, setUser] = useState(null);
@@ -143,7 +142,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/evaluate-student" // Added route for EnrollStudent
+          path="/registrar/evaluate-student"
           element={
             user && role === "registrar" ? (
               <EvaluateStudent onLogout={handleLogout} />
@@ -153,7 +152,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/enroll-student" // Added route for EnrollStudent
+          path="/registrar/enroll-student"
           element={
             user && role === "registrar" ? (
               <EnrollStudent onLogout={handleLogout} />
@@ -202,12 +201,21 @@ function App() {
             )
           }
         />
-
         <Route
           path="/registrar/evaluate-payment"
           element={
             user && role === "registrar" ? (
               <EvaluatePayment />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={
+            user && role === "registrar" ? (
+              <CertificateOfRegistration />
             ) : (
               <Navigate to="/registrar" />
             )
