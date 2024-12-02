@@ -16,7 +16,7 @@ const Billing = ({ onLogout }) => {
     // Validate if payment is complete
     if (parseFloat(receivedMoney) >= amountNeeded) {
       // Redirect to EvaluationPayment page
-      navigate("/evaluation-payment", { state: { totalAmount, receivedMoney, change } });
+      navigate("/registrar/evaluate-payment", { state: { totalAmount, receivedMoney, change } });
     } else {
       alert("Please ensure the payment is complete before confirming enrollment.");
     }

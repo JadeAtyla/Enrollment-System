@@ -8,13 +8,15 @@ import Checklist from "./components/Student/Checklist";
 import StudentProfile from "./components/Student/StudentProfile";
 import RegistrarLoginCard from "./components/Registrar/RegistrarLoginCard";
 import RegistrarDashboard from "./components/Registrar/RegistrarDashboard";
-import EnrollmentList from "./components/Registrar/EnrollmentList"; 
+import EnrollmentList from "./components/Registrar/EnrollmentList";
 import ListOfStudents from "./components/Registrar/ListOfStudents";
 import RegistrarAccounts from "./components/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./components/Registrar/RegistrarRegisterForm";
-import EvaluateStudent from "./components/Registrar/EvaluateStudent"; 
-import EnrollStudent from "./components/Registrar/EnrollStudent"; 
+import EvaluateStudent from "./components/Registrar/EvaluateStudent";
+import EnrollStudent from "./components/Registrar/EnrollStudent";
 import Billing from "./components/Registrar/Billing";  // Correct import path
+import EvaluatePayment from "./components/Registrar/EvaluatePayment";
+
 
 
 function App() {
@@ -195,6 +197,17 @@ function App() {
           element={
             user && role === "registrar" ? (
               <Billing />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        <Route
+          path="/registrar/evaluate-payment"
+          element={
+            user && role === "registrar" ? (
+              <EvaluatePayment />
             ) : (
               <Navigate to="/registrar" />
             )

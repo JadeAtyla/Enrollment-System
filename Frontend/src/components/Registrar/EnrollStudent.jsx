@@ -87,7 +87,7 @@ const EnrollStudent = ({ onLogout }) => {
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"} py-6`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-6">ENROLL STUDENT</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 mb-6">ENROLL STUDENT</h1>
 
           {/* Student Information Section */}
           <div className="mb-6 p-11 bg-white shadow-lg rounded-[1.875rem]">
