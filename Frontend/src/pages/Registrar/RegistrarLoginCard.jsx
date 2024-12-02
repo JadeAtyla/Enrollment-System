@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import universityLogo from "../../images/universityLogo.svg"; // Corrected path
+import universityLogo from "../../images/universityLogo.svg"; 
 import loginIcon from "../../images/Registrar/LogInIcons/OfficerIcon.svg"; // Corrected path
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 
