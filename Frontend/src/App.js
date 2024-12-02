@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import StudentLoginCard from "./pages/Student/StudentLoginCard";
 import Dashboard from "./pages/Student/Dashboard";
@@ -16,8 +21,9 @@ import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./pages/Registrar/RegistrarRegisterForm";
 import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
-import Billing from "./pages/Registrar/Billing";  // Correct import path
+import Billing from "./pages/Registrar/Billing"; // Correct import path
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
@@ -222,6 +228,17 @@ function App() {
           }
         />
 
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={
+            user && role === "registrar" ? (
+              <CertificateOfRegistration />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
         {/* Department Routes */}
         <Route
           path="/department"
@@ -253,6 +270,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/department/departmentScheduleList"
           element={

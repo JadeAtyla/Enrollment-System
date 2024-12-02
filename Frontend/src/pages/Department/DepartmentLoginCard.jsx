@@ -16,7 +16,7 @@ const DepartmentLoginCard = ({ onLogin }) => {
     // Call onLogin function passed as a prop
     onLogin(username, password);
     // Redirect to registrar dashboard after successful login
-    navigate("/department/dashboard");
+    navigate("/department/departmentDashboard");
   };
 
   return (
