@@ -276,7 +276,7 @@ def check_prerequisites(student, course):
 # LIST View Funtions
 def enrollment_list_view(request):
     # Get all students from DB
-    students = Student.objects.all()
+    enrollment = Enrollment.objects.all()
 
     # Search and filter functionality
     search_query = request.GET.get('search', '')
@@ -284,17 +284,17 @@ def enrollment_list_view(request):
     course = request.GET.get('course', '')
 
     if search_query:
-        students = students.filter(
+        enrollment = student.filter(
             Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
         )
     
     if year_level:
-        students = students.filter(year_level=year_level)
+        enrollment = student.filter(year_level=year_level)
     
     if course:
-        students = students.filter(program=course)  # Filter by program (course)
+        enrollment = student.filter(program=course)  # Filter by program (course)
 
-    paginator = Paginator(students, 10)
+    paginator = Paginator(enrollment, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -305,7 +305,7 @@ def enrollment_list_view(request):
 
         writer = csv.writer(response)
         writer.writerow(['Student Number', 'Student Name', 'Program', 'Year Level', 'Section', 'Status', 'Enrollment Status'])
-        for student in students:
+        for student in enrollment:
             writer.writerow([
                 student.id,
                 f'{student.first_name} {student.last_name}',  # Combine first and last name
