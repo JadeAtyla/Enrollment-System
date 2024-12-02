@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import StudentLoginCard from "./pages/Student/StudentLoginCard";
 import Dashboard from "./pages/Student/Dashboard";
@@ -21,12 +16,14 @@ import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./pages/Registrar/RegistrarRegisterForm";
 import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
-import Billing from "./pages/Registrar/Billing"; 
+import Billing from "./pages/Registrar/Billing";  // Correct import path
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
-import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
+import InstructorList from "./pages/Department/InstructorList";
+import ScheduleList from "./pages/Department/ScheduleList";
+import DepartmentAccount from "./pages/Department/DepartmentAccount";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -224,17 +221,6 @@ function App() {
           }
         />
 
-        <Route
-          path="/registrar/certificate-of-registration"
-          element={
-            user && role === "registrar" ? (
-              <CertificateOfRegistration />
-            ) : (
-              <Navigate to="/registrar" />
-            )
-          }
-        />
-
         {/* Department Routes */}
         <Route
           path="/department"
@@ -256,88 +242,37 @@ function App() {
             )
           }
         />
-        <Route
-          path="/department/enrollmentList"
+          <Route
+          path="/department/instructorList"
           element={
             user && role === "department" ? (
-              <EnrollmentList onLogout={handleLogout} />
+              <InstructorList onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )
           }
         />
         <Route
-          path="/department/evaluate-student" // Added route for EnrollStudent
+          path="/department/scheduleList"
           element={
             user && role === "department" ? (
-              <EvaluateStudent onLogout={handleLogout} />
+              <ScheduleList onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )
           }
         />
         <Route
-          path="/department/enroll-student" // Added route for EnrollStudent
+          path="/department/departmentAccount"
           element={
             user && role === "department" ? (
-              <EnrollStudent onLogout={handleLogout} />
+              <DepartmentAccount onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )
           }
         />
-        <Route
-          path="/department/studentList"
-          element={
-            user && role === "department" ? (
-              <ListOfStudents onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
-
-        <Route
-          path="/department/account"
-          element={
-            user && role === "department" ? (
-              <RegistrarAccounts onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
-        <Route
-          path="/department/register"
-          element={
-            user && role === "department" ? (
-              <RegistrarRegisterForm />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
-        <Route
-          path="/department/billing"
-          element={
-            user && role === "department" ? (
-              <Billing />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
-
-        <Route
-          path="/department/evaluate-payment"
-          element={
-            user && role === "department" ? (
-              <EvaluatePayment />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
+        
 
         {/* Catch-all Route for 404 */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
