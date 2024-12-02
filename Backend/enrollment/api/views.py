@@ -382,7 +382,7 @@ def schedule_list_view(request):
             'to_time',
             'room',
             'course.program',
-            'Instructor.full_name',  
+            'instructor.full_name',  
         ]
 
     )
