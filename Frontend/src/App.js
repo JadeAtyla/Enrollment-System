@@ -256,6 +256,88 @@ function App() {
             )
           }
         />
+        <Route
+          path="/department/enrollmentList"
+          element={
+            user && role === "department" ? (
+              <EnrollmentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/evaluate-student" // Added route for EnrollStudent
+          element={
+            user && role === "department" ? (
+              <EvaluateStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/enroll-student" // Added route for EnrollStudent
+          element={
+            user && role === "department" ? (
+              <EnrollStudent onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/studentList"
+          element={
+            user && role === "department" ? (
+              <ListOfStudents onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/account"
+          element={
+            user && role === "department" ? (
+              <RegistrarAccounts onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/register"
+          element={
+            user && role === "department" ? (
+              <RegistrarRegisterForm />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/billing"
+          element={
+            user && role === "department" ? (
+              <Billing />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/evaluate-payment"
+          element={
+            user && role === "department" ? (
+              <EvaluatePayment />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
 
         {/* Catch-all Route for 404 */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
