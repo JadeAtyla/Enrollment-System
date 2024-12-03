@@ -30,5 +30,11 @@ urlpatterns = [
     path("api/change-password/", views.change_password, name="change_password"),
     path("api/profile/", views.get_user_profile, name="get_user_profile"),
 
+    #DEPARTMENT
+    path('api/dashboard/', views.dashboard_data, name='dashboard_data'),
+    path('api/instructor-list-view/', views.instructor_list_view, name='instructor_list_view'),
+    path('api/schedule-list-view/', views.schedule_list_view, name='schedule_list_view'),
+    path('api/student-list-view/', views.student_list_view, name='student_list_view'),
+
 
 ]
