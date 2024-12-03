@@ -193,7 +193,7 @@ function App() {
           }
         />
         <Route
-          path="/department/dashboard"
+          path="/department/departmentDashboard"
           element={
             user && role === "department" ? (
               <DepartmentDashboard onLogout={handleLogout} />
@@ -202,6 +202,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/department/departmentInstructorList"
           element={
