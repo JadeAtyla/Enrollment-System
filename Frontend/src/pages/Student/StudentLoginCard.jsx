@@ -3,22 +3,32 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg"; // Corrected path
 import loginIcon from "../../images/loginIcon.svg"; // Corrected path
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
+import { validateCredentials } from "../staticFunctions";
+
+
 
 const StudentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [studentNumber, setStudentNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // Add state for error messages
   const navigate = useNavigate(); // Initialize useNavigate for routing
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
   const handleLoginClick = () => {
-    // Call onLogin function passed as a prop
-    onLogin(studentNumber, password);
-    // Redirect to dashboard after successful login
-    navigate("/student/dashboard");
+    const result = validateCredentials(studentNumber, password, "student");
+  
+    if (typeof result === "string") {
+      setErrorMessage(result); // Display error message
+    } else {
+      setErrorMessage(""); // Clear error
+      onLogin(result.identifier, result.password, result.role); // Pass user data to App
+      navigate("/student/dashboard"); // Navigate to the student dashboard
+    }
   };
-
+  
+  
   const handleRegisterClick = () => {
     // Navigate to the register page
     navigate("/register");
@@ -109,6 +119,9 @@ const StudentLoginCard = ({ onLogin }) => {
             </p>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>}
+     
           {/* Login Button */}
           <button
             onClick={handleLoginClick}

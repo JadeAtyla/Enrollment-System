@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
+import { registerUser } from "../staticFunctions";
 
-const RegisterForm = ({ onRegisterComplete }) => {
+const RegisterForm = () => {
   const [formData, setFormData] = useState({
     studentNumber: "",
     password: "",
@@ -11,6 +13,9 @@ const RegisterForm = ({ onRegisterComplete }) => {
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () =>
     setPasswordVisible(!passwordVisible);
@@ -20,21 +25,41 @@ const RegisterForm = ({ onRegisterComplete }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrorMessage(""); // Clear error message on input change
   };
 
-  const handleSubmit = () => {
-    console.log("Register Form Data:", formData);
-    if (onRegisterComplete) onRegisterComplete();
+  const handleRegisterClick = () => {
+    const registrationResult = registerUser(formData);
+    if (registrationResult === true) {
+      setShowModal(true); // Show success modal
+    } else {
+      setErrorMessage(registrationResult); // Display error message
+    }
+  };
+
+  const handleProceedToLogin = () => {
+    setShowModal(false);
+    navigate("/student"); // Redirect to login page
+  };
+
+  const handleBackToLogin = () => {
+    navigate("/student"); // Navigate back to login page
   };
 
   return (
-    <div
-      className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900"
-    >
+    <div className="relative flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
       {/* Main Container */}
       <div className="relative flex rounded-[32px] shadow-lg overflow-hidden w-[1027px] h-[641px]">
         {/* Left Section (Form Section) */}
-        <div className="flex flex-col justify-center items-center w-[600px] h-[641px] bg-white bg-opacity-25 p-6">
+        <div className="relative flex flex-col justify-center items-center w-[600px] h-[641px] bg-white bg-opacity-25 p-6">
+          {/* Back Button */}
+          <button
+            onClick={handleBackToLogin}
+            className="absolute top-8 left-8 text-white text-3xl flex items-center hover:text-gray-300"
+          >
+            <FaArrowLeft className="mr-2" />
+          </button>
+
           {/* Register Icon */}
           <div className="bg-blue-900 p-4 rounded-full shadow-lg mb-6">
             <img
@@ -103,9 +128,14 @@ const RegisterForm = ({ onRegisterComplete }) => {
             </div>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>
+          )}
+
           {/* Register Button */}
           <button
-            onClick={handleSubmit}
+            onClick={handleRegisterClick}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Register
@@ -127,6 +157,24 @@ const RegisterForm = ({ onRegisterComplete }) => {
           </h2>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg text-center">
+            <h2 className="text-lg font-bold text-green-500 mb-4">
+              Registered Successfully!
+            </h2>
+            <p className="text-gray-700 mb-4">Proceed to Login</p>
+            <button
+              onClick={handleProceedToLogin}
+              className="px-6 py-2 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
