@@ -13,7 +13,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, onToggleSidebar, isCollapsed
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const menuItems = [
-    { name: "dashboard", icon: DashboardIcon, label: "Dashboard", path: "/department/departmentDashboard" },
+    { name: "departmentDashboard", icon: DashboardIcon, label: "Dashboard", path: "/department/dashboard" },
     { name: "instructor", icon: EnrollIcon, label: "Instructor List", path: "/department/departmentInstructorList" },
     { name: "schedule", icon: ListIcon, label: "Schedule List", path: "/department/departmentScheduleList" },
     { name: "schedule", icon: StudentIcon, label: "Student List", path: "/department/departmentStudentList" },
