@@ -7,11 +7,12 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
     middleName: "",
     suffix: "",
     gender: "",
+    email: "",
+    contactNumber: "",
     street: "",
     barangay: "",
     city: "",
     province: "",
-    contactNumber: "",
   });
 
   const [isSaved, setIsSaved] = useState(false); // New state to track if data was saved
@@ -86,16 +87,6 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Street *</label>
-              <input
-                type="text"
-                name="street"
-                value={instructorData.street}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-medium mb-1">
                 First Name *
               </label>
@@ -103,18 +94,6 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
                 type="text"
                 name="firstName"
                 value={instructorData.firstName}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Barangay *
-              </label>
-              <input
-                type="text"
-                name="barangay"
-                value={instructorData.barangay}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -154,16 +133,16 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Other">Other</option>
               </select>
             </div>
-
-            
             <div>
-              <label className="block text-sm font-medium mb-1">City *</label>
+              <label className="block text-sm font-medium mb-1">Email *</label>
               <input
-                type="text"
-                name="city"
-                value={instructorData.city}
+                type="email"
+                name="email"
+                value={instructorData.email}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -181,6 +160,38 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium mb-1">Street *</label>
+              <input
+                type="text"
+                name="street"
+                value={instructorData.street}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Barangay *
+              </label>
+              <input
+                type="text"
+                name="barangay"
+                value={instructorData.barangay}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">City *</label>
+              <input
+                type="text"
+                name="city"
+                value={instructorData.city}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium mb-1">
                 Province *
               </label>
@@ -192,7 +203,6 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
           </form>
         </div>
 
@@ -209,7 +219,9 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               Cancel
             </button>
             <button
-              className={`px-6 py-2 ${isSaving ? 'bg-gray-500' : 'bg-green-600'} text-white rounded-lg hover:bg-green-700`}
+              className={`px-6 py-2 ${
+                isSaving ? "bg-gray-500" : "bg-green-600"
+              } text-white rounded-lg hover:bg-green-700`}
               onClick={handleSave}
               disabled={isSaving} // Disable button while saving
             >
@@ -225,7 +237,6 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
           </div>
         )}
       </div>
-      
     </div>
   );
 };

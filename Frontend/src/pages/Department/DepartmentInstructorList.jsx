@@ -1,54 +1,46 @@
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import { useNavigate } from "react-router-dom";
 import InstructorInfoModal from "./InstructorInfoModal";
-import DepartmentAddInstructor from "./DepartmentAddInstructor"; // Import the renamed modal component
+import DepartmentAddInstructor from "./DepartmentAddInstructor";
 
 const DepartmentInstructorList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
   const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] = useState(false);
-  const instructorsPerPage = 10; // or any number that suits your pagination logic
+  const instructorsPerPage = 10;
 
-  const [instructors, setInstructors] = useState(
-    Array.from({ length: 50 }).map((_, index) => ({
-      id: index + 1,
-      instructorId: `2022${index + 1}`,
-      name: `Instructor ${index + 1}`,
-      email: `instructor${index + 1}@university.edu`,
-      contact: `091234567${index}`,
-      address: `1234 Elm Street, City ${index + 1}`,
-    }))
-  );
+  // Set the initial state of instructors to an empty array
+  const [instructors, setInstructors] = useState([]);
 
   const handleRowDoubleClick = (instructor) => {
     setSelectedInstructor(instructor);
   };
 
-  const handleSaveInstructor = (updatedInstructor) => {
-    setInstructors((prev) =>
-      prev.map((instructor) =>
-        instructor.id === updatedInstructor.id ? updatedInstructor : instructor
-      )
-    );
-    setSelectedInstructor(null);
-  };
-
   const handleAddInstructor = (newInstructor) => {
-    setInstructors((prev) => [newInstructor, ...prev]); // Add the new instructor to the list
-    setIsAddInstructorModalOpen(false); // Close modal after adding
+    const instructorName = `${newInstructor.lastName}, ${newInstructor.firstName} ${newInstructor.middleName}`;
+    const newId = instructors.length + 1;
+
+    setInstructors((prev) => [
+      {
+        id: newId,
+        instructorId: `2022${newId}`,
+        name: instructorName,
+        email: newInstructor.email || "N/A",
+        contact: newInstructor.contactNumber || "N/A",
+        address: `${newInstructor.street}, ${newInstructor.barangay}, ${newInstructor.city}, ${newInstructor.province}`,
+      },
+      ...prev,
+    ]);
+    setIsAddInstructorModalOpen(false);
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const indexOfLastInstructor = currentPage * instructorsPerPage;
   const indexOfFirstInstructor = indexOfLastInstructor - instructorsPerPage;
-  const currentInstructors = instructors.slice(
-    indexOfFirstInstructor,
-    indexOfLastInstructor
-  );
+  const currentInstructors = instructors.slice(indexOfFirstInstructor, indexOfLastInstructor);
 
   return (
     <div className="flex min-h-screen">
@@ -127,19 +119,32 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {currentInstructors.map((instructor) => (
-                  <tr
-                    key={instructor.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onDoubleClick={() => handleRowDoubleClick(instructor)}
-                  >
-                    <td className="px-6 py-4 border-b">{instructor.instructorId}</td>
-                    <td className="px-6 py-4 border-b">{instructor.name}</td>
-                    <td className="px-6 py-4 border-b">{instructor.email}</td>
-                    <td className="px-6 py-4 border-b">{instructor.contact}</td>
-                    <td className="px-6 py-4 border-b">{instructor.address}</td>
+                {currentInstructors.length > 0 ? (
+                  currentInstructors.map((instructor) => (
+                    <tr
+                      key={instructor.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onDoubleClick={() => handleRowDoubleClick(instructor)}
+                    >
+                      <td className="px-6 py-4 border-b">
+                        {instructor.instructorId}
+                      </td>
+                      <td className="px-6 py-4 border-b">{instructor.name}</td>
+                      <td className="px-6 py-4 border-b">{instructor.email}</td>
+                      <td className="px-6 py-4 border-b">{instructor.contact}</td>
+                      <td className="px-6 py-4 border-b">{instructor.address}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-6 py-4 text-gray-500 italic text-center"
+                    >
+                      No instructors added yet.
+                    </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
             <div className="flex justify-between items-center mt-6">
@@ -173,17 +178,21 @@ const DepartmentInstructorList = ({ onLogout }) => {
         <InstructorInfoModal
           instructor={selectedInstructor}
           onClose={() => setSelectedInstructor(null)}
-          onSave={handleSaveInstructor}
+          onSave={(updatedInstructor) => {
+            const updatedList = instructors.map((inst) =>
+              inst.id === updatedInstructor.id ? updatedInstructor : inst
+            );
+            setInstructors(updatedList);
+          }}
         />
       )}
       {isAddInstructorModalOpen && (
         <DepartmentAddInstructor
           onClose={() => setIsAddInstructorModalOpen(false)}
-          onSave={handleAddInstructor} // Ensure this correctly updates the instructor list
+          onSave={handleAddInstructor}
         />
       )}
     </div>
   );
 };
-
 export default DepartmentInstructorList;
