@@ -1,3 +1,4 @@
+# Wag muna gamitin hindi pa tapos
 DELIMITER $$
 
 -- Trigger for `user` table

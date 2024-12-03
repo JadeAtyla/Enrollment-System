@@ -13,68 +13,43 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = '__all__'
-        extra_kwargs = {
-            'program': {'required': False},  # Since `unique=True`, ensure program is optional for updates
-        }
-
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = '__all__'
-        extra_kwargs = {
-            'checked_by': {'required': False},
-            'released_by': {'required': False},
-        }
-
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         fields = '__all__'
 
-
 class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructor
         fields = '__all__'
-
-
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = '__all__'
-
-
-class ProgramSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Program
-        fields = '__all__'
-
-
-class RoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Role
-        fields = '__all__'
-
-
-class RolePermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RolePermission
-        fields = '__all__'
-
 
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = '__all__'
 
-
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = '__all__'
 
+# Fixed BillingSerializer
+class BillingSerializer(serializers.ModelSerializer):  # Model should be Billing
+    class Meta:
+        model = Billing
+        fields = '__all__'
+
+# Fixed PreRequisiteSerializer
+class PreRequisiteSerializer(serializers.ModelSerializer):  # Model should be PreRequisite
+    class Meta:
+        model = PreRequisite
+        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,7 +60,8 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
-    
+
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     token = serializers.CharField(allow_blank=True, read_only=True)
@@ -93,6 +69,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'password', 'token']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, attrs):
         username = attrs.get('username')

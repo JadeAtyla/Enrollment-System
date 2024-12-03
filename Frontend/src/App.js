@@ -1,86 +1,256 @@
 import React, { useState } from "react";
-import LoginCard from "./components/LoginCard";
-import StudentTypeSelection from "./components/StudentTypeSelection";
-import RegisterForm from "./components/RegisterForm";
-import Dashboard from "./components/Dashboard";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import StudentLoginCard from "./pages/Student/StudentLoginCard";
+import Dashboard from "./pages/Student/Dashboard";
+import RegisterForm from "./pages/Student/RegisterForm";
+import COR from "./pages/Student/COR";
+import Checklist from "./pages/Student/Checklist";
+import StudentProfile from "./pages/Student/StudentProfile";
+
+import RegistrarLoginCard from "./pages/Registrar/RegistrarLoginCard";
+import RegistrarDashboard from "./pages/Registrar/RegistrarDashboard";
+import EnrollmentList from "./pages/Registrar/EnrollmentList";
+import ListOfStudents from "./pages/Registrar/ListOfStudents";
+import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
+import EnrollStudent from "./pages/Registrar/EnrollStudent";
+import Billing from "./pages/Registrar/Billing";
+import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
+
+import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
+import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
+import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
+import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
+import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
+import DepartmentAccount from "./pages/Department/DepartmentAccount";
+
+import AdminUserList from "./StaticFunctions/AdminUserList";
+
+import { validateCredentials } from "./StaticFunctions/staticFunctions";
 
 function App() {
-  const [currentStep, setCurrentStep] = useState("login");
-  const [formData, setFormData] = useState({});
-  const [user, setUser] = useState(null); // State to manage logged-in user
-  const [loading, setLoading] = useState(false); // State to manage loading
-  const [userType, setUserType] = useState("Student"); // State to manage user type
+  const [user, setUser] = useState(null); // Holds user information
+  const [role, setRole] = useState(null); // Tracks user role
 
-  const handleRegisterClick = () => {
-    setCurrentStep("studentType");
-  };
+  const handleLogin = (identifier, password, role) => {
+    const result = validateCredentials(identifier, password, role);
 
-  const handleLogin = (studentNumber, password) => {
-    if (!studentNumber || !password) {
-      alert("Please enter both student number and password");
+    if (typeof result === "string") {
+      alert(result); // Display error message
       return;
     }
 
-    setLoading(true); // Show loading state
+    // Successful login
+    setUser(result);
+    setRole(result.role);
 
-    // Simulate user authentication (e.g., check against a predefined list of users)
-    const sampleUsers = [
-      { studentNumber: "12345", password: "password123" },
-      { studentNumber: "67890", password: "password456" },
-    ];
+    // Debugging for confirmation
+    console.log("Logged in User:", result);
+    console.log("Role:", result.role);
+  };
 
-    setTimeout(() => {
-      // Credentials only apply to student login
-      if (userType === "Student") {
-        const matchedUser = sampleUsers.find(
-          (user) =>
-            user.studentNumber === studentNumber && user.password === password
-        );
-
-        if (matchedUser) {
-          setUser(matchedUser); // Set the user in state
-          setCurrentStep("dashboard"); // Navigate to dashboard
-        } else {
-          alert("Invalid student number or password");
-        }
-      } else {
-        alert("Non-student users cannot log in with student credentials.");
-      }
-
-      setLoading(false); // Hide loading state after authentication
-    }, 1000); // Simulate a delay for the authentication process
+  const handleLogout = () => {
+    setUser(null);
+    setRole(null);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      {currentStep === "login" && (
-        <LoginCard
-          onLogin={handleLogin}
-          onRegisterClick={handleRegisterClick}
-          setUserType={setUserType}
-          userType={userType} // Pass userType to LoginCard
+    <Router>
+      <Routes>
+        {/* Redirect root to appropriate login */}
+        <Route path="/" element={<Navigate to="/student" />} />
+
+        {/* Student Routes */}
+        <Route
+          path="/student"
+          element={
+            user && role === "student" ? (
+              <Navigate to="/student/dashboard" />
+            ) : (
+              <StudentLoginCard onLogin={handleLogin} />
+            )
+          }
         />
-      )}
-      {currentStep === "studentType" && (
-        <StudentTypeSelection
-          setFormData={setFormData}
-          onNext={() => setCurrentStep("registerForm")}
+        <Route
+          path="/student/dashboard"
+          element={
+            user && role === "student" ? (
+              <Dashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/student" />
+            )
+          }
         />
-      )}
-      {currentStep === "registerForm" && (
-        <RegisterForm
-          formData={formData}
-          setFormData={setFormData}
-          setCurrentStep={setCurrentStep}
+        <Route
+          path="/student/register"
+          element={<RegisterForm />}
         />
-      )}
-      {currentStep === "dashboard" && <Dashboard user={user} />}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 bg-gray-500 z-10">
-          <div className="text-white">Loading...</div>
-        </div>
-      )}
-    </div>
+
+        <Route
+          path="/student/cor"
+          element={
+            user && role === "student" ? <COR onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/checklist"
+          element={
+            user && role === "student" ? <Checklist onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            user && role === "student" ? <StudentProfile onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
+        />
+
+        {/* Registrar Routes */}
+        <Route
+          path="/registrar"
+          element={
+            user && role === "registrar" ? (
+              <Navigate to="/registrar/dashboard" />
+            ) : (
+              <RegistrarLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/registrar/dashboard"
+          element={
+            user && role === "registrar" ? (
+              <RegistrarDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/enrollmentList"
+          element={
+            user && role === "registrar" ? (
+              <EnrollmentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/studentList"
+          element={
+            user && role === "registrar" ? (
+              <ListOfStudents onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/account"
+          element={
+            user && role === "registrar" ? (
+              <RegistrarAccounts onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        <Route
+          path="/registrar/enroll-student"
+          element={<EnrollStudent onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/billing"
+          element={<Billing onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/evaluate-payment"
+          element={<EvaluatePayment onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={<CertificateOfRegistration onLogout={handleLogout} />}
+        />
+
+
+        {/* Department Routes */}
+        <Route
+          path="/department"
+          element={
+            user && role === "department" ? (
+              <Navigate to="/department/dashboard" />
+            ) : (
+              <DepartmentLoginCard onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentDashboard"
+          element={
+            user && role === "department" ? (
+              <DepartmentDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/departmentInstructorList"
+          element={
+            user && role === "department" ? (
+              <DepartmentInstructorList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentScheduleList"
+          element={
+            user && role === "department" ? (
+              <DepartmentScheduleList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentStudentList"
+          element={
+            user && role === "department" ? (
+              <DepartmentStudentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentAccount"
+          element={
+            user && role === "department" ? (
+              <DepartmentAccount onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        {/* Admin User List */}
+        <Route path="/users" element={<AdminUserList />} />
+
+        {/* Catch-all Route for 404 */}
+        <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+      </Routes>
+    </Router>
   );
 }
 

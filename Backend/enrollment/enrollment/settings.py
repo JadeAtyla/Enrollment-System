@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders', # COR Headers
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_seed', # Seeder for models
 ]
 
 MIDDLEWARE = [
@@ -61,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React's default dev server
+    "http://localhost:8000",  # React's default dev server
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -71,12 +72,13 @@ REST_FRAMEWORK = {
         'api.authentication.CookiesJWTAuthentication', # Changed
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny', # this is for trial only, need to chane in isAuthenticated when deployed
     ]
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -127,7 +129,7 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PASSWORD': os.environ.get('DB_PASS'),
         'PORT': os.environ.get('DB_PORT'),
-        # 'ENGINE': 'django.db.backends.sqlite3',
+       # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
