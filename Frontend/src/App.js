@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import StudentLoginCard from "./pages/Student/StudentLoginCard";
 import Dashboard from "./pages/Student/Dashboard";
@@ -10,6 +15,16 @@ import StudentProfile from "./pages/Student/StudentProfile";
 
 import RegistrarLoginCard from "./pages/Registrar/RegistrarLoginCard";
 import RegistrarDashboard from "./pages/Registrar/RegistrarDashboard";
+import EnrollmentList from "./pages/Registrar/EnrollmentList";
+import ListOfStudents from "./pages/Registrar/ListOfStudents";
+import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
+import RegistrarRegisterForm from "./pages/Registrar/RegistrarRegisterForm";
+import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
+import EnrollStudent from "./pages/Registrar/EnrollStudent";
+import Billing from "./pages/Registrar/Billing"; // Correct import path
+import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
+
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
 import AdminUserList from "./pages/AdminUserList";
@@ -90,6 +105,17 @@ function App() {
           element={
             user && role === "registrar" ? (
               <RegistrarDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={
+            user && role === "registrar" ? (
+              <CertificateOfRegistration />
             ) : (
               <Navigate to="/registrar" />
             )

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from rest_framework.views import APIView
@@ -24,6 +24,10 @@ from django.core.paginator import Paginator
 import csv  # For exporting to Excel (CSV)
 
 from django.contrib.auth import authenticate
+from rest_framework.pagination import PageNumberPagination
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 # # Create your views here to render in the frontend.
@@ -296,20 +300,21 @@ def check_prerequisites(student, course):
 
 
 # LIST View Funtions
-
 def generalized_list_view(
     request,
     model,
+    serializer_class,
     search_fields=None,
     filter_fields=None,
     export_headers=None,
     export_fields=None,
 ):
     """
-    Generalized list view for any model.
+    Generalized list view for any model with serializer.
 
     :param request: The HTTP request object.
     :param model: The Django model to query.
+    :param serializer_class: Serializer class for the model.
     :param search_fields: Fields to search for (list of field names).
     :param filter_fields: Fields to filter by (dict of field name -> query parameter key).
     :param export_headers: Headers for the CSV export.
@@ -333,104 +338,42 @@ def generalized_list_view(
             if value:
                 queryset = queryset.filter(**{field: value})
 
-    # Pagination
-    page_number = request.GET.get('page', 1)
-    paginator = Paginator(queryset, 10)
-    page_obj = paginator.get_page(page_number)
-
+    # Export logic
     if 'export' in request.GET and export_headers and export_fields:
-    # Generate CSV response
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(export_headers)  # Write headers first
+        writer.writerow(export_headers)  # Write headers
 
-    # Preparing data for response
-    data = []
-    for obj in page_obj:
-        if export_fields:
-            record = {}
+        for obj in queryset:
+            row = []
             for field in export_fields:
                 if '.' in field:
                     related_field, sub_field = field.split('.', 1)
                     value = getattr(getattr(obj, related_field, None), sub_field, '')
-                elif isinstance(field, tuple):  # Special case for multiple fields in one column
-                    related_obj = getattr(obj, field[0], None)
-                    value = f"{getattr(related_obj, field[1], '')} {getattr(related_obj, field[2], '')}".strip()
                 else:
                     value = getattr(obj, field, '')
-                record[field] = value
-            data.append(record)
+                row.append(value)
+            writer.writerow(row)
+        return response
 
-    # Response data
-    response_data = {
-        'data': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-        },
-    }
+    # Pagination
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    page_obj = paginator.paginate_queryset(queryset, request)
 
-    return JsonResponse(response_data)
+    # Serialize data
+    serializer = serializer_class(page_obj, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
-def student_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Student,
-        search_fields=['first_name', 'last_name'],
-        filter_fields={'year_level': 'year_level', 'program': 'course'},  
-        export_headers=[
-            'Student Number', 
-            'Student Name', 
-            'Program', 
-            'Year Level', 
-            'Section', 
-            'Status'
-            ],
-        export_fields=[
-            'id', 
-            'full_name', 
-            'program', 
-            'year_level', 
-            'section', 
-            'status'
-            ]
 
-    )
-
-def schedule_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Schedule, 
-        search_fields=['course__code'],
-        filter_fields={
-            'course__program': 'program',
-            'year_level': 'year_level',
-        },
-        export_headers=[
-            'Course Code', 'Year Level', 'Section', 'Day', 'From Time',
-            'To Time', 'Room', 'Program', 'Instructor'
-        ],
-        export_fields=[
-            'course.code',
-            'year_level',
-            'section',
-            'day',
-            'from_time',
-            'to_time',
-            'room',
-            'course.program',
-            'instructor.full_name',  
-        ]
-
-    )
-
+@api_view(['GET'])
 def enrollment_list_view(request):
     return generalized_list_view(
         request,
         model=Enrollment,
+        serializer_class=EnrollmentSerializer,
         search_fields=['student__first_name', 'student__last_name'],
         filter_fields={
             'student__year_level': 'year_level',
@@ -438,7 +381,7 @@ def enrollment_list_view(request):
         },
         export_headers=[
             'Student Number', 'Student Name', 'Program', 'Year Level', 
-            'Section', 'Status', 'Enrollment Status'
+            'Section', 'Status', 'Enrollment Status',
         ],
         export_fields=[
             'student.id',
@@ -447,36 +390,14 @@ def enrollment_list_view(request):
             'student.year_level',
             'student.section',
             'student.status',
-            'status' 
-        ]
+            'status',
+        ],
     )
 
-def instructor_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Instructor,
-        search_fields=['first_name', 'last_name'],  # Search by first and last name
-        filter_fields={},  # Add filters if needed
-        export_headers=[
-            'Instructor ID', 
-            'Instructor Name', 
-            'Email', 
-            'Contact No.', 
-            'Address'
-            ],
-        export_fields=[
-            'id', 
-            'full_name', 
-            'email', 
-            'contact_number', 
-            'address'
-            ]
-    )
-
-# Student Log in
+# Student
 @api_view(['POST'])
 def login_user(request):
-    username = request.data.get('student_number')  # Assuming student number is the username
+    username = request.data.get('student_number')  
     password = request.data.get('password')
 
     if not username or not password:
@@ -510,3 +431,215 @@ def get_student_data(request):
         return Response(data)
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
+
+@login_required
+def get_student_profile(request):
+    # Get logged-in student information
+    try:
+        student = Student.objects.get(id=request.user.id)
+        data = {
+            "student_number": student.id,
+            "email": student.email,
+            "status": student.status,
+            "contact_number": student.contact_number,
+            "program": student.program,
+            "year_level": student.year_level,
+            "section": student.section,
+        }
+        return JsonResponse(data, status=200)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+
+@csrf_exempt
+def change_password(request):
+    """
+    Handle password change requests.
+
+    Accepts a POST request with the current_password, new_password, and confirm_password.
+    """
+    if request.method == "POST":
+        try:
+            # Parse the JSON body
+            data = json.loads(request.body)
+            current_password = data.get("current_password")
+            new_password = data.get("new_password")
+            confirm_password = data.get("confirm_password")
+
+            # Validate the input
+            if not current_password or not new_password or not confirm_password:
+                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if new_password != confirm_password:
+                return JsonResponse({"error": "New passwords do not match."}, status=400)
+
+            # Authenticate the user
+            user = request.user
+            if not user.is_authenticated:
+                return JsonResponse({"error": "User is not authenticated."}, status=403)
+
+            if not user.check_password(current_password):
+                return JsonResponse({"error": "Current password is incorrect."}, status=400)
+
+            # Update the password
+            user.set_password(new_password)
+            user.save()
+
+            return JsonResponse({"success": "Password updated successfully."}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@login_required
+def get_user_profile(request):
+    """
+    API to fetch user profile 
+    """
+    try:
+        user = request.user
+        student = Student.objects.get(id=user.id)  
+        address = student.address
+
+        profile_data = {
+            "last_name": student.last_name,
+            "first_name": student.first_name,
+            "middle_name": student.middle_name,
+            "suffix": student.suffix,
+            "address": {
+                "street": address.street,
+                "barangay": address.barangay,
+                "city": address.city,
+                "province": address.province,
+            },
+            "gender": student.gender,
+            "birthday": student.date_of_birth,
+        }
+        return JsonResponse({"data": profile_data}, status=200)
+
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found."}, status=404)
+
+# Registrar Dashboard
+@api_view(['GET'])
+def dashboard_data(request):
+    total_students = Student.objects.count()
+
+    # Classification counts
+    regular_count = Student.objects.filter(status="Regular").count()
+    irregular_count = Student.objects.filter(status="Irregular").count()
+    transferee_count = Student.objects.filter(status="Transfer").count()
+    returnee_count = Student.objects.filter(status="Returning").count()
+
+    # Students per program
+    program_distribution = (
+        Student.objects.values("program")
+        .annotate(count=Count("id"))
+        .order_by("program")
+    )
+
+    # Yearly breakdown for each program
+    year_level_distribution = {}
+    for program in program_distribution:
+        program_code = program["program"]
+        year_data = (
+            Student.objects.filter(program=program_code)
+            .values("year_level")
+            .annotate(count=Count("id"))
+            .order_by("year_level")
+        )
+        year_level_distribution[program_code] = {data["year_level"]: data["count"] for data in year_data}
+
+    # Prepare response data
+    data = {
+        "total_students": total_students,
+        "classification": {
+            "regular": regular_count,
+            "irregular": irregular_count,
+            "transferee": transferee_count,
+            "returnee": returnee_count,
+        },
+        "program_distribution": list(program_distribution),
+        "year_level_distribution": year_level_distribution,
+    }
+
+    return JsonResponse(data)
+
+def instructor_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Instructor,
+        serializer_class=InstructorSerializer,
+        search_fields=['first_name', 'last_name'],  # Search by first and last name
+        filter_fields={},  # Add filters if needed
+        export_headers=[
+            'Instructor ID', 
+            'Instructor Name', 
+            'Email', 
+            'Contact No.', 
+            'Address'
+            ],
+        export_fields=[
+            'id', 
+            'full_name', 
+            'email', 
+            'contact_number', 
+            'address'
+            ]
+    )
+
+def schedule_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Schedule, 
+         serializer_class=ScheduleSerializer,
+        search_fields=['course__code'],
+        filter_fields={
+            'course__program': 'program',
+            'year_level': 'year_level',
+        },
+        export_headers=[
+            'Course Code', 'Year Level', 'Section', 'Day', 'From Time',
+            'To Time', 'Room', 'Program', 'Instructor'
+        ],
+        export_fields=[
+            'course.code',
+            'year_level',
+            'section',
+            'day',
+            'from_time',
+            'to_time',
+            'room',
+            'course.program',
+            'instructor.full_name',  
+        ]
+
+    )
+
+def student_list_view(request):
+    return generalized_list_view(
+        request,
+        model=Student,
+        serializer_class=StudentSerializer,
+        search_fields=['first_name', 'last_name'],
+        filter_fields={'year_level': 'year_level', 'program': 'course'},  
+        export_headers=[
+            'Student Number', 
+            'Student Name', 
+            'Program', 
+            'Year Level', 
+            'Section', 
+            'Status'
+            ],
+        export_fields=[
+            'id', 
+            'full_name', 
+            'program', 
+            'year_level', 
+            'section', 
+            'status'
+            ]
+
+    )

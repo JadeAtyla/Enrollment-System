@@ -207,7 +207,8 @@ const RegistrarDashboard = ({ onLogout }) => {
                   </label>
                   <select
                     id="program"
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 w-[rem]"
+                    className="border border-gray-300 rounded-lg px-4 py-2 
+                    pr-8 text-gray-700 w-[rem]"
                   >
                     <option value="BSCS">BSCS</option>
                     <option value="BSIT">BSIT</option>

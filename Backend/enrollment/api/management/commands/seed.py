@@ -3,6 +3,9 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 import random
 from datetime import datetime
+from django.contrib.auth.models import User, Group, Permission
+from django.apps import apps
+from faker import Faker
 
 class Command(BaseCommand):
     help = 'Seed the database with course data'
@@ -11,6 +14,8 @@ class Command(BaseCommand):
         self.run()
 
     def run(self):
+        fake = Faker()  # Initialize Faker
+
         # BSCS Courses
 
         # year_level and semester legend:
@@ -170,16 +175,16 @@ class Command(BaseCommand):
             {"code": "ITEC 199", "title": "Practicum (minimum 486 hours)", "lec_units": 6, "lab_units": 0, "contact_hr_lec": 0, "contact_hr_lab": 0, "year_level": 4, "semester": 2, "program": "BSIT"},
         ]
 
-        # Create sample addresses
+        # Create sample addresses using Faker
         addresses = [
-            Address.objects.create(street=f"{i} Main St", barangay=f"Barangay {i}", city=f"City {i}", province=f"Province {i}")
-            for i in range(1, 11)
+            Address.objects.create(street=fake.street_address(), barangay=fake.city(), city=fake.city(), province=fake.state())
+            for _ in range(10)  # Create 10 random addresses
         ]
 
         # Create sample instructors
         instructors = [
-            Instructor.objects.create(first_name=f"John_{i}", last_name=f"Doe_{i}", gender=random.choice(["MALE", "FEMALE"]), address=random.choice(addresses))
-            for i in range(1, 11)
+            Instructor.objects.create(first_name=fake.first_name(), last_name=fake.last_name(), gender=random.choice(["MALE", "FEMALE"]), address=random.choice(addresses))
+            for _ in range(10)  # Create 10 random instructors
         ]
 
         # Create courses for BSCS
@@ -192,10 +197,9 @@ class Command(BaseCommand):
             if not Course.objects.filter(code=course['code'], program=course['program']).exists():
                 Course.objects.create(**course)
 
-        # Create sample students
+        # Create sample students using Faker
         students = []
         year = datetime.strptime("2024-12-01", "%Y-%m-%d").year
-
         for i in range(1, 11):
             year_of_birth = random.randint(1980, 2003)  # Generate a valid year for date of birth
             month_of_birth = random.randint(1, 12)  # Generate a valid month
@@ -208,7 +212,7 @@ class Command(BaseCommand):
                 # Ensure student_id ends with '10' or '11' for program determination
                 program_suffix = random.choice(["10", "11"])
                 student_id = int(str(random.randint(2020, year)) + program_suffix + str(random.randint(100, 999)))
-                email = f"student{i}@example.com"
+                email = fake.email()  # Use Faker to generate a random email
                 
                 # Ensure no duplicate email & student id/number
                 if not Student.objects.filter(id=student_id, email=email).exists():
@@ -225,13 +229,13 @@ class Command(BaseCommand):
             student_instance = Student.objects.create(
                 id=student_id,
                 email=email,
-                first_name=f"Alice_{i}",
-                last_name=f"Johnson_{i}",
-                middle_name=f"Middle_{i}",  # Added middle_name
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+                middle_name=fake.last_name(),  # Added middle_name
                 address=random.choice(addresses),  # Assuming addresses is a list of Address objects
                 date_of_birth=date_of_birth,
                 gender=random.choice([choice[0] for choice in STUDENT_GENDER.choices]),  # Randomly select gender from choices
-                contact_number=f"0912345678{i}",
+                contact_number=fake.phone_number(),  # Use Faker for contact number
                 status=random.choice([choice[0] for choice in STUDENT_REG_STATUS.choices]),  # Randomly select status from choices
                 section=random.randint(1, 5),
                 year_level=year_level,
@@ -475,6 +479,134 @@ class Command(BaseCommand):
                     pre_requisite=prerequisite_instance, # This is the prerequisite course
                     program=pre['program']
                 )
+
+        # Get all models from the 'api' app
+        app_models = apps.get_app_config('api').get_models()
+        model_names = [model.__name__.lower() for model in app_models]
+        prefixes = ['add_', 'view_', 'update_', 'delete_']
+
+        # Dynamically generate permissions for all models
+        all_permissions = [prefix + model_name for model_name in model_names for prefix in prefixes]
+        groups = ['Admin', 'Student', 'Registrar', 'Department']
+
+        for group_name in groups:
+            # Create the group
+            group, created = Group.objects.get_or_create(name=group_name)
+            if created:
+                self.stdout.write(self.style.SUCCESS(f'Group "{group_name}" created.'))
+            else:
+                self.stdout.write(self.style.WARNING(f'Group "{group_name}" already exists.'))
+
+            # Assign permissions to the group based on conditions
+            for perm in all_permissions:
+                try:
+                    permission = Permission.objects.get(codename=perm)
+
+                    # Assign permissions based on group name
+                    if group_name == 'Admin':  # Admin gets all permissions
+                        group.permissions.add(permission)
+
+                    elif group_name == 'Student':  # Student
+                        if (
+                            'view' in perm 
+                            and 'add' not in perm 
+                            and 'delete' not in perm 
+                            and 'update' not in perm 
+                            and 'user' not in perm 
+                            and 'instructor' not in perm
+                            and 'billing' not in perm
+                            and 'userrole' not in perm
+                            and 'rolepermission' not in perm
+                        ):
+                            group.permissions.add(permission)
+
+                    elif group_name == 'Registrar':  # Registrar 
+                        if 'user' not in perm:
+                            group.permissions.add(permission)
+
+                    elif group_name == 'Department':  # Department 
+                        if 'user' not in perm and 'billing' not in perm:
+                            group.permissions.add(permission)
+
+                    # Output success message
+                    self.stdout.write(self.style.SUCCESS(f'Permission "{perm}" added to group "{group_name}".'))
+
+                except Permission.DoesNotExist:
+                    self.stdout.write(self.style.ERROR(f'Permission "{perm}" does not exist.'))
+
+            # Save the group to commit changes
+            group.save()
+
+       # Define user groups
+        user_groups = ['Admin', 'Student', 'Instructor', 'Registrar']
+        group_objects = {}
+
+        # Create user groups
+        for group_name in user_groups:
+            group, created = Group.objects.get_or_create(name=group_name)
+            group_objects[group_name] = group
+            if created:
+                self.stdout.write(self.style.SUCCESS(f'Group "{group_name}" created.'))
+
+        # Seed users
+        num_students = 10  # Number of students to create
+        num_instructors = 5  # Number of instructors to create
+        num_admins = 2  # Number of admins to create
+        num_registrars = 2  # Number of registrars to create
+
+        # Create Students
+        for student in Student.objects.all():
+            user = User.objects.create_user(
+                username=student.id,
+                email=student.email,
+                password=fake.password(),
+                first_name=student.first_name,
+                last_name=student.last_name,
+            )
+            user.groups.add(group_objects['Student'])  # Add the user to the Student group
+            
+            self.stdout.write(self.style.SUCCESS(f'Student "{user.username}" created and added to the Student group.'))
+
+        # Create Instructors
+        for _ in range(num_instructors):
+            user = User.objects.create_user(
+                username=fake.user_name(),
+                email=fake.email(),
+                password=fake.password(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+            )
+            user.groups.add(group_objects['Instructor'])  # Add the user to the Instructor group
+            
+            self.stdout.write(self.style.SUCCESS(f'Instructor "{user.username}" created and added to the Instructor group.'))
+
+        # Create Admins
+        for _ in range(num_admins):
+            user = User.objects.create_user(
+                username=fake.user_name(),
+                email=fake.email(),
+                password=fake.password(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+            )
+            user.groups.add(group_objects['Admin'])  # Add the user to the Admin group
+            
+            self.stdout.write(self.style.SUCCESS(f'Admin "{user.username}" created and added to the Admin group.'))
+
+        # Create Registrars
+        for _ in range(num_registrars):
+            user = User.objects.create_user(
+                username=fake.user_name(),
+                email=fake.email(),
+                password=fake.password(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+            )
+            user.groups.add(group_objects['Registrar'])  # Add the user to the Registrar group
+            
+            self.stdout.write(self.style.SUCCESS(f'Registrar "{user.username}" created and added to the Registrar group.'))
+
+
 
     def create_billing(self, enrollment, year, sem):
         # Define billing items based on course type or other criteria

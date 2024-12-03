@@ -106,7 +106,7 @@ const ListOfStudents = ({ onLogout }) => {
             <div className="flex items-center gap-4">
               <select
                 name="yearLevel"
-                className="border border-gray-300 rounded-full px-4 py-2"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
                 onChange={(e) => setFilters({ ...filters, yearLevel: e.target.value })}
                 value={filters.yearLevel}
               >
@@ -118,7 +118,7 @@ const ListOfStudents = ({ onLogout }) => {
               </select>
               <select
                 name="course"
-                className="border border-gray-300 rounded-full px-4 py-2"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
                 onChange={(e) => setFilters({ ...filters, course: e.target.value })}
                 value={filters.course}
               >
@@ -128,7 +128,7 @@ const ListOfStudents = ({ onLogout }) => {
               </select>
               <select
                 name="section"
-                className="border border-gray-300 rounded-full px-4 py-2"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
                 onChange={(e) => setFilters({ ...filters, section: e.target.value })}
                 value={filters.section}
               >

@@ -114,12 +114,6 @@ const StudentProfile = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center mt-12 gap-4">
                   <button
-                    onClick={() => setCurrentView("personalData")}
-                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-full hover:bg-gray-400 transition"
-                  >
-                    Back
-                  </button>
-                  <button
                     onClick={() => setCurrentView("changePassword")}
                     className="bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition"
                   >

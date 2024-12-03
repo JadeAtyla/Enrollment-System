@@ -73,19 +73,19 @@ const EnrollmentList = ({ onLogout }) => {
 
             {/* Dropdown Filters */}
             <div className="flex items-center gap-4">
-              <select className="border border-gray-300 rounded-full px-4 py-2">
+              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option>Year Level</option>
                 <option>1</option>
                 <option>2</option>
                 <option>3</option>
                 <option>4</option>
               </select>
-              <select className="border border-gray-300 rounded-full px-4 py-2">
+              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option>Course</option>
                 <option>BSCS</option>
                 <option>BSIT</option>
               </select>
-              <select className="border border-gray-300 rounded-full px-4 py-2">
+              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option>Section</option>
                 <option>A</option>
                 <option>B</option>
