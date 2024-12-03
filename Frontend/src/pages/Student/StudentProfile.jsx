@@ -30,7 +30,6 @@ const StudentProfile = ({ onLogout }) => {
         break;
     }
   };
-
   return (
     <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex">
       {/* Sidebar */}

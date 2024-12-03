@@ -30,7 +30,7 @@ const EnrollmentList = ({ onLogout }) => {
   // Handle student enrollment
   const handleEnrollment = (studentId) => {
     const selectedStudent = students.find((student) => student.id === studentId);
-    navigate("/registrar/evaluate-student", { state: { student: selectedStudent } });
+    navigate("/registrar/enroll-student", { state: { student: selectedStudent } });
   };
 
   // Get current students for pagination

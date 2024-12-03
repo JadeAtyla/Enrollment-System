@@ -18,15 +18,18 @@ import RegistrarDashboard from "./pages/Registrar/RegistrarDashboard";
 import EnrollmentList from "./pages/Registrar/EnrollmentList";
 import ListOfStudents from "./pages/Registrar/ListOfStudents";
 import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
-import RegistrarRegisterForm from "./pages/Registrar/RegistrarRegisterForm";
-import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
-import Billing from "./pages/Registrar/Billing"; // Correct import path
+import Billing from "./pages/Registrar/Billing";
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
 import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
+import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
+import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
+import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
+import DepartmentAccount from "./pages/Department/DepartmentAccount";
+
 import AdminUserList from "./pages/AdminUserList";
 
 import { validateCredentials } from "./pages/staticFunctions";
@@ -60,7 +63,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Redirect root to Student Login */}
+        {/* Redirect root to appropriate login */}
         <Route path="/" element={<Navigate to="/student" />} />
 
         {/* Student Routes */}
@@ -85,8 +88,28 @@ function App() {
           }
         />
         <Route
-          path="/register"
-          element={<RegisterForm />}
+          path="/student/register"
+          element={
+            user && role === "student" ? <RegisterForm /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/cor"
+          element={
+            user && role === "student" ? <COR onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/checklist"
+          element={
+            user && role === "student" ? <Checklist onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            user && role === "student" ? <StudentProfile onLogout={handleLogout} /> : <Navigate to="/student" />
+          }
         />
 
         {/* Registrar Routes */}
@@ -110,17 +133,54 @@ function App() {
             )
           }
         />
-
         <Route
-          path="/registrar/certificate-of-registration"
+          path="/registrar/enrollmentList"
           element={
             user && role === "registrar" ? (
-              <CertificateOfRegistration />
+              <EnrollmentList onLogout={handleLogout} />
             ) : (
               <Navigate to="/registrar" />
             )
           }
         />
+        <Route
+          path="/registrar/studentList"
+          element={
+            user && role === "registrar" ? (
+              <ListOfStudents onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+        <Route
+          path="/registrar/account"
+          element={
+            user && role === "registrar" ? (
+              <RegistrarAccounts onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
+        <Route
+          path="/registrar/enroll-student"
+          element={<EnrollStudent onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/billing"
+          element={<Billing onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/evaluate-payment"
+          element={<EvaluatePayment onLogout={handleLogout} />}
+        />
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={<CertificateOfRegistration onLogout={handleLogout} />}
+        />
+
 
         {/* Department Routes */}
         <Route
@@ -138,6 +198,46 @@ function App() {
           element={
             user && role === "department" ? (
               <DepartmentDashboard onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentInstructorList"
+          element={
+            user && role === "department" ? (
+              <DepartmentInstructorList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentScheduleList"
+          element={
+            user && role === "department" ? (
+              <DepartmentScheduleList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentStudentList"
+          element={
+            user && role === "department" ? (
+              <DepartmentStudentList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+        <Route
+          path="/department/departmentAccount"
+          element={
+            user && role === "department" ? (
+              <DepartmentAccount onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )

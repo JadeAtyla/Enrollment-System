@@ -31,8 +31,9 @@ const RegistrarSidebar = ({ currentPage, onLogout, onToggleSidebar, isCollapsed 
   };
 
   const confirmLogout = () => {
-    setIsModalOpen(false); // Close modal and trigger logout
-    onLogout(); // Call the passed logout function
+    setIsModalOpen(false);
+    onLogout(); // Call the logout function
+    navigate("/registrar"); // Redirect to the registrar login page
   };
 
   return (

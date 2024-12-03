@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import universityLogo from "../../images/universityLogo.svg";
 import LogoutIcon from "../../images/LogoutIcon.svg";
 
-const Header = ({ onLogout }) => {
+const Header = ({ onLogout = () => {} }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false); // State for logout modal
 
@@ -16,6 +16,7 @@ const Header = ({ onLogout }) => {
   };
 
   const confirmLogout = () => {
+    console.log("Triggering onLogout function:", onLogout); // Debugging to ensure onLogout is passed
     setIsModalOpen(false); // Close the modal
     onLogout(); // Trigger the logout function passed as a prop
     navigate("/student"); // Redirect to the login page

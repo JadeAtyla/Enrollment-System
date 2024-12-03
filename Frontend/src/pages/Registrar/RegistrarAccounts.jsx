@@ -14,8 +14,8 @@ const RegistrarAccounts = ({ onLogout }) => {
       <RegistrarSidebar
         onLogout={onLogout}
         currentPage="account"
-        isCollapsed={isSidebarCollapsed}
         onToggleSidebar={setIsSidebarCollapsed}
+        isCollapsed={isSidebarCollapsed}
       />
 
       {/* Main Content */}
