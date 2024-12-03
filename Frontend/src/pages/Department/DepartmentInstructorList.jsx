@@ -80,7 +80,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <select className="border border-gray-300 rounded-full px-4 py-2">
+              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option value="" disabled selected>
                   Select Year Level
                 </option>
@@ -89,7 +89,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 <option>3rd</option>
                 <option>4th</option>
               </select>
-              <select className="border border-gray-300 rounded-full px-4 py-2">
+              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option value="" disabled selected>
                   Select Course
                 </option>

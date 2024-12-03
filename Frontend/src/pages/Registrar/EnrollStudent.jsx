@@ -194,7 +194,7 @@ const EnrollStudent = ({ onLogout }) => {
                           <select
                             value={course.courseCode}
                             onChange={(e) => updateCourse(index, "courseCode", e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md pr-8"
                           >
                             <option value="DCIT26">DCIT26</option>
                             <option value="DCIT27">DCIT27</option>
@@ -207,7 +207,7 @@ const EnrollStudent = ({ onLogout }) => {
                           <select
                             value={course.schedule}
                             onChange={(e) => updateCourse(index, "schedule", e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md pr-8"
                           >
                             <option value="LAB - 1:00 PM to 3:00 PM">LAB - 1:00 PM to 3:00 PM</option>
                             <option value="LAB - 9:00 AM to 11:00 AM">LAB - 9:00 AM to 11:00 AM</option>
@@ -219,11 +219,14 @@ const EnrollStudent = ({ onLogout }) => {
                           <select
                             value={course.day}
                             onChange={(e) => updateCourse(index, "day", e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md pr-8"
                           >
                             <option value="MONDAY">MONDAY</option>
                             <option value="TUESDAY">TUESDAY</option>
                             <option value="WEDNESDAY">WEDNESDAY</option>
+                            <option value="THURSDAY">THURSDAY</option>
+                            <option value="FRIDAY">FRIDAY</option>
+                            <option value="SATURDAY">SATURDAY</option>
                             {/* Add more day options */}
                           </select>
                         </td>
@@ -232,7 +235,7 @@ const EnrollStudent = ({ onLogout }) => {
                           <select
                             value={course.room}
                             onChange={(e) => updateCourse(index, "room", e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md pr-8"
                           >
                             <option value="301">301</option>
                             <option value="302">302</option>
@@ -245,7 +248,7 @@ const EnrollStudent = ({ onLogout }) => {
                           <select
                             value={course.yearLevel}
                             onChange={(e) => updateCourse(index, "yearLevel", e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md pr-8"
                           >
                             <option value="3">3</option>
                             <option value="4">4</option>
@@ -254,7 +257,7 @@ const EnrollStudent = ({ onLogout }) => {
                           </select>
                         </td>
                         {/* Dropdown for Section */}
-                        <td className="px-6 py-4 border-b">
+                        <td className="px-6 py-4 border-b pr-8">
                           <select
                             value={course.section}
                             onChange={(e) => updateCourse(index, "section", e.target.value)}
@@ -325,8 +328,8 @@ const EnrollStudent = ({ onLogout }) => {
           <div className="grid grid-cols-2 gap-4 mt-6">
             <button
               className="bg-[#595959] text-white px-6 py-3 rounded-[1.875rem] hover:bg-[#afaa6d]"
-              onClick={handleAddToPending}
-            >
+              onClick={() => navigate("/registrar/evaluate-student")}
+              >
               BACK TO EVALUATION
             </button>
             <button

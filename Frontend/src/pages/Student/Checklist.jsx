@@ -90,7 +90,7 @@ const Checklist = ({ onLogout }) => {
                 <tr>
                   <td className="border p-2 text-[14px]">COSC 000</td>
                   <td className="border p-2 text-[14px]">
-                    NAKAKA STRESS KA SIR HAHAHAHA
+                    COMPUTER PROGRAMMING
                   </td>
                   <td className="border p-2 text-[14px]">Passed</td>
                   <td className="border p-2 text-[14px]">Completed</td>

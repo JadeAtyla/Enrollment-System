@@ -78,7 +78,7 @@ const COR = ({ onLogout }) => {
             <tbody>
               <tr>
                 <td className="border p-2">COSC 000</td>
-                <td className="border p-2">NAKAKA STRESS KA SIR HAHAHAHA</td>
+                <td className="border p-2">COMPUTER PROGRAMMING</td>
                 <td className="border p-2">3</td>
                 <td className="border p-2">7:30 AM</td>
                 <td className="border p-2">MONDAY</td>
