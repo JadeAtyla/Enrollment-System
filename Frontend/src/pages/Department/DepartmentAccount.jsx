@@ -63,6 +63,7 @@ const DepartmentAccount = ({ onLogout }) => {
           </div>
         </div>
       </div>
+      
       {/* Modal for Editing */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
