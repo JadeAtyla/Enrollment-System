@@ -25,6 +25,11 @@ import csv  # For exporting to Excel (CSV)
 
 from django.contrib.auth import authenticate
 
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+import json
+
 
 # # Create your views here to render in the frontend.
 # def index(request):
@@ -510,3 +515,94 @@ def get_student_data(request):
         return Response(data)
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
+
+@login_required
+def get_student_profile(request):
+    # Get logged-in student information
+    try:
+        student = Student.objects.get(id=request.user.id)
+        data = {
+            "student_number": student.id,
+            "email": student.email,
+            "status": student.status,
+            "contact_number": student.contact_number,
+            "program": student.program,
+            "year_level": student.year_level,
+            "section": student.section,
+        }
+        return JsonResponse(data, status=200)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+
+@csrf_exempt
+def change_password(request):
+    """
+    Handle password change requests.
+
+    Accepts a POST request with the current_password, new_password, and confirm_password.
+    """
+    if request.method == "POST":
+        try:
+            # Parse the JSON body
+            data = json.loads(request.body)
+            current_password = data.get("current_password")
+            new_password = data.get("new_password")
+            confirm_password = data.get("confirm_password")
+
+            # Validate the input
+            if not current_password or not new_password or not confirm_password:
+                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if new_password != confirm_password:
+                return JsonResponse({"error": "New passwords do not match."}, status=400)
+
+            # Authenticate the user
+            user = request.user
+            if not user.is_authenticated:
+                return JsonResponse({"error": "User is not authenticated."}, status=403)
+
+            if not user.check_password(current_password):
+                return JsonResponse({"error": "Current password is incorrect."}, status=400)
+
+            # Update the password
+            user.set_password(new_password)
+            user.save()
+
+            return JsonResponse({"success": "Password updated successfully."}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@login_required
+def get_user_profile(request):
+    """
+    API to fetch user profile 
+    """
+    try:
+        user = request.user
+        student = Student.objects.get(id=user.id)  
+        address = student.address
+
+        profile_data = {
+            "last_name": student.last_name,
+            "first_name": student.first_name,
+            "middle_name": student.middle_name,
+            "suffix": student.suffix,
+            "address": {
+                "street": address.street,
+                "barangay": address.barangay,
+                "city": address.city,
+                "province": address.province,
+            },
+            "gender": student.gender,
+            "birthday": student.date_of_birth,
+        }
+        return JsonResponse({"data": profile_data}, status=200)
+
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found."}, status=404)
+

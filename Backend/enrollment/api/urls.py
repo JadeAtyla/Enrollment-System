@@ -22,4 +22,13 @@ urlpatterns = [
     path('billing/', views.BillingListView.as_view(), name='billing-list'),
     path('pre-requisite/', views.PreRequisiteListView.as_view(), name='pre-requisite-list'),
     path('user/', views.UserListView.as_view(), name='user-list'),
+
+    #Student Log in
+    path('api/login/', views.login_user, name='login_user'),
+    path("api/student-data/", views.get_student_data, name="get_student_data"), #Student Dashboard
+    path("api/get-student-profile/", views.get_student_profile, name="get_student_profile"),
+    path("api/change-password/", views.change_password, name="change_password"),
+    path("api/profile/", views.get_user_profile, name="get_user_profile"),
+
+
 ]
