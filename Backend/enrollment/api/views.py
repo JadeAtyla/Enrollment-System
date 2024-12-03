@@ -25,6 +25,11 @@ import csv  # For exporting to Excel (CSV)
 
 from django.contrib.auth import authenticate
 
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+import json
+
 
 # # Create your views here to render in the frontend.
 # def index(request):
@@ -249,32 +254,51 @@ class CourseAPIView(APIView):
         course.delete()
         return Response({'success': True, 'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
 
-
-
-
 # HANDLER OF FORMS  
-def generic_form_view(request, form_class, template_name, success_url=None):
-    submitted = False
-    if request.method == "POST":
-        form = form_class(request.POST)
+@api_view(['POST'])
+def generic_form_api_view(request, form_class, instance=None):
+    """
+    A reusable API view for handling forms.
+
+    :param request: The HTTP request object (expects JSON data).
+    :param form_class: The form class to use for this view.
+    :param instance: An optional model instance for updating existing data (if editing).
+    :return: JSON response indicating success or failure.
+    """
+    if request.method == 'POST':
+        # Bind form with POST data (and optionally an instance for updates).
+        form = form_class(request.data, instance=instance)  # Use request.data for JSON input
+        
         if form.is_valid():
             form.save()
-            if success_url is None:
-                success_url = request.path + "?submitted=True"
-            return HttpResponseRedirect(success_url)
-    else:
-        form = form_class()
-        if 'submitted' in request.GET:
-            submitted = True
-    return render(request, template_name, {'form': form, 'submitted': submitted})
+            return Response({'message': 'Form submitted successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'message': 'Invalid method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 # Validation During Course Enrollment
 def check_prerequisites(student, course):
+    # Get the prerequisites for the given course
     prerequisites = PreRequisite.objects.filter(course=course)
+    
+    # If there are no prerequisites, the course can be taken freely
+    if not prerequisites.exists():
+        return True
+    
+    # Check if the student has completed all required prerequisites
     for prereq in prerequisites:
-        if not student.courses_completed.filter(id=prereq.pre_requisite.id).exists():
-            return False
+        # Check if the student has a grade for the prerequisite course
+        grade = Grade.objects.filter(student=student, course=prereq.pre_requisite).first()
+        
+        # If the student has no grade or the grade is not passing, return False
+        if not grade or grade.grade not in ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00']:
+            return False  # The student hasn't completed the prerequisite with a passing grade
+    
+    # If all prerequisites are met
     return True
+
 
 # LIST View Funtions
 
@@ -287,7 +311,7 @@ def generalized_list_view(
     export_fields=None,
 ):
     """
-    Generalized list view for any model, designed for React integration.
+    Generalized list view for any model.
 
     :param request: The HTTP request object.
     :param model: The Django model to query.
@@ -318,6 +342,14 @@ def generalized_list_view(
     page_number = request.GET.get('page', 1)
     paginator = Paginator(queryset, 10)
     page_obj = paginator.get_page(page_number)
+
+    if 'export' in request.GET and export_headers and export_fields:
+    # Generate CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(export_headers)  # Write headers first
 
     # Preparing data for response
     data = []
@@ -483,3 +515,94 @@ def get_student_data(request):
         return Response(data)
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
+
+@login_required
+def get_student_profile(request):
+    # Get logged-in student information
+    try:
+        student = Student.objects.get(id=request.user.id)
+        data = {
+            "student_number": student.id,
+            "email": student.email,
+            "status": student.status,
+            "contact_number": student.contact_number,
+            "program": student.program,
+            "year_level": student.year_level,
+            "section": student.section,
+        }
+        return JsonResponse(data, status=200)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+
+@csrf_exempt
+def change_password(request):
+    """
+    Handle password change requests.
+
+    Accepts a POST request with the current_password, new_password, and confirm_password.
+    """
+    if request.method == "POST":
+        try:
+            # Parse the JSON body
+            data = json.loads(request.body)
+            current_password = data.get("current_password")
+            new_password = data.get("new_password")
+            confirm_password = data.get("confirm_password")
+
+            # Validate the input
+            if not current_password or not new_password or not confirm_password:
+                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if new_password != confirm_password:
+                return JsonResponse({"error": "New passwords do not match."}, status=400)
+
+            # Authenticate the user
+            user = request.user
+            if not user.is_authenticated:
+                return JsonResponse({"error": "User is not authenticated."}, status=403)
+
+            if not user.check_password(current_password):
+                return JsonResponse({"error": "Current password is incorrect."}, status=400)
+
+            # Update the password
+            user.set_password(new_password)
+            user.save()
+
+            return JsonResponse({"success": "Password updated successfully."}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@login_required
+def get_user_profile(request):
+    """
+    API to fetch user profile 
+    """
+    try:
+        user = request.user
+        student = Student.objects.get(id=user.id)  
+        address = student.address
+
+        profile_data = {
+            "last_name": student.last_name,
+            "first_name": student.first_name,
+            "middle_name": student.middle_name,
+            "suffix": student.suffix,
+            "address": {
+                "street": address.street,
+                "barangay": address.barangay,
+                "city": address.city,
+                "province": address.province,
+            },
+            "gender": student.gender,
+            "birthday": student.date_of_birth,
+        }
+        return JsonResponse({"data": profile_data}, status=200)
+
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found."}, status=404)
+

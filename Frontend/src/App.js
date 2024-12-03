@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import StudentLoginCard from "./pages/Student/StudentLoginCard";
 import Dashboard from "./pages/Student/Dashboard";
@@ -16,14 +21,16 @@ import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
 import RegistrarRegisterForm from "./pages/Registrar/RegistrarRegisterForm";
 import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
-import Billing from "./pages/Registrar/Billing";  // Correct import path
+import Billing from "./pages/Registrar/Billing"; // Correct import path
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
-import InstructorList from "./pages/Department/InstructorList";
-import ScheduleList from "./pages/Department/ScheduleList";
+import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
+import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
+import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -221,19 +228,30 @@ function App() {
           }
         />
 
+        <Route
+          path="/registrar/certificate-of-registration"
+          element={
+            user && role === "registrar" ? (
+              <CertificateOfRegistration />
+            ) : (
+              <Navigate to="/registrar" />
+            )
+          }
+        />
+
         {/* Department Routes */}
         <Route
           path="/department"
           element={
             user && role === "department" ? (
-              <Navigate to="/department/dashboard" />
+              <Navigate to="/department/departmentDashboard" />
             ) : (
               <DepartmentLoginCard onLogin={handleLogin} />
             )
           }
         />
         <Route
-          path="/department/dashboard"
+          path="/department/departmentDashboard"
           element={
             user && role === "department" ? (
               <DepartmentDashboard onLogout={handleLogout} />
@@ -242,21 +260,32 @@ function App() {
             )
           }
         />
-          <Route
-          path="/department/instructorList"
+        <Route
+          path="/department/departmentInstructorList"
           element={
             user && role === "department" ? (
-              <InstructorList onLogout={handleLogout} />
+              <DepartmentInstructorList onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/department" />
+            )
+          }
+        />
+
+        <Route
+          path="/department/departmentScheduleList"
+          element={
+            user && role === "department" ? (
+              <DepartmentScheduleList onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )
           }
         />
         <Route
-          path="/department/scheduleList"
+          path="/department/departmentStudentList"
           element={
             user && role === "department" ? (
-              <ScheduleList onLogout={handleLogout} />
+              <DepartmentStudentList onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )
@@ -272,8 +301,6 @@ function App() {
             )
           }
         />
-        
-
         {/* Catch-all Route for 404 */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
