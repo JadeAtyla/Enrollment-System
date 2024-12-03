@@ -30,9 +30,9 @@ import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
 import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
 
-import AdminUserList from "./pages/AdminUserList";
+import AdminUserList from "./StaticFunctions/AdminUserList";
 
-import { validateCredentials } from "./pages/staticFunctions";
+import { validateCredentials } from "./StaticFunctions/staticFunctions";
 
 function App() {
   const [user, setUser] = useState(null); // Holds user information
