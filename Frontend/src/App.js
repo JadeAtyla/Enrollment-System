@@ -89,10 +89,9 @@ function App() {
         />
         <Route
           path="/student/register"
-          element={
-            user && role === "student" ? <RegisterForm /> : <Navigate to="/student" />
-          }
+          element={<RegisterForm />}
         />
+
         <Route
           path="/student/cor"
           element={

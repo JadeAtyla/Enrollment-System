@@ -31,7 +31,7 @@ const StudentLoginCard = ({ onLogin }) => {
   
   const handleRegisterClick = () => {
     // Navigate to the register page
-    navigate("/register");
+    navigate("/student/register");
   };
 
   return (
