@@ -30,6 +30,8 @@ import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
 import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
 
+import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
+
 import AdminUserList from "./StaticFunctions/AdminUserList";
 
 import { validateCredentials } from "./StaticFunctions/staticFunctions";
