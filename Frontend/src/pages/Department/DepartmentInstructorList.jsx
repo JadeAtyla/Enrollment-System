@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import InstructorInfoModal from "./InstructorInfoModal";
+import InstructorInfoModal from "./InformationModal";
 import DepartmentAddInstructor from "./DepartmentAddInstructor";
 
 const DepartmentInstructorList = ({ onLogout }) => {

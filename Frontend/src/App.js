@@ -26,11 +26,8 @@ import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistrati
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
 import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
-import DepartmentScheduleList from "./pages/Department/DepartmentScheduleList";
 import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
-
-import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 
 import AdminUserList from "./StaticFunctions/AdminUserList";
 
@@ -211,16 +208,6 @@ function App() {
           element={
             user && role === "department" ? (
               <DepartmentInstructorList onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/department" />
-            )
-          }
-        />
-        <Route
-          path="/department/departmentScheduleList"
-          element={
-            user && role === "department" ? (
-              <DepartmentScheduleList onLogout={handleLogout} />
             ) : (
               <Navigate to="/department" />
             )

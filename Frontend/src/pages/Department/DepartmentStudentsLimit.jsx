@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 const DepartmentStudentsModal = ({ currentLimit, onClose, onSave }) => {
   const [limit, setLimit] = useState(currentLimit);
+  const [selectedYear, setSelectedYear] = useState("");
 
   const handleSave = () => {
     onSave(limit);
@@ -9,33 +10,57 @@ const DepartmentStudentsModal = ({ currentLimit, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-[30rem] p-6">
-        <h2 className="text-lg font-bold mb-4">
-          Limit Students Per Department
-        </h2>
-        <p className="text-sm text-gray-600 mb-4">
-          You are limiting the number of students who can enroll in a
-          department, dividing it equally across each course.
+      <div className="bg-white rounded-[1.875rem] shadow-lg w-[30rem] p-8">
+        {/* Modal Header */}
+        <h2 className="text-2xl font-bold mb-2 text-center">LIMIT STUDENTS PER SECTIONS</h2>
+        <p className="text-sm text-gray-600 mb-6 text-center">
+          You are limiting the number of students who can enroll in a section, dividing it equally across each part.
         </p>
-        <input
-          type="number"
-          value={limit}
-          onChange={(e) => setLimit(Number(e.target.value))}
-          className="border rounded-lg w-full p-2 mb-4"
-          placeholder="Enter limit"
-        />
-        <div className="flex justify-end space-x-4">
+
+        {/* Input Fields */}
+        <div className="flex items-center gap-4 mb-6">
+          {/* Year Dropdown */}
+          <div className="w-1/2">
+            <label className="block text-gray-700 mb-1 text-sm">YEAR</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="border border-gray-300 rounded-full px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="" disabled>Select Year</option>
+              <option value="1st">1st</option>
+              <option value="2nd">2nd</option>
+              <option value="3rd">3rd</option>
+              <option value="4th">4th</option>
+            </select>
+          </div>
+
+          {/* Limit Students Input */}
+          <div className="w-1/2">
+            <label className="block text-gray-700 mb-1 text-sm">LIMIT STUDENTS</label>
+            <input
+              type="number"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="border border-gray-300 rounded-full px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Input Here"
+            />
+          </div>
+        </div>
+
+        {/* Buttons Section */}
+        <div className="flex justify-end gap-4">
           <button
-            className="px-4 py-2 bg-gray-300 rounded-lg"
+            className="bg-gray-300 text-gray-700 px-6 py-2 rounded-full hover:bg-gray-400 transition"
             onClick={onClose}
           >
-            Cancel
+            CANCEL
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition"
             onClick={handleSave}
           >
-            Confirm
+            CONFIRM
           </button>
         </div>
       </div>

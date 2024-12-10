@@ -50,6 +50,9 @@ const DepartmentLoginCard = ({ onLogin }) => {
           <h2 className="text-center text-[16px] font-medium text-gray-600 mt-2">
             BACOOR CAMPUS
           </h2>
+          <h2 className="text-center text-[16px] font-bold text-gray-600 mt-[10rem] font-inter">
+            Enrollment Management System
+          </h2>
         </div>
 
         {/* Right Section */}

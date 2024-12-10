@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardIcon from "../../images/Department/SidebarIcons/DashboardIcon.svg";
 import EnrollIcon from "../../images/Department/SidebarIcons/EnrollIcon.svg";
-import ListIcon from "../../images/Department/SidebarIcons/InstructorListIcon.svg";
 import StudentIcon from "../../images/Department/SidebarIcons/StudentListIcon.svg";
 import AccountIcon from "../../images/Department/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Department/SidebarIcons/LogoutIcon.svg";
@@ -15,7 +14,6 @@ const DepartmentSidebar = ({ currentPage, onLogout, onToggleSidebar, isCollapsed
   const menuItems = [
     { name: "departmentDashboard", icon: DashboardIcon, label: "Dashboard", path: "/department/dashboard" },
     { name: "instructor", icon: EnrollIcon, label: "Instructor List", path: "/department/departmentInstructorList" },
-    { name: "schedule", icon: ListIcon, label: "Schedule List", path: "/department/departmentScheduleList" },
     { name: "schedule", icon: StudentIcon, label: "Student List", path: "/department/departmentStudentList" },
     { name: "account", icon: AccountIcon, label: "Account", path: "/department/departmentAccount" },
   ];

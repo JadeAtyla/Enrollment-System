@@ -18,7 +18,7 @@ const StudentLoginCard = ({ onLogin }) => {
 
   const handleLoginClick = () => {
     const result = validateCredentials(studentNumber, password, "student");
-  
+
     if (typeof result === "string") {
       setErrorMessage(result); // Display error message
     } else {
@@ -27,8 +27,8 @@ const StudentLoginCard = ({ onLogin }) => {
       navigate("/student/dashboard"); // Navigate to the student dashboard
     }
   };
-  
-  
+
+
   const handleRegisterClick = () => {
     // Navigate to the register page
     navigate("/student/register");
@@ -50,6 +50,9 @@ const StudentLoginCard = ({ onLogin }) => {
           </h1>
           <h2 className="text-center text-[16px] font-medium text-gray-600 mt-2 font-inter">
             BACOOR CAMPUS
+          </h2>
+          <h2 className="text-center text-[16px] font-bold text-gray-600 mt-[10rem] font-inter">
+            Academic Records Viewer
           </h2>
         </div>
 
@@ -121,7 +124,7 @@ const StudentLoginCard = ({ onLogin }) => {
 
           {/* Error Message */}
           {errorMessage && <p className="text-red-500 text-sm text-center mb-4">{errorMessage}</p>}
-     
+
           {/* Login Button */}
           <button
             onClick={handleLoginClick}

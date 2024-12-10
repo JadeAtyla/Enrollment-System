@@ -18,9 +18,9 @@ const RegistrarLoginCard = ({ onLogin }) => {
     console.log("Username:", username);
     console.log("Password:", password);
     console.log("Role: registrar");
-  
+
     const result = validateCredentials(username, password, "registrar");
-  
+
     if (typeof result === "string") {
       setErrorMessage(result); // Display error message
     } else {
@@ -30,9 +30,9 @@ const RegistrarLoginCard = ({ onLogin }) => {
       navigate("/registrar/dashboard"); // Navigate to registrar dashboard
     }
   };
-  
-  
-  
+
+
+
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
@@ -45,6 +45,9 @@ const RegistrarLoginCard = ({ onLogin }) => {
           </h1>
           <h2 className="text-center text-[16px] font-medium text-gray-600 mt-2">
             BACOOR CAMPUS
+          </h2>
+          <h2 className="text-center text-[16px] font-bold text-gray-600 mt-[10rem] font-inter">
+            Enrollment Management System
           </h2>
         </div>
 
