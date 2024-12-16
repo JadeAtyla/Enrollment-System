@@ -23,7 +23,7 @@ module.exports = {
       },
       boxShadow: {
         card: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for cards
-        modal: '0 10px 15px rgba(0, 0, 0, 0.2)', // Stronger shadow for modals
+        modal: '8px 8px 10px rgba(0, 0, 0, 0.4)', // Stronger shadow for modals
       },
       spacing: {
         cardPadding: '2rem', // Consistent padding for cards
