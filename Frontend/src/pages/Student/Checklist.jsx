@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "./Header"; // Custom Header
 import Sidebar from "./Sidebar"; // Custom Sidebar
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,11 @@ import { useNavigate } from "react-router-dom";
 const Checklist = ({ onLogout }) => {
   const navigate = useNavigate();
 
+  // State to track the active section
+  const [currentSection, setCurrentSection] = useState("checklist");
+
   const handleNavigate = (section) => {
+    setCurrentSection(section); // Update the current section
     switch (section) {
       case "dashboard":
         navigate("/student/dashboard");
@@ -32,7 +36,7 @@ const Checklist = ({ onLogout }) => {
 
       <div className="flex flex-1 lg:h-[calc(100%-4rem)]">
         {/* Sidebar */}
-        <Sidebar onNavigate={handleNavigate} />
+        <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
         {/* Main Content */}
         <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center mb-[6rem] sm:mb-0">

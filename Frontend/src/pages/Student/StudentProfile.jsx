@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const StudentProfile = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState("account");
+  const [currentSection, setCurrentSection] = useState("profile"); // Track current section
   const navigate = useNavigate();
 
   const handleSavePassword = () => {
@@ -13,6 +14,7 @@ const StudentProfile = ({ onLogout }) => {
   };
 
   const handleNavigate = (section) => {
+    setCurrentSection(section); // Update current section
     switch (section) {
       case "dashboard":
         navigate("/student/dashboard");
@@ -34,7 +36,7 @@ const StudentProfile = ({ onLogout }) => {
   return (
     <div className="w-screen min-h-screen lg:h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <Sidebar onNavigate={handleNavigate} />
+      <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
       <div className="flex-1 flex flex-col">
         {/* Header */}

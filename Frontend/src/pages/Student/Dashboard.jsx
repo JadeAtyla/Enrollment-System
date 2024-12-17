@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import MissionIcon from "../../images/Student/DashboardIcons/Mission.svg";
@@ -9,7 +9,11 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate();
 
+  // State to track the active section
+  const [currentSection, setCurrentSection] = useState("dashboard");
+
   const handleNavigate = (section) => {
+    setCurrentSection(section); // Update the current section
     switch (section) {
       case "dashboard":
         navigate("/student/dashboard");
@@ -30,7 +34,7 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <div className="w-screen min-h-screen lg:h-screen lg:overflow-hidden bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] pb-8 lg:pb-0 relative">
-      <Sidebar onNavigate={handleNavigate} />
+      <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
       <Header onLogout={onLogout} />
 
       {/* Main Content */}
@@ -46,7 +50,7 @@ const Dashboard = ({ onLogout }) => {
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-[20px] shadow-lg w-full max-w-[1000px] md:rounded-[34px] flex flex-col sm:flex-row items-center sm:items-start md:items-center p-4 md:p-6 my-4 lg:my-6">
+        <div className="bg-white rounded-[20px] shadow-lg w-full max-w-[1000px] md:rounded-[34px] flex flex-col sm:flex-row items-center sm:items-start md:items-center p-4 md:p-6 my-4 lg:my-6 relative">
           {/* Profile Icon */}
           <div className="flex items-center justify-center sm:justify-start w-full sm:w-auto mb-4 sm:mb-0">
             <img
@@ -70,8 +74,8 @@ const Dashboard = ({ onLogout }) => {
           </div>
 
           {/* Status */}
-          <div className="sm:ml-auto mt-4 sm:mt-0 md:mt-0 md:ml-0 md:text-right">
-            <p className="text-[#888] text-[0.875rem] sm:text-[1rem] md:text-[1.125rem]">
+          <div className="absolute bottom-4 right-4 md:right-6 md:bottom-6 text-[#888] text-[0.875rem] sm:text-[1rem] md:text-[1.125rem]">
+            <p>
               Status: <span className="font-bold">Regular</span>
             </p>
           </div>
