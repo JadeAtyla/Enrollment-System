@@ -43,7 +43,7 @@ const COR = ({ onLogout }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 justify-center items-center w-full h-auto mt-7 mb-[7rem]">
+      <div className="flex flex-1 justify-center items-center w-full h-auto mt-3 mb-[1rem]">
         <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
         {/* Main Content */}
