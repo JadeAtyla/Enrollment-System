@@ -3,13 +3,25 @@ import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 import RegistrarRegisterForm from "./RegistrarRegisterForm";
+import LimitStudentsModal from "./LimitStudentsModal";
 
 const EnrollmentList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const studentsPerPage = 10;
   const navigate = useNavigate();
+
+  const [studentLimit, setStudentLimit] = useState(50); // Added here
+
+  const handleLimitModal = () => setIsLimitModalOpen(true);
+  const closeLimitModal = () => setIsLimitModalOpen(false);
+
+  const handleSaveLimit = (newLimit) => {
+    setStudentLimit(newLimit);
+    setIsLimitModalOpen(false);
+  };
 
   const [students, setStudents] = useState(
     Array.from({ length: 50 }).map((_, index) => ({
@@ -29,19 +41,25 @@ const EnrollmentList = ({ onLogout }) => {
 
   // Handle student enrollment
   const handleEnrollment = (studentId) => {
-    const selectedStudent = students.find((student) => student.id === studentId);
-    navigate("/registrar/enroll-student", { state: { student: selectedStudent } });
+    const selectedStudent = students.find(
+      (student) => student.id === studentId
+    );
+    navigate("/registrar/enroll-student", {
+      state: { student: selectedStudent },
+    });
   };
 
   // Get current students for pagination
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = students.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
 
   // Handle the opening and closing of modals
   const handleAddStudent = () => setIsAddStudentModalOpen(true);
   const closeAddStudentModal = () => setIsAddStudentModalOpen(false);
-
 
   return (
     <div className="flex min-h-screen">
@@ -55,7 +73,9 @@ const EnrollmentList = ({ onLogout }) => {
 
       {/* Main Content */}
       <div
-        className={`flex flex-col items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"} py-6`}
+        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
+        } py-6`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
           {/* Search and Filter Section */}
@@ -97,7 +117,9 @@ const EnrollmentList = ({ onLogout }) => {
           {/* Student List */}
           <div className="bg-white shadow-lg rounded-[1.875rem] p-8">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-semibold text-gray-800">Enrollment List</h1>
+              <h1 className="text-2xl font-semibold text-gray-800">
+                Enrollment List
+              </h1>
               <div className="flex items-center space-x-4">
                 <button className="bg-green-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-green-700">
                   Export as Excel
@@ -108,12 +130,12 @@ const EnrollmentList = ({ onLogout }) => {
                 >
                   + Add Student
                 </button>
-                {/*<button
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-blue-700"
                   onClick={handleLimitModal}
                 >
                   Limit Students
-                </button>*/}
+                </button>
               </div>
             </div>
 
@@ -139,7 +161,9 @@ const EnrollmentList = ({ onLogout }) => {
                     <td className="px-6 py-4 border-b">{student.yearLevel}</td>
                     <td className="px-6 py-4 border-b">{student.section}</td>
                     <td className="px-6 py-4 border-b">{student.status}</td>
-                    <td className="px-6 py-4 border-b">{student.enrollmentStatus}</td>
+                    <td className="px-6 py-4 border-b">
+                      {student.enrollmentStatus}
+                    </td>
                     <td className="px-6 py-4 border-b">
                       <button
                         className="bg-blue-600 text-white px-4 py-2 w-[150px] rounded-full hover:bg-blue-700"
@@ -162,12 +186,15 @@ const EnrollmentList = ({ onLogout }) => {
                 Previous
               </button>
               <p>
-                Page {currentPage} of {Math.ceil(students.length / studentsPerPage)}
+                Page {currentPage} of{" "}
+                {Math.ceil(students.length / studentsPerPage)}
               </p>
               <button
                 className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 disabled:opacity-50"
                 onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === Math.ceil(students.length / studentsPerPage)}
+                disabled={
+                  currentPage === Math.ceil(students.length / studentsPerPage)
+                }
               >
                 Next
               </button>
@@ -177,16 +204,16 @@ const EnrollmentList = ({ onLogout }) => {
       </div>
 
       {/* Modals */}
-      {isAddStudentModalOpen && <RegistrarRegisterForm onClose={closeAddStudentModal} />}
-       {/* {isLimitModalOpen && (
-            <LimitStudentsModal
-            onClose={closeLimitModal}
-            onSave={(limit) => {
-                console.log("New student limit:", limit);
-                setIsLimitModalOpen(false);
-            }}
+      {isAddStudentModalOpen && (
+        <RegistrarRegisterForm onClose={closeAddStudentModal} />
+      )}
+      {isLimitModalOpen && (
+        <LimitStudentsModal
+          currentLimit={studentLimit}
+          onClose={closeLimitModal}
+          onSave={handleSaveLimit}
         />
-      )} */}
+      )}
     </div>
   );
 };

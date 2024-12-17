@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import DepartmentStudentsModal from "./DepartmentStudentsLimit"; // Import for limiting students
 import StudentInfoModal from "./InformationModal"; // Import for editing student info
 
 const DepartmentStudentList = ({ onLogout }) => {
@@ -19,9 +18,6 @@ const DepartmentStudentList = ({ onLogout }) => {
     }))
   );
 
-  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
-  const [studentLimit, setStudentLimit] = useState(50);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -32,13 +28,6 @@ const DepartmentStudentList = ({ onLogout }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleLimitModal = () => setIsLimitModalOpen(true);
-  const closeLimitModal = () => setIsLimitModalOpen(false);
-
-  const handleSaveLimit = (newLimit) => {
-    setStudentLimit(newLimit);
-    setIsLimitModalOpen(false);
-  };
 
   const handleRowDoubleClick = (student) => {
     setSelectedStudent(student);
@@ -108,9 +97,6 @@ const DepartmentStudentList = ({ onLogout }) => {
                 <button className="bg-green-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-green-700">
                   Export as Excel
                 </button>
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-indigo-700" onClick={handleLimitModal}>
-                  Limit Students
-                </button>
               </div>
             </div>
 
@@ -143,9 +129,6 @@ const DepartmentStudentList = ({ onLogout }) => {
       </div>
 
       {/* Modals */}
-      {isLimitModalOpen && (
-        <DepartmentStudentsModal currentLimit={studentLimit} onClose={closeLimitModal} onSave={handleSaveLimit} />
-      )}
       {isEditModalOpen && selectedStudent && (
         <StudentInfoModal instructor={selectedStudent} onClose={closeEditModal} onSave={handleSaveStudent} />
       )}
