@@ -15,6 +15,7 @@ const RegisterForm = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +28,8 @@ const RegisterForm = () => {
   }, []);
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
-  const toggleConfirmPasswordVisibility = () => setConfirmPasswordVisible(!confirmPasswordVisible);
+  const toggleConfirmPasswordVisibility = () =>
+    setConfirmPasswordVisible(!confirmPasswordVisible);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +40,7 @@ const RegisterForm = () => {
   const handleRegisterClick = () => {
     const registrationResult = registerUser(formData);
     if (registrationResult === true) {
-      navigate("/student");
+      setIsModalOpen(true); // Open modal on successful registration
     } else {
       setErrorMessage(registrationResult);
     }
@@ -48,10 +50,14 @@ const RegisterForm = () => {
     navigate("/student");
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    navigate("/student"); // Redirect to login after closing modal
+  };
+
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">
       <div className="relative flex flex-col lg:flex-row items-center justify-center rounded-[32px] shadow-lg overflow-hidden w-full max-w-[1027px] h-auto lg:h-[641px] mx-4 lg:mx-0">
-        
         {/* Register Form Section */}
         <div className="flex flex-col justify-center items-center w-full lg:w-[600px] h-[500px] lg:h-[641px] bg-white bg-opacity-25 p-6 lg:mr-[436px]">
           <button
@@ -62,7 +68,11 @@ const RegisterForm = () => {
           </button>
 
           <div className="bg-blue-900 p-4 rounded-full shadow-lg mb-6">
-            <img src={registerIcon} alt="Register Icon" className="h-[80px] lg:h-[120px] w-[80px] lg:w-[120px]" />
+            <img
+              src={registerIcon}
+              alt="Register Icon"
+              className="h-[80px] lg:h-[120px] w-[80px] lg:w-[120px]"
+            />
           </div>
 
           <h2 className="text-[24px] lg:text-[30px] font-extrabold text-black mb-6 font-inter">
@@ -87,8 +97,16 @@ const RegisterForm = () => {
                 placeholder="PASSWORD"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"
               />
-              <button type="button" onClick={togglePasswordVisibility} className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                {passwordVisible ? <FaEye className="w-5 h-5 text-gray-500" /> : <FaEyeSlash className="w-5 h-5 text-gray-500" />}
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                {passwordVisible ? (
+                  <FaEye className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <FaEyeSlash className="w-5 h-5 text-gray-500" />
+                )}
               </button>
             </div>
             <div className="relative mb-6">
@@ -100,13 +118,23 @@ const RegisterForm = () => {
                 placeholder="RETYPE PASSWORD"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"
               />
-              <button type="button" onClick={toggleConfirmPasswordVisibility} className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                {confirmPasswordVisible ? <FaEye className="w-5 h-5 text-gray-500" /> : <FaEyeSlash className="w-5 h-5 text-gray-500" />}
+              <button
+                type="button"
+                onClick={toggleConfirmPasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                {confirmPasswordVisible ? (
+                  <FaEye className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <FaEyeSlash className="w-5 h-5 text-gray-500" />
+                )}
               </button>
             </div>
           </div>
 
-          {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
+          {errorMessage && (
+            <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
+          )}
 
           <button
             onClick={handleRegisterClick}
@@ -116,10 +144,33 @@ const RegisterForm = () => {
           </button>
         </div>
 
+        {isModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+              <h2 className="text-2xl font-bold mb-4">
+                Registration Successful!
+              </h2>
+              <p className="text-gray-700 mb-6">
+                You have successfully registered. Please log in to continue.
+              </p>
+              <button
+                onClick={closeModal}
+                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Right Section for Desktop View Only */}
         {isDesktop && (
           <div className="flex flex-col justify-center items-center absolute right-0 z-10 w-[459px] h-[641px] bg-white rounded-[32px]">
-            <img src={universityLogo} alt="University Logo" className="h-[220px] mb-6" />
+            <img
+              src={universityLogo}
+              alt="University Logo"
+              className="h-[220px] mb-6"
+            />
             <h1 className="text-center text-[25px] font-extrabold text-gray-800">
               CAVITE STATE UNIVERSITY
             </h1>
@@ -137,4 +188,3 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
-
