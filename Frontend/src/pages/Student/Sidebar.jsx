@@ -6,35 +6,41 @@ import ChecklistIcon from "../../images/SidebarIcons/ChecklistIcon.svg";
 
 const Sidebar = ({ onNavigate = () => {} }) => {
   return (
-    <div className="fixed flex flex-col items-center bg-[#28324B] shadow-lg w-[60px] h-[400px] top-1/2 right-[30px] -translate-y-1/2 rounded-[30px]">
-      <div className="flex flex-col justify-around h-full">
+    <div
+      className="
+        fixed flex items-center bg-[#28324B] bg-opacity-90 shadow-lg
+        bottom-[1rem] left-1/2 transform -translate-x-1/2 w-[90%] h-[4.3125rem] rounded-[3.4375rem] 
+        md:w-[3.75rem] md:h-[25rem] md:bottom-auto md:top-1/2 md:right-[1.875rem] md:transform md:-translate-y-1/2 md:left-auto md:rounded-[1.875rem]
+        z-50"
+    >
+      <div className="flex md:flex-col justify-around w-full md:h-full">
         <button
-          className="p-3 hover:bg-gray-400 rounded-full transition"
+          className="p-[0.75rem] hover:bg-gray-500 rounded-full transition"
           title="Dashboard"
           onClick={() => onNavigate("dashboard")}
         >
-          <img src={DashboardIcon} alt="Dashboard Icon" className="w-6 h-6" />
+          <img src={DashboardIcon} alt="Dashboard Icon" className="w-[1.5rem] h-[1.5rem]" />
         </button>
         <button
-          className="p-3 hover:bg-gray-400 rounded-full transition"
+          className="p-[0.75rem] hover:bg-gray-500 rounded-full transition"
           title="Profile"
           onClick={() => onNavigate("profile")}
         >
-          <img src={ProfileIcon} alt="Profile Icon" className="w-6 h-6" />
+          <img src={ProfileIcon} alt="Profile Icon" className="w-[1.5rem] h-[1.5rem]" />
         </button>
         <button
-          className="p-3 hover:bg-gray-400 rounded-full transition"
+          className="p-[0.75rem] hover:bg-gray-500 rounded-full transition"
           title="COR"
           onClick={() => onNavigate("cor")}
         >
-          <img src={CORIcon} alt="COR Icon" className="w-6 h-6" />
+          <img src={CORIcon} alt="COR Icon" className="w-[1.5rem] h-[1.5rem]" />
         </button>
         <button
-          className="p-3 hover:bg-gray-400 rounded-full transition"
+          className="p-[0.75rem] hover:bg-gray-500 rounded-full transition"
           title="Checklist"
           onClick={() => onNavigate("checklist")}
         >
-          <img src={ChecklistIcon} alt="Checklist Icon" className="w-6 h-6" />
+          <img src={ChecklistIcon} alt="Checklist Icon" className="w-[1.5rem] h-[1.5rem]" />
         </button>
       </div>
     </div>
