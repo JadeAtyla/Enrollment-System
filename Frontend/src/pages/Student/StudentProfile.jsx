@@ -34,7 +34,7 @@ const StudentProfile = ({ onLogout }) => {
   };
 
   return (
-    <div className="w-screen min-h-screen lg:h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col lg:flex-row">
+    <div className="w-screen min-h-screen lg:h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col lg:flex-row overflow-x-hidden">
       {/* Sidebar */}
       <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
