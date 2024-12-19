@@ -4,6 +4,7 @@ import universityLogo from "../../images/universityLogo.svg"; // Corrected path
 import loginIcon from "../../images/Department/LoginIcons/OfficerIcon.svg"; // Corrected path
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import { validateCredentials } from "../../StaticFunctions/staticFunctions";
+import axios from "axios";
 
 const DepartmentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -14,23 +15,50 @@ const DepartmentLoginCard = ({ onLogin }) => {
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleLoginClick = () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-    console.log("Role: department");
+  // const handleLoginClick = () => {
+  //   console.log("Username:", username);
+  //   console.log("Password:", password);
+  //   console.log("Role: department");
   
-    const result = validateCredentials(username, password, "department");
+  //   const result = validateCredentials(username, password, "department");
   
-    if (typeof result === "string") {
-      setErrorMessage(result); // Display error message
-    } else {
-      console.log("Validation Success:", result);
-      setErrorMessage(""); // Clear error on success
-      onLogin(result.identifier, result.password, result.role); // Pass user info to parent component
-      navigate("/department/dashboard"); // Navigate to department dashboard
-    }
-  };
+  //   if (typeof result === "string") {
+  //     setErrorMessage(result); // Display error message
+  //   } else {
+  //     console.log("Validation Success:", result);
+  //     setErrorMessage(""); // Clear error on success
+  //     onLogin(result.identifier, result.password, result.role); // Pass user info to parent component
+  //     navigate("/department/dashboard"); // Navigate to department dashboard
+  //   }
+  // };
   
+  const handleLoginClick = async () => {
+        try {
+          // Determine the correct login URL based on user role (you may pass 'role' as an argument or set it in state)
+          const role = "department"; // For example, this could be dynamically determined
+          const loginUrl = `/api/login/${role}/`;
+      
+          // Send login request
+          const res = await axios.post(loginUrl, {
+            username: username, 
+            password: password
+          });
+      
+          console.log(res.data.success); // For debugging
+          navigate(`/${res.data.group}/dashboard/`);
+        } catch (error) {
+          // Handle any errors that occur during the axios request
+          console.log("Login Failed:", error.response?.data?.detail || error.message);
+          
+          // Display error message
+          setErrorMessage(error.response?.data?.detail || "An error occurred during login.");
+      
+          // You can choose to redirect to a specific page in case of error (optional)
+          if (error.response?.data?.group) {
+            navigate(`/${error.response?.data?.group}/`);
+          }
+        }
+      };
   
 
   return (

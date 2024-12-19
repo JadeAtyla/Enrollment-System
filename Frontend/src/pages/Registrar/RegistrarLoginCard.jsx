@@ -4,6 +4,7 @@ import universityLogo from "../../images/universityLogo.svg";
 import loginIcon from "../../images/Registrar/LogInIcons/OfficerIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { validateCredentials } from "../../StaticFunctions/staticFunctions";
+import axios from "axios";
 
 const RegistrarLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -14,25 +15,50 @@ const RegistrarLoginCard = ({ onLogin }) => {
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleLoginClick = () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-    console.log("Role: registrar");
+  // const handleLoginClick = () => {
+  //   console.log("Username:", username);
+  //   console.log("Password:", password);
+  //   console.log("Role: registrar");
 
-    const result = validateCredentials(username, password, "registrar");
+  //   const result = validateCredentials(username, password, "registrar");
 
-    if (typeof result === "string") {
-      setErrorMessage(result); // Display error message
-    } else {
-      console.log("Validation Success:", result);
-      setErrorMessage(""); // Clear error on success
-      onLogin(result.identifier, result.password, result.role); // Pass user info to parent component
-      navigate("/registrar/dashboard"); // Navigate to registrar dashboard
-    }
-  };
+  //   if (typeof result === "string") {
+  //     setErrorMessage(result); // Display error message
+  //   } else {
+  //     console.log("Validation Success:", result);
+  //     setErrorMessage(""); // Clear error on success
+  //     onLogin(result.identifier, result.password, result.role); // Pass user info to parent component
+  //     navigate("/registrar/dashboard"); // Navigate to registrar dashboard
+  //   }
+  // };
 
-
-
+  const handleLoginClick = async () => {
+      try {
+        // Determine the correct login URL based on user role (you may pass 'role' as an argument or set it in state)
+        const role = "registrar"; // For example, this could be dynamically determined
+        const loginUrl = `/api/login/${role}/`;
+    
+        // Send login request
+        const res = await axios.post(loginUrl, {
+          username: username, 
+          password: password
+        });
+    
+        console.log(res.data.success); // For debugging
+        navigate(`/${res.data.group}/dashboard/`);
+      } catch (error) {
+        // Handle any errors that occur during the axios request
+        console.log("Login Failed:", error.response?.data?.detail || error.message);
+        
+        // Display error message
+        setErrorMessage(error.response?.data?.detail || "An error occurred during login.");
+    
+        // You can choose to redirect to a specific page in case of error (optional)
+        if (error.response?.data?.group) {
+          navigate(`/${error.response?.data?.group}/`);
+        }
+      }
+    };
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
