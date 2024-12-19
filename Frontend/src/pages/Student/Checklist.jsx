@@ -30,11 +30,11 @@ const Checklist = ({ onLogout }) => {
   };
 
   return (
-    <div className="w-screen min-h-screen lg:h-screen lg:overflow-hidden bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
+    <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
       {/* Header */}
       <Header onLogout={onLogout} />
 
-      <div className="flex flex-1 lg:h-[calc(100%-4rem)]">
+      <div className="flex flex-1 lg:h-[calc(100%-4rem)] overflow-y-auto">
         {/* Sidebar */}
         <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
