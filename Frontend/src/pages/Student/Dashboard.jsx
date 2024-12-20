@@ -33,8 +33,9 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] relative flex flex-col lg:flex-row overflow-hidden">
+    <div className="w-screen min-h-screen lg:h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col lg:flex-row overflow-hidden">
       <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
+    <div className="flex-1 flex flex-col">
       <Header onLogout={onLogout} />
 
       {/* Main Content */}
@@ -118,6 +119,7 @@ const Dashboard = ({ onLogout }) => {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
