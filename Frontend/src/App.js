@@ -1,238 +1,248 @@
-import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+  import React, { useState } from "react";
+  import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+  } from "react-router-dom";
 
-import StudentLoginCard from "./pages/Student/StudentLoginCard";
-import Dashboard from "./pages/Student/Dashboard";
-import RegisterForm from "./pages/Student/RegisterForm";
-import COR from "./pages/Student/COR";
-import Checklist from "./pages/Student/Checklist";
-import StudentProfile from "./pages/Student/StudentProfile";
+  import StudentLoginCard from "./pages/Student/StudentLoginCard";
+  import Dashboard from "./pages/Student/Dashboard";
+  import RegisterForm from "./pages/Student/RegisterForm";
+  import COR from "./pages/Student/COR";
+  import Checklist from "./pages/Student/Checklist";
+  import StudentProfile from "./pages/Student/StudentProfile";
 
-import RegistrarLoginCard from "./pages/Registrar/RegistrarLoginCard";
-import RegistrarDashboard from "./pages/Registrar/RegistrarDashboard";
-import EnrollmentList from "./pages/Registrar/EnrollmentList";
-import ListOfStudents from "./pages/Registrar/ListOfStudents";
-import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
-import EnrollStudent from "./pages/Registrar/EnrollStudent";
-import Billing from "./pages/Registrar/Billing";
-import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
-import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
+  import RegistrarLoginCard from "./pages/Registrar/RegistrarLoginCard";
+  import RegistrarDashboard from "./pages/Registrar/RegistrarDashboard";
+  import EnrollmentList from "./pages/Registrar/EnrollmentList";
+  import ListOfStudents from "./pages/Registrar/ListOfStudents";
+  import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
+  import EnrollStudent from "./pages/Registrar/EnrollStudent";
+  import Billing from "./pages/Registrar/Billing";
+  import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+  import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
-import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
-import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
-import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
-import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
-import DepartmentAccount from "./pages/Department/DepartmentAccount";
+  import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
+  import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
+  import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
+  import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
+  import DepartmentAccount from "./pages/Department/DepartmentAccount";
 
-import { validateCredentials } from "./StaticFunctions/staticFunctions";
-import PageNotFound from "./pages/404page/PageNotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
+  import AdminUserList from "./StaticFunctions/AdminUserList";
 
-import axios from "axios";
+  import { validateCredentials } from "./StaticFunctions/staticFunctions";
 
-function App() {
-  const [user, setUser] = useState(null); // Holds user information
-  const [role, setRole] = useState(null); // Tracks user role
+  import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
 
-  const handleLogin = (identifier, password, role) => {
-    const result = validateCredentials(identifier, password, role);
+  function App() {
+    const [user, setUser] = useState(null); // Holds user information
+    const [role, setRole] = useState(null); // Tracks user role
 
-    if (typeof result === "string") {
-      alert(result); // Display error message
-      return;
-    }
+    const handleLogin = (identifier, password, role) => {
+      const result = validateCredentials(identifier, password, role);
 
-    // Successful login
-    setUser(result);
-    setRole(result.role);
-
-    // Debugging for confirmation
-    console.log("Logged in User:", result);
-    console.log("Role:", result.role);
-  };
-
-  // For logging out all users
-  const handleLogout = async () => {
-    try {
-      const logoutUrl = `/api/logout/`;
-  
-      const res = await axios.post(logoutUrl);
-  
-      console.log(res.data.success); // For debugging
-  
-      // Redirect after successful logout
-      if (res.data.success) {
-        <Navigate to={`/${res.data.group}/`}/>; // Navigate to the group's page
+      if (typeof result === "string") {
+        alert(result); // Display error message
+        return;
       }
-    } catch (error) {
-      // Handle any errors that occur during the axios request
-      console.log("Logout Failed:", error.response?.data?.detail || error.message);
-    }
-  };
-  
-  // Redirect Component
-  const RedirectToAdmin = () => {
-    window.location.href = "http://127.0.0.1:8000/admin/login/";
-    return null; // Return null since we don't render anything
-  };
 
-  return (
-    <Router>
-      <Routes>
-        {/* Redirect root to appropriate login */}
-        <Route path="/" element={<Navigate to="/student" />} />
+      // Successful login
+      setUser(result);
+      setRole(result.role);
 
-        {/* Student Routes */}
-        <Route path="/student" element={<StudentLoginCard />} />
-        <Route
-          path="/student/dashboard"
-          element={
-            <ProtectedRoute group="student">
-              <Dashboard onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/cor"
-          element={
-            <ProtectedRoute group="student">
-              <COR onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/checklist"
-          element={
-            <ProtectedRoute group="student">
-              <Checklist onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/profile"
-          element={
-            <ProtectedRoute group="student">
-              <StudentProfile onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/student/register" element={<RegisterForm />} />
+      // Debugging for confirmation
+      console.log("Logged in User:", result);
+      console.log("Role:", result.role);
+    };
 
-        {/* Registrar Routes */}
-        <Route path="/registrar" element={<RegistrarLoginCard />} />
-        <Route
-          path="/registrar/dashboard"
-          element={
-            <ProtectedRoute group="registrar">
-              <RegistrarDashboard onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/enrollmentList"
-          element={
-            <ProtectedRoute group="registrar">
-              <EnrollmentList onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/studentList"
-          element={
-            <ProtectedRoute group="registrar">
-              <ListOfStudents onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/account"
-          element={
-            <ProtectedRoute group="registrar">
-              <RegistrarAccounts onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/enroll-student"
-          element={
-            <ProtectedRoute group="registrar">
-              <EnrollStudent onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/billing"
-          element={
-            <ProtectedRoute group="registrar">
-              <Billing onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/evaluate-payment"
-          element={
-            <ProtectedRoute group="registrar">
-              <EvaluatePayment onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registrar/certificate-of-registration"
-          element={
-            <ProtectedRoute group="registrar">
-              <CertificateOfRegistration onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
+    const handleLogout = () => {
+      setUser(null);
+      setRole(null);
+    };
 
-        {/* Department Routes */}
-        <Route path="/department" element={<DepartmentLoginCard />} />
-        <Route
-          path="/department/dashboard"
-          element={
-            <ProtectedRoute group="department">
-              <DepartmentDashboard onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/department/departmentInstructorList"
-          element={
-            <ProtectedRoute group="department">
-              <DepartmentInstructorList onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/department/departmentStudentList"
-          element={
-            <ProtectedRoute group="department">
-              <DepartmentStudentList onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/department/departmentAccount"
-          element={
-            <ProtectedRoute group="department">
-              <DepartmentAccount onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
+    return (
+      <Router>
+        <Routes>
+          {/* Redirect root to appropriate login */}
+          <Route path="/" element={<Navigate to="/student" />} />
+          {/* Student Routes */}
+          <Route
+            path="/student"
+            element={
+              user && role === "student" ? (
+                <Navigate to="/student/dashboard" />
+              ) : (
+                <StudentLoginCard onLogin={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/student/dashboard"
+            element={
+              user && role === "student" ? (
+                <Dashboard onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/student" />
+              )
+            }
+          />
+          <Route path="/student/register" element={<RegisterForm />} />
+          <Route
+            path="/student/cor"
+            element={
+              user && role === "student" ? (
+                <COR onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/student" />
+              )
+            }
+          />
+          <Route
+            path="/student/checklist"
+            element={
+              user && role === "student" ? (
+                <Checklist onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/student" />
+              )
+            }
+          />
+          <Route
+            path="/student/profile"
+            element={
+              user && role === "student" ? (
+                <StudentProfile onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/student" />
+              )
+            }
+          />
+          {/* Registrar Routes */}
+          <Route
+            path="/registrar"
+            element={
+              user && role === "registrar" ? (
+                <Navigate to="/registrar/dashboard" />
+              ) : (
+                <RegistrarLoginCard onLogin={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/registrar/dashboard"
+            element={
+              user && role === "registrar" ? (
+                <RegistrarDashboard onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/registrar" />
+              )
+            }
+          />
+          <Route
+            path="/registrar/enrollmentList"
+            element={
+              user && role === "registrar" ? (
+                <EnrollmentList onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/registrar" />
+              )
+            }
+          />
+          <Route
+            path="/registrar/studentList"
+            element={
+              user && role === "registrar" ? (
+                <ListOfStudents onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/registrar" />
+              )
+            }
+          />
+          <Route
+            path="/registrar/account"
+            element={
+              user && role === "registrar" ? (
+                <RegistrarAccounts onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/registrar" />
+              )
+            }
+          />
+          <Route
+            path="/registrar/enroll-student"
+            element={<EnrollStudent onLogout={handleLogout} />}
+          />
+          <Route
+            path="/registrar/billing"
+            element={<Billing onLogout={handleLogout} />}
+          />
+          <Route
+            path="/registrar/evaluate-payment"
+            element={<EvaluatePayment onLogout={handleLogout} />}
+          />
+          <Route
+            path="/registrar/certificate-of-registration"
+            element={<CertificateOfRegistration onLogout={handleLogout} />}
+          />
+          {/* Department Routes */}
+          <Route
+            path="/department"
+            element={
+              user && role === "department" ? (
+                <Navigate to="/department/dashboard" />
+              ) : (
+                <DepartmentLoginCard onLogin={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/department/dashboard"
+            element={
+              user && role === "department" ? (
+                <DepartmentDashboard onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/department" />
+              )
+            }
+          />
+          <Route
+            path="/department/departmentInstructorList"
+            element={
+              user && role === "department" ? (
+                <DepartmentInstructorList onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/department" />
+              )
+            }
+          />
+          <Route
+            path="/department/departmentStudentList"
+            element={
+              user && role === "department" ? (
+                <DepartmentStudentList onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/department" />
+              )
+            }
+          />
+          <Route
+            path="/department/departmentAccount"
+            element={
+              user && role === "department" ? (
+                <DepartmentAccount onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/department" />
+              )
+            }
+          />
+          {/* Admin User List */}
+          <Route path="/users" element={<AdminUserList />} />
+          {/* Catch-all Route for 404 */}
+          <Route path="*" element={<PageNotFound />} /> {/* Updated */}
+        </Routes>
+      </Router>
+    );
+  }
 
-        {/* Admin User List */}
-        <Route path="/admin" element={<RedirectToAdmin />} />
-
-        {/* Catch-all Route for 404 */}
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </Router>
-  );
-}
-
-export default App;
+  export default App;

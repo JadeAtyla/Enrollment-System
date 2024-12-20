@@ -4,14 +4,12 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
 import { registerUser } from "../../StaticFunctions/staticFunctions";
-import axios from "axios";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    username: "",
+    studentNumber: "",
     password: "",
-    re_password: "",
-    group: "student",
+    confirmPassword: "",
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -39,40 +37,12 @@ const RegisterForm = () => {
     setErrorMessage("");
   };
 
-   // const handleRegisterClick = () => {
-  //   const registrationResult = registerUser(formData);
-  //   if (registrationResult === true) {
-  //     setIsModalOpen(true); // Open modal on successful registration
-  //   } else {
-  //     setErrorMessage(registrationResult);
-  //   }
-  // };
-
-  const handleRegisterClick = async () => {
-    try {
-      const registerUrl = `/api/register/`;
-
-      const res = await axios.post(registerUrl, {
-        username: formData.username,
-        password: formData.password,
-        re_password: formData.re_password,
-        group: formData.group,
-      });
-
-      console.log(res.data.success); // For debugging
-      handleBackToLogin();
-    } catch (error) {
-      console.log(
-        "Registration Failed:",
-        error.response?.data?.non_field_errors ||
-          error.response?.data?.message ||
-          error.message
-      );
-      setErrorMessage(
-        error.response?.data?.non_field_errors ||
-          error.response?.data?.message ||
-          "An error occurred during registration."
-      );
+  const handleRegisterClick = () => {
+    const registrationResult = registerUser(formData);
+    if (registrationResult === true) {
+      setIsModalOpen(true); // Open modal on successful registration
+    } else {
+      setErrorMessage(registrationResult);
     }
   };
 
@@ -112,10 +82,10 @@ const RegisterForm = () => {
           <div className="w-full max-w-[350px]">
             <input
               type="text"
-              name="username"
-              value={formData.username}
+              name="studentNumber"
+              value={formData.studentNumber}
               onChange={handleInputChange}
-              placeholder="USERNAME"
+              placeholder="STUDENT NUMBER"
               className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"
             />
             <div className="relative mb-4">
@@ -142,8 +112,8 @@ const RegisterForm = () => {
             <div className="relative mb-6">
               <input
                 type={confirmPasswordVisible ? "text" : "password"}
-                name="re_password"
-                value={formData.re_password}
+                name="confirmPassword"
+                value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="RETYPE PASSWORD"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"

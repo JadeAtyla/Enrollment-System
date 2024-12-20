@@ -4,7 +4,6 @@ import universityLogo from "../../images/universityLogo.svg";
 import loginIcon from "../../images/loginIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { validateCredentials } from "../../StaticFunctions/staticFunctions";
-import axios from "axios"
 
 const StudentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -31,48 +30,16 @@ const StudentLoginCard = ({ onLogin }) => {
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  // const handleLoginClick = () =>{
-  //   const result = validateCredentials(studentNumber, password, "student");
-  //   if (typeof result === "string") {
-  //     setErrorMessage(result);
-  //   } else {
-  //     setErrorMessage("");
-  //     onLogin(result.identifier, result.password, result.role);
-  //     navigate("/student/dashboard");
-  //   }
-    
-  // };
-
-  const handleLoginClick = async () => {
-
-    // Fetch data when the component mounts
-    try {
-      // Determine the correct login URL based on user role (you may pass 'role' as an argument or set it in state)
-      const role = "student"; // For example, this could be dynamically determined
-      const loginUrl = `/api/login/${role}/`;
-  
-      // Send login request
-      const res = await axios.post(loginUrl, {
-        username: studentNumber, // Make sure 'studentNumber' is your username field
-        password: password
-      });
-  
-      console.log(res.data.success); // For debugging
-      navigate(`/${res.data.group}/dashboard/`);
-    } catch (error) {
-      // Handle any errors that occur during the axios request
-      console.log("Login Failed:", error.response?.data?.detail || error.message);
-      
-      // Display error message
-      setErrorMessage(error.response?.data?.detail || "An error occurred during login.");
-  
-      // You can choose to redirect to a specific page in case of error (optional)
-      if (error.response?.data?.group) {
-        navigate(`/${error.response?.data?.group}/`);
-      }
+  const handleLoginClick = () => {
+    const result = validateCredentials(studentNumber, password, "student");
+    if (typeof result === "string") {
+      setErrorMessage(result);
+    } else {
+      setErrorMessage("");
+      onLogin(result.identifier, result.password, result.role);
+      navigate("/student/dashboard");
     }
   };
-  
 
   const handleRegisterClick = () => {
     navigate("/student/register");

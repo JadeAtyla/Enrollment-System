@@ -1,34 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const StudentProfile = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState("account");
   const [currentSection, setCurrentSection] = useState("profile"); // Track current section
   const navigate = useNavigate();
-  const [data, setData] = useState('')
 
   const handleSavePassword = () => {
     alert("Password updated successfully!");
     setCurrentView("account");
-  };
-
-  // Fetch data when the component mounts
-  useEffect(() => {
-    getData(); // Call getData when the component mounts
-  }, []); // Empty dependency array ensures it runs only once after the first render
-
-  const getData = async () => {
-    try {
-      // Send a request to the Protected API to validate the user's group and token
-      const res = await axios.get(`/api/student/`);
-      setData(res.data[0]); // Store the response data in the state
-    } catch (error) {
-      console.log("Authorization Error:", error.response?.data?.detail || error.message);
-      // Optionally handle error here, e.g., redirecting the user or showing a message
-    }
   };
 
   const handleNavigate = (section) => {
@@ -97,29 +79,29 @@ const StudentProfile = ({ onLogout }) => {
                       <p className="text-gray-800 font-semibold">
                         Student Number:
                       </p>
-                      <p className="text-gray-600">{`${data.id}`}</p>
+                      <p className="text-gray-600">[Student Number]</p>
                       <p className="text-gray-800 font-semibold mt-4">Email:</p>
-                      <p className="text-gray-600">{`${data.email}`}</p>
+                      <p className="text-gray-600">[Email]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Status:
                       </p>
-                      <p className="text-gray-600">{`${data.status}`}</p>
+                      <p className="text-gray-600">[Status]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Contact Number:
                       </p>
-                      <p className="text-gray-600">{`${data.contact_number}`}</p>
+                      <p className="text-gray-600">[Contact Number]</p>
                     </div>
                     <div>
-                      <p className="text-gray-800 font-semibold">Program:</p>
-                      <p className="text-gray-600">{`${data.program}`}</p>
+                      <p className="text-gray-800 font-semibold">Course:</p>
+                      <p className="text-gray-600">[Course]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Year Level:
                       </p>
-                      <p className="text-gray-600">{`${data.year_level}`}</p>
+                      <p className="text-gray-600">[Year Level]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Section:
                       </p>
-                      <p className="text-gray-600">{`${data.section}`}</p>
+                      <p className="text-gray-600">[Section]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Password:
                       </p>
@@ -193,31 +175,31 @@ const StudentProfile = ({ onLogout }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[0.9rem]">
                     <div>
                       <p className="text-gray-800 font-semibold">Last Name:</p>
-                      <p className="text-gray-600">{`${data.last_name}`}</p>
+                      <p className="text-gray-600">[Last Name]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Middle Name:
                       </p>
-                      <p className="text-gray-600">{`${data.middle_name}`}</p>
+                      <p className="text-gray-600">[Middle Name]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Address:
                       </p>
-                      <p className="text-gray-600">{`${data.address.street}, ${data.address.barangay}, ${data.address.city}, ${data.address.province}`}</p>
+                      <p className="text-gray-600">[Address]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Gender:
                       </p>
-                      <p className="text-gray-600">{`${data.gender}`}</p>
+                      <p className="text-gray-600">[Gender]</p>
                     </div>
                     <div>
                       <p className="text-gray-800 font-semibold">First Name:</p>
-                      <p className="text-gray-600">{`${data.first_name}`}</p>
+                      <p className="text-gray-600">[First Name]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Suffix:
                       </p>
-                      <p className="text-gray-600">{`${data.suffix}`}</p>
+                      <p className="text-gray-600">[Suffix]</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Birthday:
                       </p>
-                      <p className="text-gray-600">{`${data.date_of_birth}`}</p>
+                      <p className="text-gray-600">[mm-dd-yyyy]</p>
                     </div>
                   </div>
                   <div className="flex justify-center">
