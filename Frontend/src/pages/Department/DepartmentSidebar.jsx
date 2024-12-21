@@ -6,17 +6,21 @@ import StudentIcon from "../../images/Department/SidebarIcons/StudentListIcon.sv
 import AccountIcon from "../../images/Department/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Department/SidebarIcons/LogoutIcon.svg";
 import UniversityLogo from "../../images/universityLogo.svg";
+import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg"; // Add a new Course icon
 
 const DepartmentSidebar = ({ currentPage, onLogout, onToggleSidebar, isCollapsed }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const menuItems = [
-    { name: "departmentDashboard", icon: DashboardIcon, label: "Dashboard", path: "/department/dashboard" },
-    { name: "instructor", icon: EnrollIcon, label: "Instructor List", path: "/department/departmentInstructorList" },
-    { name: "schedule", icon: StudentIcon, label: "Student List", path: "/department/departmentStudentList" },
-    { name: "account", icon: AccountIcon, label: "Account", path: "/department/departmentAccount" },
-  ];
+
+const menuItems = [
+  { name: "departmentDashboard", icon: DashboardIcon, label: "Dashboard", path: "/department/dashboard" },
+  { name: "instructor", icon: EnrollIcon, label: "Instructor List", path: "/department/departmentInstructorList" },
+  { name: "schedule", icon: StudentIcon, label: "Student List", path: "/department/departmentStudentList" },
+  { name: "course", icon: CourseIcon, label: "Course", path: "/department/departmentMasterList" }, // New Course item
+  { name: "account", icon: AccountIcon, label: "Account", path: "/department/departmentAccount" },
+];
+
 
   const handleToggle = () => {
     onToggleSidebar(!isCollapsed);
