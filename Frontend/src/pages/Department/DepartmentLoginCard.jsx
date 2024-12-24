@@ -14,20 +14,26 @@ const DepartmentLoginCard = ({ onLogin }) => {
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleLoginClick = () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-    console.log("Role: department");
+  const handleLoginClick = async () => {
+    setErrorMessage(""); // Clear any previous errors
+    const group = "department";
   
-    const result = validateCredentials(username, password, "department");
+    try {
+      const response = await onLogin(username, password, group); // Wait for the promise to resolve
+      console.log(response);
   
-    if (typeof result === "string") {
-      setErrorMessage(result); // Display error message
-    } else {
-      console.log("Validation Success:", result);
-      setErrorMessage(""); // Clear error on success
-      onLogin(result.identifier, result.password, result.role); // Pass user info to parent component
-      navigate("/department/dashboard"); // Navigate to department dashboard
+      if (response.success) {
+        console.log("Login Successfully");
+        navigate(`/${group}/dashboard`);
+      } else {
+        setErrorMessage(response.detail || response.error || "Login failed.");
+        if(response.group){
+          navigate(`/${response.group}/`);
+        }
+      }
+      
+    } catch (error) {
+      setErrorMessage(error.error); // Handle unexpected errors
     }
   };
   

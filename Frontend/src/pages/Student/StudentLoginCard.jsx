@@ -30,16 +30,29 @@ const StudentLoginCard = ({ onLogin }) => {
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
-  const handleLoginClick = () => {
-    const result = validateCredentials(studentNumber, password, "student");
-    if (typeof result === "string") {
-      setErrorMessage(result);
-    } else {
-      setErrorMessage("");
-      onLogin(result.identifier, result.password, result.role);
-      navigate("/student/dashboard");
+  const handleLoginClick = async () => {
+    setErrorMessage(""); // Clear any previous errors
+    const group = "student";
+  
+    try {
+      const response = await onLogin(studentNumber, password, group); // Wait for the promise to resolve
+      console.log(response);
+  
+      if (response.success) {
+        console.log("Login Successfully");
+        navigate(`/${group}/dashboard`);
+      } else {
+        setErrorMessage(response.detail || response.error || "Login failed.");
+        if(response.group){
+          navigate(`/${response.group}/`);
+        }
+      }
+      
+    } catch (error) {
+      setErrorMessage(error.error); // Handle unexpected errors
     }
   };
+  
 
   const handleRegisterClick = () => {
     navigate("/student/register");
