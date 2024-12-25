@@ -1,16 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 const StudentProfile = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState("account");
   const [currentSection, setCurrentSection] = useState("profile"); // Track current section
   const navigate = useNavigate();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSavePassword = () => {
-    alert("Password updated successfully!");
-    setCurrentView("account");
+  // Fetch student data
+  const { data: studentData, error: studentError, getData: getStudentData } = useData("/api/student/");
+  const { data: userData, error: userError, getData: getUserData, updateData: updateUserData } = useData("/api/user/");
+  const [student, setStudent] = useState(null);
+  const [user, setUser] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
+
+  useEffect(() => {
+    // Fetch student and user data on component mount
+    const fetchData = async () => {
+      await getStudentData();
+      await getUserData();
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // Update student and user states when data is fetched
+    if (studentData && userData) {
+      setStudent(studentData[0]);  // Access the first item in the array
+      setUser(userData[0]);        // Access the first item in the array
+      // console.log(user.password)
+    } else if (studentError || userError) {
+      setFetchError(studentError?.response || userError?.response);
+      console.log(fetchError);  // Log the error to debug
+    }
+  }, [studentData, userData]);
+
+  const handleSavePassword = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      alert("Please fill out all password fields.");
+      return;
+    }
+
+    const passwordPayload = {
+      old_password: oldPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    };
+
+    try {
+      await updateUserData(user?.id, passwordPayload); // Call updateData from useData
+      // alert("Password updated successfully!");
+      // setOldPassword("");
+      // setNewPassword("");
+      // setConfirmPassword("");
+      console.log(userData);
+    } catch {
+      console.log("Failed to update password. Please try again.");
+    }
   };
 
   const handleNavigate = (section) => {
@@ -79,33 +130,33 @@ const StudentProfile = ({ onLogout }) => {
                       <p className="text-gray-800 font-semibold">
                         Student Number:
                       </p>
-                      <p className="text-gray-600">[Student Number]</p>
+                      <p className="text-gray-600">{student?.id || "No student id."}</p>
                       <p className="text-gray-800 font-semibold mt-4">Email:</p>
-                      <p className="text-gray-600">[Email]</p>
+                      <p className="text-gray-600">{student?.email || "No assigned email."}</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Status:
                       </p>
-                      <p className="text-gray-600">[Status]</p>
+                      <p className="text-gray-600">{student?.status || "Not enrolled."}</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Contact Number:
                       </p>
-                      <p className="text-gray-600">[Contact Number]</p>
+                      <p className="text-gray-600">{student?.contact_number || "No assigned contact number."}</p>
                     </div>
                     <div>
                       <p className="text-gray-800 font-semibold">Course:</p>
-                      <p className="text-gray-600">[Course]</p>
+                      <p className="text-gray-600">{student?.program || "No program yet."}</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Year Level:
                       </p>
-                      <p className="text-gray-600">[Year Level]</p>
+                      <p className="text-gray-600">{student?.year_level || "Not enrolled yet."}</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Section:
                       </p>
-                      <p className="text-gray-600">[Section]</p>
+                      <p className="text-gray-600">{student?.section || "To be announced."}</p>
                       <p className="text-gray-800 font-semibold mt-4">
                         Password:
                       </p>
-                      <p className="text-gray-600">**********</p>
+                      <p className="text-gray-600">{"Password is secured"}</p>
                     </div>
                   </div>
                   <div className="flex justify-center gap-4">
@@ -129,6 +180,7 @@ const StudentProfile = ({ onLogout }) => {
                       </label>
                       <input
                         type="password"
+                        onChange={(e) => setOldPassword(e.target.value)}
                         className="w-full mt-2 p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -138,6 +190,7 @@ const StudentProfile = ({ onLogout }) => {
                       </label>
                       <input
                         type="password"
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full mt-2 p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -147,6 +200,7 @@ const StudentProfile = ({ onLogout }) => {
                       </label>
                       <input
                         type="password"
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full mt-2 p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
