@@ -7,6 +7,7 @@ const useData = (endpoint) => {
 
   // Fetch data
   const getData = useCallback(async () => {
+
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -23,6 +24,7 @@ const useData = (endpoint) => {
 
   // Create data (POST)
   const createData = async (newData) => {
+
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -39,6 +41,7 @@ const useData = (endpoint) => {
 
   // Update data (PUT)
   const updateData = async (id, updatedData) => {
+
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -55,6 +58,7 @@ const useData = (endpoint) => {
 
   // Delete data (DELETE)
   const deleteData = async (id) => {
+    
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -72,11 +76,14 @@ const useData = (endpoint) => {
   // Error handling function
   const handleError = (err) => {
     if (err.response) {
-      console.error("API Error:", err.response.status, err.response.data);
-      setError({ status: err.response.status, message: err.response.data });
+      // console.error("API Error:", err.response.status, err.response.data);
+      setError(err.response.data);
     } else {
       console.error("Network Error:", err.message);
       setError({ status: null, message: "Network error, please try again later." });
+        // setError(err?.response);
+        // setError(err.response.data);
+        // console.log({"DATA UTIL": err.response.data});
     }
     setData(null); // Clear data if an error occurs
   };

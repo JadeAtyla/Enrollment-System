@@ -41,7 +41,7 @@ const Dashboard = ({ onLogout }) => {
         data,
         id: studentInstance.id,
         first_name: studentInstance.first_name,
-        full_name: `${studentInstance.last_name}, ${studentInstance.first_name} ${studentInstance.middle_name?.split(" ")[0]?.[0]?.toUpperCase()}`,
+        full_name: `${studentInstance.last_name}, ${studentInstance.first_name} ${studentInstance.middle_name}`,
         program: `${studentInstance.program} ${studentInstance.year_level}-${studentInstance.section || "TBA"}`,
         enrollment_status: "" || "Not enrolled yet.",
         student_status: studentInstance.status || "Not enrolled yet.",

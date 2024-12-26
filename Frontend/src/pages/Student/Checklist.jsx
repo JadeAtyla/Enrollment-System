@@ -1,13 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./Header"; // Custom Header
 import Sidebar from "./Sidebar"; // Custom Sidebar
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 const Checklist = ({ onLogout }) => {
   const navigate = useNavigate();
 
   // State to track the active section
   const [currentSection, setCurrentSection] = useState("checklist");
+
+  const { data: studentData, error: studentError, getData: getStudentData } = useData("/api/student/");
+  const [student, setStudent] = useState(null);
+  useEffect(() => {
+      // Fetch student and user data on component mount
+      const fetchData = async () => {
+        await getStudentData();
+      };
+      fetchData();
+    }, [getStudentData]);
+
+    useEffect(() => {
+        // Update student and user states when data is fetched
+        if (studentData) setStudent(studentData[0]); // Access the first item in the array
+      }, [studentData]);
 
   const handleNavigate = (section) => {
     setCurrentSection(section); // Update the current section
@@ -48,13 +64,13 @@ const Checklist = ({ onLogout }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="space-y-2">
                 <p className="text-[1rem] font-medium">
-                  <strong>Name:</strong> [Name]
+                  <strong>Name:</strong>{`${student?.last_name}, ${student?.first_name} ${student?.middle_name}`}
                 </p>
                 <p className="text-[1rem] font-medium">
-                  <strong>Student Number:</strong> [20######]
+                  <strong>Student Number:</strong> {student?.id}
                 </p>
                 <p className="text-[1rem] font-medium">
-                  <strong>Address:</strong> [Address]
+                  <strong>Address:</strong>{`${student?.address?.street || ""} ${student?.address?.barangay || ""} ${student?.address?.city}, ${student?.address?.province}`}
                 </p>
               </div>
               <div className="flex flex-row justify-between gap-4 mb-4">
