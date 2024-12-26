@@ -38,7 +38,6 @@ const Dashboard = ({ onLogout }) => {
     if (data) {
       const studentInstance =  data[0]
       setStudent({
-        data,
         id: studentInstance.id,
         first_name: studentInstance.first_name,
         full_name: `${studentInstance.last_name}, ${studentInstance.first_name} ${studentInstance.middle_name}`,

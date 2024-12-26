@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./Header"; // Custom Header
 import Sidebar from "./Sidebar"; // Custom Sidebar
 import universityLogo from "../../images/universityLogo.svg";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 const COR = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -11,6 +12,35 @@ const COR = ({ onLogout }) => {
   const section = "A"; // Replace with dynamic value if needed
 
   const [currentSection, setCurrentSection] = useState("cor");
+  const { data, error, getData } = useData("/api/cor/");
+  const [student, setStudent] = useState(null);
+  const [enrollments, setEnrollments] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
+
+  useEffect(() => {
+      // Fetch student data on component mount
+      const fetchData = async () => {
+        await getData(); // Fetch data
+      };
+      fetchData();
+    }, [getData]);
+
+    useEffect(() => {
+      // Update the `student` and `enrollments` state when `data` changes
+      if (data) {
+        if (data.student) {
+          setStudent(data.student); // Set the student data
+        }
+        if (data.enrollments) {
+          setEnrollments(data.enrollments); // Set the enrollments data
+        }
+        // console.log("Fetched data:", student?.id);
+        // console.log("Enrollments:", enrollments);
+        } else if(error){
+          setFetchError(error.response);
+          console.log(fetchError);
+        }
+      }, [data]);
 
   const handleNavigate = (section) => {
     setCurrentSection(section); // Update the current section
@@ -68,36 +98,36 @@ const COR = ({ onLogout }) => {
               <div className="flex flex-col">
                 <div className="flex">
                   <p className="font-bold w-1/3">Student Number:</p>
-                  <p className="ml-4">[20######]</p>
+                  <p className="ml-4">{student?.id}</p>
                 </div>
 
                 <div className="flex">
                   <p className="font-bold w-1/3">Student Name:</p>
                   <p className="ml-4">
-                    [Last Name], [First Name] [Middle Name]
+                  {`${student?.last_name}, ${student?.first_name} ${student?.middle_name}`}
                   </p>
                 </div>
 
                 <div className="flex">
                   <p className="font-bold w-1/3">Course:</p>
-                  <p className="ml-4">BSCS</p>
+                  <p className="ml-4">{student?.program}</p>
                 </div>
 
                 <div className="flex">
                   <p className="font-bold w-1/3">Year:</p>
-                  <p className="ml-4">{year}</p>
+                  <p className="ml-4">{student?.year_level}</p>
                 </div>
 
                 <div className="flex">
                   <p className="font-bold w-1/3">Address:</p>
-                  <p className="ml-4">[Address]</p>
+                  <p className="ml-4">{`${student?.address?.street || ""} ${student?.address?.barangay || ""} ${student?.address?.city}, ${student?.address?.province} `}</p>
                 </div>
               </div>
 
               <div className="flex flex-col">
                 <div className="flex">
                   <p className="font-bold w-1/3">Semester:</p>
-                  <p className="ml-4">1st Semester</p>
+                  <p className="ml-4">{student?.semester}</p>
                 </div>
                 <div className="flex">
                   <p className="font-bold w-1/3">Date:</p>
@@ -106,12 +136,12 @@ const COR = ({ onLogout }) => {
                 <div className="flex">
                   <p className="font-bold w-1/3">Section:</p>
                   <p className="ml-4">
-                    BSCS {year} - {section}
+                    {`${student?.program} ${student?.year_level}-${student?.section || "TBA"}`}
                   </p>
                 </div>
                 <div className="flex">
                   <p className="font-bold w-1/3">School Year:</p>
-                  <p className="ml-4">[2024-2025]</p>
+                  <p className="ml-4">{student?.academic_year}</p>
                 </div>
               </div>
             </div>
@@ -130,27 +160,34 @@ const COR = ({ onLogout }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="border p-2">COSC 000</td>
-                    <td className="border p-2">COMPUTER PROGRAMMING</td>
-                    <td className="border p-2">3</td>
-                    <td className="border p-2">7:30 AM</td>
-                    <td className="border p-2">MONDAY</td>
-                    <td className="border p-2">COMLAB 1</td>
-                  </tr>
-                  {[...Array(5)].map((_, index) => (
-                    <tr key={index}>
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2">&nbsp;</td>
-                    </tr>
-                  ))}
+                  {enrollments.length > 0 ? (
+                    enrollments.map((enrollment, index) => (
+                      <tr key={index}>
+                        <td className="border p-2">{enrollment.course?.code || 'N/A'}</td>
+                        <td className="border p-2">{enrollment.course?.title || 'N/A'}</td>
+                        <td className="border p-2">{enrollment.course?.units || 'N/A'}</td>
+                        <td className="border p-2">{enrollment.schedule?.time || 'N/A'}</td>
+                        <td className="border p-2">{enrollment.schedule?.day || 'N/A'}</td>
+                        <td className="border p-2">{enrollment.schedule?.room || 'N/A'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    // Placeholder rows when no data is available
+                    [...Array(5)].map((_, index) => (
+                      <tr key={index}>
+                        <td className="border p-2">&nbsp;</td>
+                        <td className="border p-2">&nbsp;</td>
+                        <td className="border p-2">&nbsp;</td>
+                        <td className="border p-2">&nbsp;</td>
+                        <td className="border p-2">&nbsp;</td>
+                        <td className="border p-2">&nbsp;</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
 
             {/* Fee and Assessment Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

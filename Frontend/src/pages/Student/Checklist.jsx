@@ -10,20 +10,32 @@ const Checklist = ({ onLogout }) => {
   // State to track the active section
   const [currentSection, setCurrentSection] = useState("checklist");
 
-  const { data: studentData, error: studentError, getData: getStudentData } = useData("/api/student/");
+  const { data, error, getData } = useData("/api/checklist/");
   const [student, setStudent] = useState(null);
+  const [courseGrade, setCourseGrade] = useState(null);
   useEffect(() => {
       // Fetch student and user data on component mount
       const fetchData = async () => {
-        await getStudentData();
+        await getData();
       };
       fetchData();
-    }, [getStudentData]);
+    }, [getData]);
 
     useEffect(() => {
-        // Update student and user states when data is fetched
-        if (studentData) setStudent(studentData[0]); // Access the first item in the array
-      }, [studentData]);
+          // Update the `student` and `enrollments` state when `data` changes
+          if (data) {
+            if (data.student) {
+              setStudent(data.student); // Set the student data
+            }
+            if (data.courses_and_grades) {
+              setCourseGrade(data.courses_and_grades); // Set the enrollments data
+            }
+            // console.log("Fetched data:", student?.id);
+            // console.log("Enrollments:", enrollments);
+            } else if (error) {
+              console.log(error?.error);
+            }
+          }, [data]);
 
   const handleNavigate = (section) => {
     setCurrentSection(section); // Update the current section
