@@ -21,6 +21,7 @@ import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
 import Billing from "./pages/Registrar/Billing";
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
+import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
 import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
@@ -156,6 +157,14 @@ function App() {
           element={
             <ProtectedRoute group="registrar">
               <RegistrarAccounts onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registrar/evaluate-student"
+          element={
+            <ProtectedRoute group="registrar">
+              <EvaluateStudent onLogout={handleLogout} />
             </ProtectedRoute>
           }
         />

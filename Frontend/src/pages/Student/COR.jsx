@@ -15,6 +15,8 @@ const COR = ({ onLogout }) => {
   const { data, error, getData } = useData("/api/cor/");
   const [student, setStudent] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
+  const [billings, setBillings] = useState([]);
+  const [total, setTotal] = useState(null);
   const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
@@ -34,8 +36,14 @@ const COR = ({ onLogout }) => {
         if (data.enrollments) {
           setEnrollments(data.enrollments); // Set the enrollments data
         }
+        if (data.acad_term_billings){
+          setBillings(data.acad_term_billings);
+        }
+        if(data.total_acad_term_billing_price){
+          setTotal(data.total_acad_term_billing_price);
+        }
         // console.log("Fetched data:", student?.id);
-        // console.log("Enrollments:", enrollments);
+        console.log(billings);
         } else if(error){
           setFetchError(error.response);
           console.log(fetchError);
@@ -61,6 +69,18 @@ const COR = ({ onLogout }) => {
         break;
     }
   };
+
+  const labFees = billings.filter(billingData => 
+    billingData.billing_list.category === "LAB FEES"
+  );
+
+  const otherFees = billings.filter(billingData => 
+    billingData.billing_list.category === "OTHER FEES"
+  );
+
+  const assessment = billings.filter(billingData => 
+    billingData.billing_list.category === "ASSESSMENT"
+  );
 
   return (
     <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
@@ -188,8 +208,75 @@ const COR = ({ onLogout }) => {
               </table>
             </div>
 
+            <div className="overflow-x-auto mb-6">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="bg-gray-100 text-gray-700">
+                  <th className="border p-3">Lab Fees</th>
+                  <th className="border p-3">Other Fees</th>
+                  <th className="border p-3">Assessment</th>
+                  <th className="border p-3">Payments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                    {labFees.map((lab, index) => (
+                      <td key={index} className="flex justify-between">{lab.billing_list.name || "-"}<span>{lab.billing_list.price || "-"}</span></td>
+                    ))}
+                    {labFees.length === 0 && (
+                        <td className="border p-2 text-center" colSpan="6">
+                          No billings available.
+                        </td>
+                    )}
+                  </td>
+                  <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                  {otherFees.map((other, index) => (
+                      <td key={index} className="flex justify-between">{other.billing_list.name || "-"}<span>{other.billing_list.price || "-"}</span></td>
+                    ))}
+                    {otherFees.length === 0 && (
+                        <td className="border p-2 text-center" colSpan="6">
+                          No billings available.
+                        </td>
+                    )}
+                  </td>
+                  <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                    {assessment.map((assess, index) => (
+                        <td key={index} className="flex justify-between">{assess.billing_list.name || "-"}<span>{assess.billing_list.price || "-"}</span></td>
+                      ))}
+                      {assessment.length === 0 && (
+                          <td className="border p-2 text-center" colSpan="6">
+                            No billings available.
+                          </td>
+                      )}
+                  </td>
+                </tr>
+                <tr className="border align-top">
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Total Units:<span >1</span></td>
+                </tr>
+                <tr className="border align-top">
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Total Hours:<span >1</span></td>
+                </tr>
+                <tr className="border align-top">
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Total Amount:<span >{total  }</span></td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Scholarship<span >1</span></td>
+                </tr>
+                <tr className="border align-top">
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Tuition:<span >1</span></td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">SFDF:<span >1</span></td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">SRF:<span >1</span></td>
+                </tr>
+                <tr className="border p-3 align-top">
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Terms of Payment</td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">First:<span >1</span></td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Second:<span >1</span></td>
+                  <td className="pb-2 pr-5 pl-5 flex justify-between">Third:<span >1</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-            {/* Fee and Assessment Section */}
+            Fee and Assessment Section
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Lab Fees */}

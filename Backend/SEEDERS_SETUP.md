@@ -8,4 +8,7 @@ python manage.py createdb
 python manage.py migrate
 
 # Custom made seeders for sample data
-python manage.py seed
+python manage.py seeders
+
+# Create super user to by pass or else check data if rightfully addess
+python manage.py createsuperuser

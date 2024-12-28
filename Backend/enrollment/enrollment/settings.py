@@ -12,42 +12,31 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv # imports env
-import os # helps to access environment variables
+from dotenv import load_dotenv  # imports env
+import os  # helps to access environment variables
 
-load_dotenv() # initialize env
+load_dotenv()  # initialize env
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
-
-# Application definition
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
-    'api.apps.AppConfig', # Register the app
+    'jazzmin',
     'django.contrib.admin',
-    # 'app.apps.RegistrarAdminConfig', # Just Added
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework', # Django Rest Framework
-    'corsheaders', # COR Headers
+    'corsheaders',
+    'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'django_seed', # Seeder for models
+    'django_seed',
+    'api',  # Your app name
 ]
 
 MIDDLEWARE = [
@@ -58,22 +47,24 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # CORS middlware
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
+
+# CORS settings to allow frontend to communicate
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",  # React's default dev server
+    "http://localhost:3000",
 ]
+CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 
-CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'api.authentication.CookiesJWTAuthentication', # Changed
+        'api.authentication.CookiesJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny', # this is for trial only, need to chane in isAuthenticated when deployed
+        'rest_framework.permissions.IsAuthenticated',
     ]
 }
 
@@ -83,14 +74,12 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
-
-    'AUTH_COOKIE': 'access_token',  # Cookie name for the access token
-    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name for the refresh token
-    'AUTH_COOKIE_SECURE': False,  # Set to True if using HTTPS
-    'AUTH_COOKIE_HTTP_ONLY': True,  # Make the cookie HTTP only
-    'AUTH_COOKIE_PATH': '/',  # Root path for the cookie
-    'AUTH_COOKIE_SAMESITE': 'Lax',  # Adjust according to your needs
-
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_REFRESH': 'refresh_token',
+    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'Lax',
 }
 
 CSRF_COOKIE_SECURE = False
@@ -101,7 +90,7 @@ ROOT_URLCONF = 'enrollment.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'Frontend/src'], # Folder Directory for templates
+        'DIRS': [BASE_DIR / 'Frontend/src'],  # Modify this path if needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -116,11 +105,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'enrollment.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# Change engine and other component for mysql compatability
+# Database settings
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -129,49 +114,62 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PASSWORD': os.environ.get('DB_PASS'),
         'PORT': os.environ.get('DB_PORT'),
-       # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'data.sqlite3',
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Enrollment Admin",
+    "site_header": "Enrollment System",
+    "site_logo": "jazzmin/img/transparent-logo.png",
+    "welcome_sign": "Welcome to the Enrollment System Admin",
+    "copyright": "Enrollment System © 2024",
+    "search_model": "auth.User",  # Model to search by default
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Enrollment System", "url": "http://localhost:3000/", "new_window": True},
+    ],
+    "usermenu_links": [
+        {"name": "Support", "url": "https://support.example.com", "new_window": True},
+    ],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "api.address": "fa-solid fa-house",
+        "api.billing": "fa-solid fa-money-bill",
+        "api.course": "fa-solid fa-book",
+        "api.enrollment": "fa-solid fa-clipboard-check",
+        "api.grade": "fa-solid fa-graduation-cap",
+        "api.instructor": "fa-solid fa-chalkboard-teacher",
+        "api.prerequisite": "fa-solid fa-link",
+        "api.schedule": "fa-solid fa-calendar-alt",
+        "api.student": "fa-solid fa-user-graduate",
+        "api.sectioning": "fa-solid fa-section",
+        "api.program": "fa-solid fa-microchip",
+    },
+
+    "related_modal_active": True, # X_FRAME_OPTIONS mus be SAMEORIGIN
+    "changeform_format": "horizontal_tabs",  # Horizontal tabs in the change form
+}
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

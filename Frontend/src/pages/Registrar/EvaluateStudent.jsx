@@ -19,7 +19,7 @@ const EvaluateStudent = ({ onLogout }) => {
 
   const handleAddToPending = () => {
     studentInfo.enrollmentStatus = "Pending";
-    navigate("/registrar/enroll-student", { state: { updatedStudent: studentInfo } });
+    navigate("/registrar/enrollmentList", { state: { updatedStudent: studentInfo } });
   };
 
   const studentGrades = [

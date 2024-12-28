@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,9 @@ const EnrollmentList = ({ onLogout }) => {
   const studentsPerPage = 10;
   const navigate = useNavigate();
 
-  const [studentLimit, setStudentLimit] = useState(50); // Added here
+  const [studentLimit, setStudentLimit] = useState(50);
+  const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleLimitModal = () => setIsLimitModalOpen(true);
   const closeLimitModal = () => setIsLimitModalOpen(false);
@@ -23,39 +25,42 @@ const EnrollmentList = ({ onLogout }) => {
     setIsLimitModalOpen(false);
   };
 
-  const [students, setStudents] = useState(
-    Array.from({ length: 50 }).map((_, index) => ({
-      id: index + 1,
-      number: `202210111${index}`,
-      name: `Karlos, Juan M.`,
-      course: "BSCS",
-      yearLevel: 3,
-      section: "A",
-      status: "Regular",
-      enrollmentStatus: index % 2 === 0 ? "Pending" : "Not Enrolled",
-    }))
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/student/?enrollment_status=WAITLISTED");
+        const data = await response.json();
+        setStudents(data); // Set the API response directly
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Pagination function
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Handle student enrollment
   const handleEnrollment = (studentId) => {
-    const selectedStudent = students.find(
-      (student) => student.id === studentId
-    );
-    navigate("/registrar/enroll-student", {
+    const selectedStudent = students.find((student) => student.id === studentId);
+    navigate("/registrar/evaluate-student", {
       state: { student: selectedStudent },
     });
   };
 
+  // Filter students by search term across all table data
+const filteredStudents = students.filter((student) =>
+  `${student.id} ${student.first_name} ${student.last_name} ${student.program} ${student.year_level} ${student.section} ${student.status} ${student.enrollment_status}`
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase())
+);
+
+
   // Get current students for pagination
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = students.slice(
-    indexOfFirstStudent,
-    indexOfLastStudent
-  );
+  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
 
   // Handle the opening and closing of modals
   const handleAddStudent = () => setIsAddStudentModalOpen(true);
@@ -84,33 +89,13 @@ const EnrollmentList = ({ onLogout }) => {
               <input
                 type="text"
                 placeholder="Search here..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
               />
               <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
                 <FaSearch />
               </span>
-            </div>
-
-            {/* Dropdown Filters */}
-            <div className="flex items-center gap-4">
-              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
-                <option>Year Level</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-              </select>
-              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
-                <option>Course</option>
-                <option>BSCS</option>
-                <option>BSIT</option>
-              </select>
-              <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
-                <option>Section</option>
-                <option>A</option>
-                <option>B</option>
-                <option>C</option>
-              </select>
             </div>
           </div>
 
@@ -147,7 +132,6 @@ const EnrollmentList = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Course</th>
                   <th className="px-6 py-4 border-b">Year Level</th>
                   <th className="px-6 py-4 border-b">Section</th>
-                  <th className="px-6 py-4 border-b">Status</th>
                   <th className="px-6 py-4 border-b">Enrollment Status</th>
                   <th className="px-6 py-4 border-b">Enroll</th>
                 </tr>
@@ -155,14 +139,18 @@ const EnrollmentList = ({ onLogout }) => {
               <tbody>
                 {currentStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">{student.number}</td>
-                    <td className="px-6 py-4 border-b">{student.name}</td>
-                    <td className="px-6 py-4 border-b">{student.course}</td>
-                    <td className="px-6 py-4 border-b">{student.yearLevel}</td>
-                    <td className="px-6 py-4 border-b">{student.section}</td>
-                    <td className="px-6 py-4 border-b">{student.status}</td>
+                    <td className="px-6 py-4 border-b">{student.id}</td>
                     <td className="px-6 py-4 border-b">
-                      {student.enrollmentStatus}
+                      {student.last_name}, {student.first_name}{" "}
+                      {student.middle_name || ""}
+                    </td>
+                    <td className="px-6 py-4 border-b">{student.program}</td>
+                    <td className="px-6 py-4 border-b">{student.year_level}</td>
+                    <td className="px-6 py-4 border-b">
+                      {student.section || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student.enrollment_status}
                     </td>
                     <td className="px-6 py-4 border-b">
                       <button
@@ -187,13 +175,13 @@ const EnrollmentList = ({ onLogout }) => {
               </button>
               <p>
                 Page {currentPage} of{" "}
-                {Math.ceil(students.length / studentsPerPage)}
+                {Math.ceil(filteredStudents.length / studentsPerPage)}
               </p>
               <button
                 className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 disabled:opacity-50"
                 onClick={() => paginate(currentPage + 1)}
                 disabled={
-                  currentPage === Math.ceil(students.length / studentsPerPage)
+                  currentPage === Math.ceil(filteredStudents.length / studentsPerPage)
                 }
               >
                 Next

@@ -175,76 +175,6 @@ class Command(BaseCommand):
             {"code": "ITEC 199", "title": "Practicum (minimum 486 hours)", "lec_units": 6, "lab_units": 0, "contact_hr_lec": 0, "contact_hr_lab": 0, "year_level": 4, "semester": 2, "program": "BSIT"},
         ]
 
-        # Create sample addresses using Faker
-        addresses = [
-            Address.objects.create(street=fake.street_address(), barangay=fake.city(), city=fake.city(), province=fake.state())
-            for _ in range(10)  # Create 10 random addresses
-        ]
-
-        # Create sample instructors
-        instructors = [
-            Instructor.objects.create(first_name=fake.first_name(), last_name=fake.last_name(), gender=random.choice(["MALE", "FEMALE"]), address=random.choice(addresses))
-            for _ in range(10)  # Create 10 random instructors
-        ]
-
-        # Create courses for BSCS
-        for course in bscs_courses:
-            if not Course.objects.filter(code=course['code'], program=course['program']).exists():
-                Course.objects.create(**course)
-
-        # Create courses for BSIT
-        for course in bsit_courses:
-            if not Course.objects.filter(code=course['code'], program=course['program']).exists():
-                Course.objects.create(**course)
-
-        # Create sample students using Faker
-        students = []
-        year = datetime.strptime("2024-12-01", "%Y-%m-%d").year
-        for i in range(1, 11):
-            year_of_birth = random.randint(1980, 2003)  # Generate a valid year for date of birth
-            month_of_birth = random.randint(1, 12)  # Generate a valid month
-            day_of_birth = random.randint(1, 28)  # To avoid issues with month lengths, limit to 28 days
-            date_of_birth = f"{year_of_birth}-{month_of_birth:02d}-{day_of_birth:02d}"  # Set a valid date format
-
-            # Generate a unique student_id and email
-            unique = False
-            while not unique:
-                # Ensure student_id ends with '10' or '11' for program determination
-                program_suffix = random.choice(["10", "11"])
-                student_id = int(str(random.randint(2020, year)) + program_suffix + str(random.randint(100, 999)))
-                email = fake.email()  # Use Faker to generate a random email
-                
-                # Ensure no duplicate email & student id/number
-                if not Student.objects.filter(id=student_id, email=email).exists():
-                    unique = True
-
-            # Determine category based on year level
-            year_level = random.randint(1, 4)  # Randomly select year level (1 to 4)
-            category = "NEW" if year_level == 1 else "OLD"
-
-            # Determine program based on student_id
-            program = "BSIT" if str(student_id)[4:6] == "10" else "BSCS"
-
-            # Create the student instance
-            student_instance = Student.objects.create(
-                id=student_id,
-                email=email,
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-                middle_name=fake.last_name(),  # Added middle_name
-                address=random.choice(addresses),  # Assuming addresses is a list of Address objects
-                date_of_birth=date_of_birth,
-                gender=random.choice([choice[0] for choice in STUDENT_GENDER.choices]),  # Randomly select gender from choices
-                contact_number=fake.phone_number(),  # Use Faker for contact number
-                status=random.choice([choice[0] for choice in STUDENT_REG_STATUS.choices]),  # Randomly select status from choices
-                section=random.randint(1, 5),
-                year_level=year_level,
-                academic_year="2023-2024",
-                category=category,  # Use the determined category
-                program=program  # Use the determined program
-            )
-            students.append(student_instance)
-
         pre_requisite = [
             {"pre_requisite": "GNED 11", "course_id": "GNED 12", "program": "BSCS"},
             {"pre_requisite": "DCIT 22", "course_id": "DCIT 23", "program": "BSCS"},
@@ -334,132 +264,228 @@ class Command(BaseCommand):
             {"pre_requisite": "ITEC 85", "course_id": "ITEC 199", "program": "BSIT"},   
         ]
 
-        # Create sample enrollments for courses
-        for student in students:
-            # Enroll in BSCS courses
-            for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
-                enrollment = Enrollment.objects.create(
-                    course=course,
-                    student=student,
-                    enrollment_date=timezone.now(),
-                    status=random.choice(["ENROLLED", "WAITLISTED"]),
-                    school_year="2023-2024"
-                )
-                # Create billing for each enrollment
-                self.create_billing(enrollment, course.year_level, course.semester)
+        # # Create sample addresses using Faker
+        # addresses = [
+        #     Address.objects.create(street=fake.street_address(), barangay=fake.city(), city=fake.city(), province=fake.state())
+        #     for _ in range(10)  # Create 10 random addresses
+        # ]
 
-            # Enroll in BSIT courses
-            for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
-                enrollment = Enrollment.objects.create(
-                    course=course,
-                    student=student,
-                    enrollment_date=timezone.now(),
-                    status=random.choice(["ENROLLED", "WAITLISTED"]),
-                    school_year="2023-2024"
-                )
-                # Create billing for each enrollment
-                self.create_billing(enrollment, course.year_level, course.semester)
+        # # Create sample instructors
+        # instructors = [
+        #     Instructor.objects.create(first_name=fake.first_name(), last_name=fake.last_name(), gender=random.choice(["MALE", "FEMALE"]), address=random.choice(addresses))
+        #     for _ in range(10)  # Create 10 random instructors
+        # ]
+        programs = [
+            {"id": "BSCS", "description": "Bachelor of Science in Computer Science"},
+            {"id": "BSIT", "description": "Bachelor of Science in Information Technology"},
+        ]
+    
+        limits = [
+            {"limit_per_section": 40, "year_level": 1, "program": "BSCS"},
+            {"limit_per_section": 40, "year_level": 2, "program": "BSCS"},
+            {"limit_per_section": 40, "year_level": 3, "program": "BSCS"},
+            {"limit_per_section": 40, "year_level": 4, "program": "BSCS"},
 
-        # Create sample grades
-        for student in students:
-            for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
-                # Assign grade
-                if course.code == "CvSU 101":
-                    grade = "S"  # Special case for CvSU 101
-                else:
-                    grade = random.choice(["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"])
+            {"limit_per_section": 40, "year_level": 1, "program": "BSIT"},
+            {"limit_per_section": 40, "year_level": 2, "program": "BSIT"},
+            {"limit_per_section": 40, "year_level": 3, "program": "BSIT"},
+            {"limit_per_section": 40, "year_level": 4, "program": "BSIT"},
+        ]
+        
+        # Create instances of the Program model
+        for program in programs:
+            # Create a new Program instance
+            new_program = Program(id=program["id"], description=program["description"])
+            # Save the instance to the database
+            new_program.save()
 
-                # Determine remarks based on grade
-                if grade in ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "S"]:
-                    remarks = GRADE_REMARKS.PASSED  # Grades from 1.00 to 3.00 and "S" are considered passed
-                elif grade == "4":
-                    remarks = GRADE_REMARKS.CONDITIONAL_FAILURE  # Grade of 4 is conditional failure
-                elif grade == "5":
-                    remarks = GRADE_REMARKS.FAILED  # Grade of 5 is a failure
-                elif grade == "INC":
-                    remarks = GRADE_REMARKS.INCOMPLETE  # Grade of INC is incomplete
-                elif grade == "DRP":
-                    remarks = GRADE_REMARKS.DROPPED_SUBJECT  # Grade of DRP indicates dropped subject
-                else:
-                    remarks = GRADE_REMARKS.NOT_GRADED_YET  # Any other case can be considered not graded yet
+        for limit in limits:
+            Sectioning.objects.create(**limit)
 
-                # Create Grade instance
-                Grade.objects.create(
-                    student=student,
-                    course=course,
-                    grade=grade,
-                    instructor=random.choice(instructors),
-                    remarks=remarks
-                )
-
-            for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
-                # Assign grade
-                if course.code == "ORNT 1":
-                    grade = "S"  # Special case for ORNT 1
-                else:
-                    grade = random.choice(["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"])
-
-                # Determine remarks based on grade
-                if grade in ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "S"]:
-                    remarks = GRADE_REMARKS.PASSED  # Grades from 1.00 to 3.00 and "S" are considered passed
-                elif grade == "4":
-                    remarks = GRADE_REMARKS.CONDITIONAL_FAILURE  # Grade of 4 is conditional failure
-                elif grade == "5":
-                    remarks = GRADE_REMARKS.FAILED  # Grade of 5 is a failure
-                elif grade == "INC":
-                    remarks = GRADE_REMARKS.INCOMPLETE  # Grade of INC is incomplete
-                elif grade == "DRP":
-                    remarks = GRADE_REMARKS.DROPPED_SUBJECT  # Grade of DRP indicates dropped subject
-                else:
-                    remarks = GRADE_REMARKS.NOT_GRADED_YET  # Any other case can be considered not graded yet
-
-                # Create Grade instance
-                Grade.objects.create(
-                    student=student,
-                    course=course,
-                    grade=grade,
-                    instructor=random.choice(instructors),
-                    remarks=remarks
-                )
-
-        # Create sample schedules for the courses
-        for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
-            Schedule.objects.create(
-                course=course,
-                instructor=random.choice(instructors),
-                from_time=f"{random.randint(8, 12)}:00:00",
-                to_time=f"{random.randint(13, 17)}:00:00",
-                year_level=random.randint(1, 4),
-                section=random.randint(1, 5),
-                category=random.choice(["LEC", "LAB"]),
-                day=random.choice(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]),
-                room=f"Room {random.randint(1, 10)}"
-            )
-        for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
-            Schedule.objects.create(
-                course=course,
-                instructor=random.choice(instructors),
-                from_time=f"{random.randint(7, 19)}:00:00",
-                to_time=f"{random.randint(7, 19)}:00:00",
-                year_level=random.randint(1, 4),
-                section=random.randint(1, 5),
-                category=random.choice(["LEC", "LAB"]),
-                day=random.choice(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]),
-                room=f"Room {random.randint(1, 10)}"
-            )
-
-        # Initialize the mapping id
-        course_id_mapping = {}
-
-        # Populate the mapping for BSCS courses
+        # Create courses for BSCS
         for course in bscs_courses:
-            course_obj = Course.objects.get(code=course['code'], program=course['program'])
-            course_id_mapping[course['code']] = course_obj.id
+            if not Course.objects.filter(code=course['code'], program=course['program']).exists():
+                Course.objects.create(**course)
 
-        # Populate the mapping for BSIT courses
+        # Create courses for BSIT
         for course in bsit_courses:
-            course_obj = Course.objects.get(code=course['code'], program=course['program'])
-            course_id_mapping[course['code']] = course_obj.id
+            if not Course.objects.filter(code=course['code'], program=course['program']).exists():
+                Course.objects.create(**course)
+
+        # # Create sample students using Faker
+        # students = []
+        # year = datetime.strptime("2024-12-01", "%Y-%m-%d").year
+        # for i in range(1, 11):
+        #     year_of_birth = random.randint(1980, 2003)  # Generate a valid year for date of birth
+        #     month_of_birth = random.randint(1, 12)  # Generate a valid month
+        #     day_of_birth = random.randint(1, 28)  # To avoid issues with month lengths, limit to 28 days
+        #     date_of_birth = f"{year_of_birth}-{month_of_birth:02d}-{day_of_birth:02d}"  # Set a valid date format
+
+        #     # Generate a unique student_id and email
+        #     unique = False
+        #     while not unique:
+        #         # Ensure student_id ends with '10' or '11' for program determination
+        #         program_suffix = random.choice(["10", "11"])
+        #         student_id = int(str(random.randint(2020, year)) + program_suffix + str(random.randint(100, 999)))
+        #         email = fake.email()  # Use Faker to generate a random email
+                
+        #         # Ensure no duplicate email & student id/number
+        #         if not Student.objects.filter(id=student_id, email=email).exists():
+        #             unique = True
+
+        #     # Determine category based on year level
+        #     year_level = random.randint(1, 4)  # Randomly select year level (1 to 4)
+        #     category = "NEW" if year_level == 1 else "OLD"
+
+        #     # Determine program based on student_id
+        #     program = "BSIT" if str(student_id)[4:6] == "10" else "BSCS"
+
+        #     # Create the student instance
+        #     student_instance = Student.objects.create(
+        #         id=student_id,
+        #         email=email,
+        #         first_name=fake.first_name(),
+        #         last_name=fake.last_name(),
+        #         middle_name=fake.last_name(),  # Added middle_name
+        #         address=random.choice(addresses),  # Assuming addresses is a list of Address objects
+        #         date_of_birth=date_of_birth,
+        #         gender=random.choice([choice[0] for choice in STUDENT_GENDER.choices]),  # Randomly select gender from choices
+        #         contact_number=fake.phone_number(),  # Use Faker for contact number
+        #         status=random.choice([choice[0] for choice in STUDENT_REG_STATUS.choices]),  # Randomly select status from choices
+        #         section=random.randint(1, 5),
+        #         year_level=year_level,
+        #         academic_year="2023-2024",
+        #         category=category,  # Use the determined category
+        #         program=program  # Use the determined program
+        #     )
+        #     students.append(student_instance)
+
+        # # Create sample enrollments for courses
+        # for student in students:
+        #     # Enroll in BSCS courses
+        #     for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
+        #         enrollment = Enrollment.objects.create(
+        #             course=course,
+        #             student=student,
+        #             enrollment_date=timezone.now(),
+        #             status=random.choice(["ENROLLED", "WAITLISTED"]),
+        #             school_year="2023-2024"
+        #         )
+        #         # Create billing for each enrollment
+        #         self.create_billing(enrollment, course.year_level, course.semester)
+
+        #     # Enroll in BSIT courses
+        #     for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
+        #         enrollment = Enrollment.objects.create(
+        #             course=course,
+        #             student=student,
+        #             enrollment_date=timezone.now(),
+        #             status=random.choice(["ENROLLED", "WAITLISTED"]),
+        #             school_year="2023-2024"
+        #         )
+        #         # Create billing for each enrollment
+        #         self.create_billing(enrollment, course.year_level, course.semester)
+
+        # # Create sample grades
+        # for student in students:
+        #     for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
+        #         # Assign grade
+        #         if course.code == "CvSU 101":
+        #             grade = "S"  # Special case for CvSU 101
+        #         else:
+        #             grade = random.choice(["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"])
+
+        #         # Determine remarks based on grade
+        #         if grade in ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "S"]:
+        #             remarks = GRADE_REMARKS.PASSED  # Grades from 1.00 to 3.00 and "S" are considered passed
+        #         elif grade == "4":
+        #             remarks = GRADE_REMARKS.CONDITIONAL_FAILURE  # Grade of 4 is conditional failure
+        #         elif grade == "5":
+        #             remarks = GRADE_REMARKS.FAILED  # Grade of 5 is a failure
+        #         elif grade == "INC":
+        #             remarks = GRADE_REMARKS.INCOMPLETE  # Grade of INC is incomplete
+        #         elif grade == "DRP":
+        #             remarks = GRADE_REMARKS.DROPPED_SUBJECT  # Grade of DRP indicates dropped subject
+        #         else:
+        #             remarks = GRADE_REMARKS.NOT_GRADED_YET  # Any other case can be considered not graded yet
+
+        #         # Create Grade instance
+        #         Grade.objects.create(
+        #             student=student,
+        #             course=course,
+        #             grade=grade,
+        #             instructor=random.choice(instructors),
+        #             remarks=remarks
+        #         )
+
+        #     for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
+        #         # Assign grade
+        #         if course.code == "ORNT 1":
+        #             grade = "S"  # Special case for ORNT 1
+        #         else:
+        #             grade = random.choice(["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"])
+
+        #         # Determine remarks based on grade
+        #         if grade in ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "S"]:
+        #             remarks = GRADE_REMARKS.PASSED  # Grades from 1.00 to 3.00 and "S" are considered passed
+        #         elif grade == "4":
+        #             remarks = GRADE_REMARKS.CONDITIONAL_FAILURE  # Grade of 4 is conditional failure
+        #         elif grade == "5":
+        #             remarks = GRADE_REMARKS.FAILED  # Grade of 5 is a failure
+        #         elif grade == "INC":
+        #             remarks = GRADE_REMARKS.INCOMPLETE  # Grade of INC is incomplete
+        #         elif grade == "DRP":
+        #             remarks = GRADE_REMARKS.DROPPED_SUBJECT  # Grade of DRP indicates dropped subject
+        #         else:
+        #             remarks = GRADE_REMARKS.NOT_GRADED_YET  # Any other case can be considered not graded yet
+
+        #         # Create Grade instance
+        #         Grade.objects.create(
+        #             student=student,
+        #             course=course,
+        #             grade=grade,
+        #             instructor=random.choice(instructors),
+        #             remarks=remarks
+        #         )
+
+        # # Create sample schedules for the courses
+        # for course in Course.objects.filter(program='BSCS'):  # Use the created BSCS courses
+        #     Schedule.objects.create(
+        #         course=course,
+        #         instructor=random.choice(instructors),
+        #         from_time=f"{random.randint(8, 12)}:00:00",
+        #         to_time=f"{random.randint(13, 17)}:00:00",
+        #         year_level=random.randint(1, 4),
+        #         section=random.randint(1, 5),
+        #         category=random.choice(["LEC", "LAB"]),
+        #         day=random.choice(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]),
+        #         room=f"Room {random.randint(1, 10)}"
+        #     )
+        # for course in Course.objects.filter(program='BSIT'):  # Use the created BSIT courses
+        #     Schedule.objects.create(
+        #         course=course,
+        #         instructor=random.choice(instructors),
+        #         from_time=f"{random.randint(7, 19)}:00:00",
+        #         to_time=f"{random.randint(7, 19)}:00:00",
+        #         year_level=random.randint(1, 4),
+        #         section=random.randint(1, 5),
+        #         category=random.choice(["LEC", "LAB"]),
+        #         day=random.choice(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]),
+        #         room=f"Room {random.randint(1, 10)}"
+        #     )
+
+        # # Initialize the mapping id
+        # course_id_mapping = {}
+
+        # # Populate the mapping for BSCS courses
+        # for course in bscs_courses:
+        #     course_obj = Course.objects.get(code=course['code'], program=course['program'])
+        #     course_id_mapping[course['code']] = course_obj.id
+
+        # # Populate the mapping for BSIT courses
+        # for course in bsit_courses:
+        #     course_obj = Course.objects.get(code=course['code'], program=course['program'])
+        #     course_id_mapping[course['code']] = course_obj.id
 
         # Seed the updated prerequisites into the database
         for pre in pre_requisite:
@@ -541,72 +567,70 @@ class Command(BaseCommand):
         user_groups = ['Admin', 'Student', 'Instructor', 'Registrar']
         group_objects = {}
 
-        # Create user groups
-        for group_name in user_groups:
-            group, created = Group.objects.get_or_create(name=group_name)
-            group_objects[group_name] = group
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Group "{group_name}" created.'))
+        # # Create user groups
+        # for group_name in user_groups:
+        #     group, created = Group.objects.get_or_create(name=group_name)
+        #     group_objects[group_name] = group
+        #     if created:
+        #         self.stdout.write(self.style.SUCCESS(f'Group "{group_name}" created.'))
 
-        # Seed users
-        num_students = 10  # Number of students to create
-        num_instructors = 5  # Number of instructors to create
-        num_admins = 2  # Number of admins to create
-        num_registrars = 2  # Number of registrars to create
+        # # Seed users
+        # num_students = 10  # Number of students to create
+        # num_instructors = 5  # Number of instructors to create
+        # num_admins = 2  # Number of admins to create
+        # num_registrars = 2  # Number of registrars to create
 
-        # Create Students
-        for student in Student.objects.all():
-            user = User.objects.create_user(
-                username=student.id,
-                email=student.email,
-                password=fake.password(),
-                first_name=student.first_name,
-                last_name=student.last_name,
-            )
-            user.groups.add(group_objects['Student'])  # Add the user to the Student group
+        # # Create Students
+        # for student in Student.objects.all():
+        #     user = User.objects.create_user(
+        #         username=student.id,
+        #         email=student.email,
+        #         password=fake.password(),
+        #         first_name=student.first_name,
+        #         last_name=student.last_name,
+        #     )
+        #     user.groups.add(group_objects['Student'])  # Add the user to the Student group
             
-            self.stdout.write(self.style.SUCCESS(f'Student "{user.username}" created and added to the Student group.'))
+        #     self.stdout.write(self.style.SUCCESS(f'Student "{user.username}" created and added to the Student group.'))
 
-        # Create Instructors
-        for _ in range(num_instructors):
-            user = User.objects.create_user(
-                username=fake.user_name(),
-                email=fake.email(),
-                password=fake.password(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-            )
-            user.groups.add(group_objects['Instructor'])  # Add the user to the Instructor group
+        # # Create Instructors
+        # for _ in range(num_instructors):
+        #     user = User.objects.create_user(
+        #         username=fake.user_name(),
+        #         email=fake.email(),
+        #         password=fake.password(),
+        #         first_name=fake.first_name(),
+        #         last_name=fake.last_name(),
+        #     )
+        #     user.groups.add(group_objects['Instructor'])  # Add the user to the Instructor group
             
-            self.stdout.write(self.style.SUCCESS(f'Instructor "{user.username}" created and added to the Instructor group.'))
+        #     self.stdout.write(self.style.SUCCESS(f'Instructor "{user.username}" created and added to the Instructor group.'))
 
-        # Create Admins
-        for _ in range(num_admins):
-            user = User.objects.create_user(
-                username=fake.user_name(),
-                email=fake.email(),
-                password=fake.password(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-            )
-            user.groups.add(group_objects['Admin'])  # Add the user to the Admin group
+        # # Create Admins
+        # for _ in range(num_admins):
+        #     user = User.objects.create_user(
+        #         username=fake.user_name(),
+        #         email=fake.email(),
+        #         password=fake.password(),
+        #         first_name=fake.first_name(),
+        #         last_name=fake.last_name(),
+        #     )
+        #     user.groups.add(group_objects['Admin'])  # Add the user to the Admin group
             
-            self.stdout.write(self.style.SUCCESS(f'Admin "{user.username}" created and added to the Admin group.'))
+        #     self.stdout.write(self.style.SUCCESS(f'Admin "{user.username}" created and added to the Admin group.'))
 
-        # Create Registrars
-        for _ in range(num_registrars):
-            user = User.objects.create_user(
-                username=fake.user_name(),
-                email=fake.email(),
-                password=fake.password(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-            )
-            user.groups.add(group_objects['Registrar'])  # Add the user to the Registrar group
+        # # Create Registrars
+        # for _ in range(num_registrars):
+        #     user = User.objects.create_user(
+        #         username=fake.user_name(),
+        #         email=fake.email(),
+        #         password=fake.password(),
+        #         first_name=fake.first_name(),
+        #         last_name=fake.last_name(),
+        #     )
+        #     user.groups.add(group_objects['Registrar'])  # Add the user to the Registrar group
             
-            self.stdout.write(self.style.SUCCESS(f'Registrar "{user.username}" created and added to the Registrar group.'))
-
-
+        #     self.stdout.write(self.style.SUCCESS(f'Registrar "{user.username}" created and added to the Registrar group.'))
 
     def create_billing(self, enrollment, year, sem):
         # Define billing items based on course type or other criteria

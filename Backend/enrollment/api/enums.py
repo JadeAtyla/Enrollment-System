@@ -7,7 +7,7 @@ class STUDENT_GENDER(models.TextChoices):
     PREFER_NOT_TO_SAY = 'PREFER NOT TO SAY'
 
 # for Student.category
-class OLD_OR_NEW_STUDENT(models.TextChoices):
+class STUDENT_CATEGORY(models.TextChoices):
     OLD = 'OLD'
     NEW = 'NEW'
 
@@ -17,6 +17,7 @@ class STUDENT_REG_STATUS(models.TextChoices):
     IRREGULAR = 'IRREGULAR'
     TRANFEREE = 'TRANFEREE'
     RETURNEE = 'RETURNEE'
+    NOT_ENROLLED = 'NOT ENROLLED'
 
 # for Schedule.category
 class LAB_OR_LEC(models.TextChoices):
@@ -59,11 +60,12 @@ class BILLING_CATEGORY(models.TextChoices):
     OTHER_FEES = 'OTHER FEES'
 
 class PAYMENT_STATUS(models.TextChoices):
-    FULLY_PAID = 'FULLY PAID'
+    PAID = 'PAID'
     UNPAID = 'UNPAID'
+    PENDING = 'PENDING'
 
-# class USER_ROLES(models.TextChoices):
-#     ADMIN = 'ADMIN'
-#     REGISTRAR = 'REGISTRAR'
-#     DEPARTMENT = 'DEPARTMENT'
-#     STUDENT = 'STUDENT'
+class USER_ROLES(models.TextChoices):
+    ADMIN = 'ADMIN'
+    REGISTRAR = 'REGISTRAR'
+    DEPARTMENT = 'DEPARTMENT'
+    STUDENT = 'STUDENT'

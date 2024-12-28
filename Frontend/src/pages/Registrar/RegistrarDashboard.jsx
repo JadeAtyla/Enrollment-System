@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { Doughnut } from "react-chartjs-2";
 import {
@@ -11,6 +11,7 @@ import ProfileIcon from "../../images/Registrar/DashboardIcons/ProfileIcon.svg";
 import StudentIcon from "../../images/Registrar/DashboardIcons/StudentIcon.svg";
 import IrregularIcon from "../../images/Registrar/DashboardIcons/IrregularIcon.svg";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 // Register chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -18,6 +19,27 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const RegistrarDashboard = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { data, error, getData } = useData("/api/dashboard/");
+  const [userData, setUserData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  
+  useEffect(() => {
+      // Fetch student and course data on component mount
+      const fetchData = async () => {
+        await getData();
+      };
+      fetchData();
+    }, [getData]);
+
+  useEffect(() => {
+      // Update state when data changes
+      if (data) {
+        if(data.user) setUserData(data.user);
+        if(data.dashboard) setDashboardData(data.dashboard);
+      } else if (error) {
+        console.error(error?.error);
+      }
+    }, [data, error]);
 
   // Data for the pie chart
   const pieData = {
@@ -25,7 +47,7 @@ const RegistrarDashboard = ({ onLogout }) => {
     datasets: [
       {
         label: "Students",
-        data: [1000, 800, 150, 50],
+        data: [dashboardData?.regular_students, dashboardData?.irregular_students, dashboardData?.transferee_students, dashboardData?.returnee_students],
         backgroundColor: ["#22C55E", "#EF4444", "#3B82F6", "#FACC15"],
         borderWidth: 1,
       },
@@ -82,7 +104,7 @@ const RegistrarDashboard = ({ onLogout }) => {
             {/* Registrar Welcome Header */}
             <header className="flex justify-between items-center mb-[1.5rem]">
               <h1 className="text-[1.875rem] font-semibold text-gray-800">
-                Welcome! <span className="font-normal">[Registrar Name]</span>
+                Welcome! <span className="font-normal">{userData?.firs_name || "No first name."}</span>
               </h1>
             </header>
 
@@ -95,9 +117,9 @@ const RegistrarDashboard = ({ onLogout }) => {
                   className="h-[5rem] w-[5rem] rounded-full mr-[1rem]"
                 />
                 <div>
-                  <h2 className="text-[1.25rem] font-semibold">[Registrar Name]</h2>
-                  <p className="text-gray-600 text-[0.875rem]">[Username]</p>
-                  <p className="text-gray-600 text-[0.875rem]">[Date Joined]</p>
+                  <h2 className="text-[1.25rem] font-semibold">{`${userData?.last_name || ""}, ${userData?.first_name || ""}`}</h2>
+                  <p className="text-gray-600 text-[0.875rem]"><strong>Username:</strong> <em>{userData?.username || "No username."}</em></p>
+                  <p className="text-gray-600 text-[0.875rem]"><strong>First joined:</strong> <em>{userData?.date_joined || "First joined not detected."}</em></p>
                 </div>
               </div>
               <div className="text-[1.125rem] font-semibold text-gray-700">
@@ -116,16 +138,16 @@ const RegistrarDashboard = ({ onLogout }) => {
                   className="h-[4rem] w-[4rem] mx-auto mb-[1rem]"
                 />
                 <h3 className="text-base font-medium text-gray-500">Total Students</h3>
-                <p className="text-2xl font-bold mb-[1rem]">3,000</p>
+                <p className="text-2xl font-bold mb-[1rem]">{dashboardData?.total_students || 0}</p>
                 <hr className="border-t border-gray-300 mb-[1rem]" />
                 <div className="flex flex-col gap-4">
                   <div>
                     <p className="text-sm text-gray-500">BSCS</p>
-                    <p className="text-xl font-bold">1,500</p>
+                    <p className="text-xl font-bold">{dashboardData?.bscs_students || 0}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">BSIT</p>
-                    <p className="text-xl font-bold">1,500</p>
+                    <p className="text-xl font-bold">{dashboardData?.bsit_students || 0}</p>
                   </div>
                 </div>
               </div>
@@ -139,7 +161,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                     className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                   />
                   <h3 className="text-sm font-medium text-gray-500">Regular</h3>
-                  <p className="text-xl font-bold">1,000</p>
+                  <p className="text-xl font-bold">{dashboardData?.regular_students || 0}</p>
                 </div>
                 <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                   <img
@@ -148,7 +170,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                     className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                   />
                   <h3 className="text-sm font-medium text-gray-500">Irregular</h3>
-                  <p className="text-xl font-bold">800</p>
+                  <p className="text-xl font-bold">{dashboardData?.irregular_students || 0}</p>
                 </div>
                 <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                   <img
@@ -157,7 +179,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                     className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                   />
                   <h3 className="text-sm font-medium text-gray-500">Returnee</h3>
-                  <p className="text-xl font-bold">50</p>
+                  <p className="text-xl font-bold">{dashboardData?.returnee_students || 0}</p>
                 </div>
                 <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                   <img
@@ -166,7 +188,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                     className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                   />
                   <h3 className="text-sm font-medium text-gray-500">Transferee</h3>
-                  <p className="text-xl font-bold">150</p>
+                  <p className="text-xl font-bold">{dashboardData?.transferee_students || 0}</p>
                 </div>
               </div>
 

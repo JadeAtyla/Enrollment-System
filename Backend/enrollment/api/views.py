@@ -1,127 +1,139 @@
-from django.shortcuts import render
-from django.db.models import Q, Count
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse
-from rest_framework.views import APIView
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+from django.contrib.auth import authenticate
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
+from rest_framework import status
+# from ..services.services import StudentService
+# from ..validators.validators import RegistrationValidator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import *
-from .forms import (
-    AddressForm, CourseForm, EnrollmentForm, GradeForm, PreRequisiteForm,
-    InstructorForm, Billing, ScheduleForm, StudentForm, UserForm
-)
-from .models import (
-    Address, Course, Enrollment, Grade, Instructor, Billing, Schedule, PreRequisite,
-    Student
-)
-from datetime import datetime
-from django.http import JsonResponse# for Json responses
-from django.shortcuts import get_object_or_404 
-from django.core.paginator import Paginator
-import csv  # For exporting to Excel (CSV)
-
-from django.contrib.auth import authenticate
 from rest_framework.pagination import PageNumberPagination
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-import json
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+# import jwt, datetime
+# import csv  # For exporting to Excel (CSV)
+from django.db import IntegrityError
+from .utils.permissions import *
+from .custom_views.base_view import BaseView
+from .models import *
+from .serializers import *
+from django.db import transaction
+from .utils.services import StudentService
+from api.utils.validators import EnrollmentValidator
+from datetime import datetime
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.models import Group
+from django.db.models import Sum
 
+class AddressView(BaseView):
+    model = Address
+    serializer_class = AddressSerializer
+    permission_classes = [GroupPermission]
 
-# # Create your views here to render in the frontend.
-# def index(request):
-#     account = Account.objects.all() # retrive all data from the table
-#     context={
-#         'account': account # key: value
-#     }
-#     return render(request, 'index.html', context) # request, redering file, content (for html ready)
+class CourseView(BaseView):
+    model = Course
+    serializer_class = CourseSerializer
+    permission_classes = [GroupPermission]
 
-class AddressListView(APIView):
-    def get(self, request):
-        addresses = Address.objects.all()
-        serializer = AddressSerializer(addresses, many=True)
-        return Response(serializer.data)
+# Cadidate for changes
+class EnrollmentView(BaseView):
+    model = Enrollment
+    serializer_class = EnrollmentSerializer
+    permission_classes = [GroupPermission]
 
-class CourseListView(APIView):
-    def get(self, request):
-        courses = Course.objects.all()
-        serializer = CourseSerializer(courses, many=True)
-        return Response(serializer.data)
+class GradeView(BaseView):
+    model = Grade
+    serializer_class = GradeSerializer
+    permission_classes = [GroupPermission]
 
-class EnrollmentListView(APIView):
-    def get(self, request):
-        enrollments = Enrollment.objects.all()
-        serializer = EnrollmentSerializer(enrollments, many=True)
-        return Response(serializer.data)
+class InstructorView(BaseView):
+    model = Instructor
+    serializer_class = InstructorSerializer
+    permission_classes = [GroupPermission]
 
-class GradeListView(APIView):
-    def get(self, request):
-        grades = Grade.objects.all()
-        serializer = GradeSerializer(grades, many=True)
-        return Response(serializer.data)
+class StudentView(BaseView):
+    model = Student
+    serializer_class = StudentSerializer
+    permission_classes = [GroupPermission]
 
-class InstructorListView(APIView):
-    def get(self, request):
-        instructors = Instructor.objects.all()
-        serializer = InstructorSerializer(instructors, many=True)
-        return Response(serializer.data)
+# Cadidate for removal
+class ProgramView(BaseView):
+    model = Program
+    serializer_class = ProgramSerializer
+    permission_classes = [GroupPermission]
 
-class ScheduleListView(APIView):
-    def get(self, request):
-        schedules = Schedule.objects.all()
-        serializer = ScheduleSerializer(schedules, many=True)
-        return Response(serializer.data)
+class SectioningView(BaseView):
+    model = Sectioning
+    serializer_class = SectioningSerializer
+    permission_classes = [GroupPermission]
 
-class StudentListView(APIView):
-    def get(self, request):
-        students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
-        return Response(serializer.data)
+class UserView(BaseView):
+    model = User
+    serializer_class = UserSerializer
+    permission_classes = [GroupPermission]
+    
+    def put(self, request, *args, **kwargs):
+        # Extract data from the request
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
 
-class BillingListView(APIView):
-    def get(self, request):
-        billings = Billing.objects.all()
-        serializer = BillingSerializer(billings, many=True)
-        return Response(serializer.data)
+        # Get the currently authenticated user
+        user = request.user
 
-class PreRequisiteListView(APIView):
-    def get(self, request):
-        pre_requisites = PreRequisite.objects.all()
-        serializer = PreRequisiteSerializer(pre_requisites, many=True)
-        return Response(serializer.data)
+        # Validate inputs
+        if not old_password or not new_password or not confirm_password:
+            return Response(
+                {"error": "All fields (old_password, new_password, confirm_password) are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-class UserListView(APIView):
-    def get(self, request):
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
+        # Check if the old password is correct
+        if not check_password(old_password, user.password):
+            return Response(
+                {"success": False, "error": "The old password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-# Register View: Handle user registration
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register(request):
-    serializer = UserRegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=400)
+        # Check if new_password and confirm_password match
+        if new_password != confirm_password:
+            return Response(
+                {"success": False, "error": "New password and confirm password do not match."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        # Check if the new password is different from the old password
+        if old_password == new_password:
+            return Response(
+                {"success": False, "error": "The new password cannot be the same as the old password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-# Custom Token Obtain Pair View: Handle login and cookie setting
+        # Update the user's password
+        user.password = make_password(new_password)
+        user.save()
+
+        return Response(
+            {"success": True,"detail": "Password updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         try:
             response = super().post(request, *args, **kwargs)
             tokens = response.data
-
+            
             access_token = tokens['access']
             refresh_token = tokens['refresh']
 
             res = Response()
 
-            res.data = {'success': True}
+            res.data = {'detail': 'Logged in successfully', 'success': True}
 
             res.set_cookie(
                 key='access_token',
@@ -146,7 +158,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         except Exception as e:
             print(e)
-            return Response({'success': False}, status=400)
+            return Response({'detail': 'Username or password is incorrect', 'success': False}, status=400)
 
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
@@ -156,24 +168,41 @@ class CustomTokenRefreshView(TokenRefreshView):
             if not refresh_token:
                 return Response({'detail': 'Refresh token is missing.'}, status=400)
 
+            # Inject the refresh token from the cookie into the request data
             request.data['refresh'] = refresh_token
             response = super().post(request, *args, **kwargs)
 
             tokens = response.data
             access_token = tokens['access']
 
-            res = Response()
+            # Generate a new refresh token
+            new_refresh_token = tokens.get('refresh', refresh_token)
 
+            res = Response()
             res.data = {'refreshed': True}
 
+            # Update access token cookie
             res.set_cookie(
                 key='access_token',
                 value=access_token,
                 httponly=True,
-                secure=False,
+                secure=True,
                 samesite='None',
                 path='/'
             )
+
+            # Update refresh token cookie
+            res.set_cookie(
+                key='refresh_token',
+                value=new_refresh_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/'
+            )
+
+            res.data.update(tokens)
+
             return res
 
         except Exception as e:
@@ -181,465 +210,391 @@ class CustomTokenRefreshView(TokenRefreshView):
             return Response({'refreshed': False}, status=400)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout(request):
-    try:
-        res = Response()
-        res.data = {'success': True}
-        res.delete_cookie('access_token', path='/', samesite='None')
-        res.delete_cookie('refresh_token', path='/', samesite='None')
-        return res
-    except Exception as e:
-        print(e)
-        return Response({'success': False}, status=400)
- 
+# Register View
+class RegisterView(APIView):
+    permission_classes = [AllowAny]  # Allow any user to register
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def list_courses_by_program(request, program_id):
-    program = get_object_or_404(Course, pk=program_id) 
-    courses = Course.objects.filter(program=program)  
-    serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data)
+    def post(self, request, *args, **kwargs):
+        serializer = UserRegisterSerializer(data=request.data, context={'request': request})
+        try:
+            if serializer.is_valid():
+                # Create the user and return a success response
+                user = serializer.save()
+                return Response({
+                    "success": True,
+                    "message": f"User '{user.username}' registered successfully."
+                }, status=status.HTTP_201_CREATED)
+
+            # Return validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            return Response({
+                'success': False,
+                'message': f"Duplicate entry of account: {request.data['username']}"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def enroll_student(request, student_id, course_code):
-    student = get_object_or_404(Student, pk=student_id)  
-    course = get_object_or_404(Course, code=course_code) 
+# Logout View
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]  # Require authentication to log out
 
-    if Enrollment.objects.filter(student=student, course_code=course).exists():
-        return Response({'detail': 'Student is already enrolled in this course.'}, status=400)
+    def post(self, request, *args, **kwargs):
+        try:
+            res = Response()
+            res.data = {'success': True, 'group': request.user.groups.values_list("name", flat=True).first().lower()}
+            res.delete_cookie('access_token', path='/', samesite='None')
+            res.delete_cookie('refresh_token', path='/', samesite='None')
+            return res
+        except Exception as e:
+            print(e)
+            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
-    enrollment = Enrollment(
-        student=student,
-        course_code=course,
-        enrollment_date=datetime.now(),
-        status='enrolled',
-        school_year=datetime.now().year,
-    )
-    enrollment.save()
+class BaseUserView(CustomTokenObtainPairView):
+    group_name = None  # To be set in subclasses
 
-    return Response({'detail': 'Student successfully enrolled in the course.'})
+    def post(self, request, *args, **kwargs):
+        # Authenticate user and get tokens
+        response = super().post(request, *args, **kwargs)
 
-class CourseAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # Only authenticated users can access this view.
+        try:
+            # Extract username and password from request
+            username = request.data.get('username')
+            password = request.data.get('password')
+
+            # Authenticate user
+            user = authenticate(request, username=username, password=password)
+
+            if user is None:
+                return Response({'success': False, 'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Check if user belongs to the required group
+            if not user.groups.filter(name=self.group_name).exists():
+                return Response({
+                    'success': False,
+                    'detail': f"Unauthorized: User is not part of '{self.group_name}' group.",
+                    'group': f"{user.groups.values_list("name", flat=True).first().lower()}"
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Add a success message to the response
+            response.data.update({
+                'success': True,
+                'detail': f"Logged in as {self.group_name} user.",
+                'group': f"{self.group_name}"
+            })
+
+            return response
+
+        except Exception as e:
+            print(f"Error in BaseUserView: {e}")
+            return Response({'success': False, 'detail': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+class RegistrarUserView(BaseUserView):
+    group_name = "registrar"
+
+class StudentUserView(BaseUserView):
+    group_name = "student"
+
+class DepartmentUserView(BaseUserView):
+    group_name = "department"
+
+class ProtectedGroupView(APIView):
+    permission_classes = None  # Ensure the user is authenticated
+
+    def post(self, request, *args, **kwargs):
+        user_group = request.user.groups.values_list("name", flat=True).first().lower()
+
+        return Response({
+            'success': True, 
+            'detail': f"Logged in as {user_group} user.",
+            'group': f"{user_group}"
+            })
+
+class ProtectStudentView(ProtectedGroupView):
+    permission_classes = [isStudent]
+
+class ProtectDepartmentView(ProtectedGroupView):
+    permission_classes = [isDepartment]
+
+class ProtectRegistrarView(ProtectedGroupView):
+    permission_classes = [isRegistrar]
+
+class CORView(APIView):
+    permission_classes = [isStudent]
+
+    def get(self, request, *args, **kwargs):
+        # Retrieve the authenticated user's student record
+        try:
+            student = Student.objects.get(id=request.user.username)
+        except Student.DoesNotExist:
+            return Response({"error": "Student information not found for the logged-in user."}, status=404)
+        except Exception:
+            return Response({"error": "User is not a student."}, status=400)
+
+        # Serialize student data
+        student_data = StudentSerializer(student).data
+
+        # Fetch all enrollments for the student according to its present enrollment
+        enrollments = Enrollment.objects.filter(student=student, school_year=student_data['academic_year'])
+        enrollments_data = EnrollmentSerializer(enrollments, many=True).data
+
+        # Fetch all BillingList items
+        billing_list = BillingList.objects.all()
+
+        # Annotate BillingList with related AcadTermBilling data (if exists) for the student's year level and semester
+        joined_data = []
+        for billing in billing_list:
+            acad_term_billing = AcadTermBilling.objects.filter(
+                billing=billing,
+                year_level=student_data['year_level'],
+                semester=student_data['semester']
+            ).first()  # Use `first` to handle potential multiple matches (shouldn't occur due to unique constraint)
+
+            joined_data.append({
+                "billing_list": {
+                    "name": billing.name,
+                    "category": billing.category,
+                    "price": acad_term_billing.price if acad_term_billing else None,
+                    "year_level": acad_term_billing.year_level if acad_term_billing else None,
+                    "semester": acad_term_billing.semester if acad_term_billing else None
+                }
+            })
+        
+        # Collects data that is needed for total
+        billing_list = BillingList.objects.filter(category='ASSESSMENT')
+
+        # Calculate total price of academic term billings
+        total_acad_term_billings = AcadTermBilling.objects.filter(
+            billing__in = billing_list,
+            year_level=student_data['year_level'],
+            semester=student_data['semester'], 
+        ).aggregate(total_price=Sum('price'))['total_price'] or 0
+
+        # Fetch all receipts for the student
+        receipts = Receipt.objects.filter(student=student, school_year=student_data['academic_year'])
+        receipts_data = ReceiptSerializer(receipts, many=True).data
+
+        # Combine and return the response
+        return Response({
+            "student": student_data,
+            "enrollments": enrollments_data,
+            "acad_term_billings": joined_data,
+            "total_acad_term_billing_price": total_acad_term_billings,
+            "receipts": receipts_data
+        })
+
+    
+class ChecklistView(APIView):
+    permission_classes = [isStudent]  # Ensure the user is a student
+
+    def get(self, request, *args, **kwargs):
+        # Retrieve the authenticated user's student record
+        try:
+            student = Student.objects.get(id=request.user.username)
+        except Student.DoesNotExist:
+            return Response({"error": "Student information not found for the logged-in user."}, status=404)
+        except Exception:
+            return Response({"error": "User is not a student."}, status=400)
+        
+        # Get the student's program details
+        program = student.program  # Assuming the student has a foreign key to Program
+
+        # Get the courses that belong to the student's program
+        courses = Course.objects.filter(program=program).prefetch_related(
+            'grades'  # Fetch all related grades for each course
+        ).all()
+
+        # Create response data
+        data = {
+            "student": StudentSerializer(student).data,  # Serialize student data
+            "courses_and_grades": []
+        }
+
+        # Go through each course and gather grade information
+        for course in courses:
+            # Try to get the grade for this course for the specific student
+            grade = course.grades.filter(student=student).first()  # Get the first grade for the student in this course
+            
+            grade_data = {
+                "course": {
+                    "code": course.code,
+                    "title": course.title,
+                    "lab_units": course.lab_units,
+                    "lec_units": course.lec_units,
+                    "contact_hr_lab": course.contact_hr_lab,
+                    "contact_hr_lec": course.contact_hr_lec,
+                    "year_level": course.year_level,
+                    "semester": course.semester,
+                    "program": {  # Include program details for each course
+                        "program_name": course.program.description,  # Adjust according to your Program model
+                        "program_code": course.program.id,  # Adjust according to your Program model
+                    }
+                },
+                "grade": grade.grade if grade else "No Grade",  # If no grade exists, show "No Grade"
+                "remarks": grade.remarks if grade else "No Remarks"  # If no grade, show "No Remarks"
+            }
+            data["courses_and_grades"].append(grade_data)
+
+        return Response(data)
+
+class BatchEnrollStudentAPIView(APIView):
+    def post(self, request):
+        data = request.data
+
+        # Extract data from the request
+        student_id = data.get("student_id")
+        course_ids = data.get("course_ids", [])  # List of course IDs
+        paid_amount = data.get("paid")
+        current_year = datetime.now().year
+        acad_year = f"{current_year}-{current_year + 1}"
+
+        if not course_ids:
+            return Response(
+                {"error": "No courses provided for enrollment"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Start transaction block
+            with transaction.atomic():
+                # Step 1: Retrieve Student
+                student = Student.objects.get(id=student_id)
+
+                # Validate student residency
+                EnrollmentValidator.valid_residency(student.id)
+
+                # Step 2: Process enrollments for all courses
+                successful_enrollments = []
+                errors = []  # Collect validation or course-related errors
+                enrollment_date = None  # Store the enrollment date
+
+                for course_id in course_ids:
+                    try:
+                        # Validate if the student can enroll in the course
+                        EnrollmentValidator.valid_to_enroll_course(student.id, course_id)
+
+                        # If validation succeeds, retrieve the course
+                        course = Course.objects.get(id=course_id)
+
+                        # Create the enrollment
+                        enrollment = Enrollment.objects.create(
+                            student=student,
+                            course=course,
+                            status="ENROLLED",
+                            school_year=acad_year,
+                        )
+                        successful_enrollments.append(course_id)  # Append course_id to response
+
+                        enrollment_date = enrollment.enrollment_date
+                    except serializers.ValidationError as e:
+                        # Add validation error to errors list
+                        error_message = f"Course {course_id}: {str(e.detail['error'])}"
+                        errors.append(error_message)
+                    except Course.DoesNotExist:
+                        # Add course not found error to errors list
+                        error_message = f"Course {course_id}: Course not found."
+                        errors.append(error_message)
+
+                # Check for errors and return if any exist
+                if errors:
+                    raise serializers.ValidationError(
+                        {
+                            "message": "Some courses could not be enrolled.",
+                            "errors": errors,  # List of all errors
+                            "successful_enrollments": successful_enrollments,  # Successfully enrolled courses
+                        }
+                    )
+
+                # Step 3: Update Student status
+                student.year_level = StudentService.set_year_level(enrollment_date)
+                student.academic_year = acad_year
+                student.status = "REGULAR"
+                student.save()
+
+                # Step 4: Compute `total_amount` based on `AcadTermBilling`
+                acad_term_billing = AcadTermBilling.objects.filter(
+                    year_level=student.year_level,
+                    semester=student.semester,
+                )
+
+                if not acad_term_billing:
+                    # Billing information not found, raise an error and rollback
+                    raise serializers.ValidationError(
+                        {"error": "Billing information not found for the student's year level and semester."}
+                    )
+                
+                # Calculate total price from academic term billings
+                total_amount = acad_term_billing.aggregate(total_price=Sum('price'))['total_price'] or 0
+                
+                # Step 5: Create a Receipt
+                remaining_balance = float(total_amount) - float(paid_amount)
+                receipt = Receipt.objects.create(
+                    student=student,
+                    total=total_amount,
+                    paid=paid_amount,
+                    remaining=remaining_balance,
+                    status="PENDING" if remaining_balance > 0 else "PAID",
+                )
+
+            # Success response
+            return Response(
+                {
+                    "message": "Student enrolled successfully",
+                    "enrollments": successful_enrollments,  # Return course_ids
+                    "receipt_id": receipt.id,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Student.DoesNotExist:
+            return Response(
+                {"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except serializers.ValidationError as e:
+            return Response(
+                {"error": e.detail['error']},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+class DashboarView(APIView):
+    permission_classes = [isRegistrar | isDepartment]
 
     def get(self, request):
-        courses = Course.objects.all()
-        serializer = CourseSerializer(courses, many=True)
-        return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
+        # Serialize user data
+        user = UserSerializer(request.user).data
 
-    def post(self, request):
-        serializer = CourseSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True, 'data': serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # Base counts
+        total_students = Student.objects.count()
 
-    def put(self, request, course_id):
-        course = get_object_or_404(Course, id=course_id)
-        serializer = CourseSerializer(course, data=request.data, partial=True)  # Use `partial=True` for partial updates
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
-        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # Dynamic filters for statuses
+        statuses = ["REGULAR", "IRREGULAR", "RETURNEE", "TRANSFEREE"]
+        status_counts = {f"{status.lower()}_students": Student.objects.filter(status=status).count() for status in statuses}
 
-    # Delete a course by ID
-    def delete(self, request, course_id):
-        course = get_object_or_404(Course, id=course_id)
-        course.delete()
-        return Response({'success': True, 'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
+        # Dynamic filters for programs
+        programs = ["BSCS", "BSIT"]
+        program_counts = {f"{program.lower()}_students": Student.objects.filter(program=program).count() for program in programs}
 
-# HANDLER OF FORMS  
-@api_view(['POST'])
-def generic_form_api_view(request, form_class, instance=None):
-    """
-    A reusable API view for handling forms.
+        # Dynamic filters for year levels per program
+        year_name = ["first", "second", "third", "fourth"]
+        year_level_counts = {}
+        for program in programs:
+            for year in range(1, 5):  # Year levels 1 to 4
+                key = f"{program.lower()}_{year_name[year - 1]}_year_students"
+                year_level_counts[key] = Student.objects.filter(program=program, year_level=year).count()
 
-    :param request: The HTTP request object (expects JSON data).
-    :param form_class: The form class to use for this view.
-    :param instance: An optional model instance for updating existing data (if editing).
-    :return: JSON response indicating success or failure.
-    """
-    if request.method == 'POST':
-        # Bind form with POST data (and optionally an instance for updates).
-        form = form_class(request.data, instance=instance)  # Use request.data for JSON input
-        
-        if form.is_valid():
-            form.save()
-            return Response({'message': 'Form submitted successfully'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response({'message': 'Invalid method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-# Validation During Course Enrollment
-def check_prerequisites(student, course):
-    # Get the prerequisites for the given course
-    prerequisites = PreRequisite.objects.filter(course=course)
-    
-    # If there are no prerequisites, the course can be taken freely
-    if not prerequisites.exists():
-        return True
-    
-    # Check if the student has completed all required prerequisites
-    for prereq in prerequisites:
-        # Check if the student has a grade for the prerequisite course
-        grade = Grade.objects.filter(student=student, course=prereq.pre_requisite).first()
-        
-        # If the student has no grade or the grade is not passing, return False
-        if not grade or grade.grade not in ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00']:
-            return False  # The student hasn't completed the prerequisite with a passing grade
-    
-    # If all prerequisites are met
-    return True
-
-
-# LIST View Funtions
-def generalized_list_view(
-    request,
-    model,
-    serializer_class,
-    search_fields=None,
-    filter_fields=None,
-    export_headers=None,
-    export_fields=None,
-):
-    """
-    Generalized list view for any model with serializer.
-
-    :param request: The HTTP request object.
-    :param model: The Django model to query.
-    :param serializer_class: Serializer class for the model.
-    :param search_fields: Fields to search for (list of field names).
-    :param filter_fields: Fields to filter by (dict of field name -> query parameter key).
-    :param export_headers: Headers for the CSV export.
-    :param export_fields: Fields to include in the CSV export.
-    """
-    # Querying the model
-    queryset = model.objects.all()
-
-    # Handling search
-    search_query = request.GET.get('search', '')
-    if search_query and search_fields:
-        search_conditions = Q()
-        for field in search_fields:
-            search_conditions |= Q(**{f"{field}__icontains": search_query})
-        queryset = queryset.filter(search_conditions)
-
-    # Handling filters
-    if filter_fields:
-        for field, param in filter_fields.items():
-            value = request.GET.get(param, '')
-            if value:
-                queryset = queryset.filter(**{field: value})
-
-    # Export logic
-    if 'export' in request.GET and export_headers and export_fields:
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{model._meta.model_name}_list.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(export_headers)  # Write headers
-
-        for obj in queryset:
-            row = []
-            for field in export_fields:
-                if '.' in field:
-                    related_field, sub_field = field.split('.', 1)
-                    value = getattr(getattr(obj, related_field, None), sub_field, '')
-                else:
-                    value = getattr(obj, field, '')
-                row.append(value)
-            writer.writerow(row)
-        return response
-
-    # Pagination
-    paginator = PageNumberPagination()
-    paginator.page_size = 10
-    page_obj = paginator.paginate_queryset(queryset, request)
-
-    # Serialize data
-    serializer = serializer_class(page_obj, many=True)
-    return paginator.get_paginated_response(serializer.data)
-
-
-@api_view(['GET'])
-def enrollment_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Enrollment,
-        serializer_class=EnrollmentSerializer,
-        search_fields=['student__first_name', 'student__last_name'],
-        filter_fields={
-            'student__year_level': 'year_level',
-            'course__code': 'course',
-        },
-        export_headers=[
-            'Student Number', 'Student Name', 'Program', 'Year Level', 
-            'Section', 'Status', 'Enrollment Status',
-        ],
-        export_fields=[
-            'student.id',
-            'student.full_name', 
-            'student.program',
-            'student.year_level',
-            'student.section',
-            'student.status',
-            'status',
-        ],
-    )
-
-# Student
-@api_view(['POST'])
-def login_user(request):
-    username = request.data.get('student_number')  
-    password = request.data.get('password')
-
-    if not username or not password:
-        return Response({"error": "Both fields are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    user = authenticate(request, username=username, password=password)
-
-    if user is not None:
-        request.session['student_id'] = user.id  # Store student ID in the session
-        return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
-    else:
-        return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-
-# Student Dashboard
-@api_view(['GET'])
-def get_student_data(request):
-    student_id = request.session.get("student_id")
-    if not student_id:
-        return Response({"error": "Unauthorized"}, status=401)
-
-    try:
-        student = Student.objects.get(id=student_id)
-        data = {
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "program": student.program,
-            "student_id": student.id,
-            "enrollment_status": "Enrolled" if student.status == "active" else "Not Enrolled",
-            "category": student.category,
+        # Combine results
+        response_data = {
+            "user": user,
+            "dashboard": {
+                "total_students": total_students,
+                **status_counts,
+                **program_counts,
+                **year_level_counts,
+            }
         }
-        return Response(data)
-    except Student.DoesNotExist:
-        return Response({"error": "Student not found"}, status=404)
 
-@login_required
-def get_student_profile(request):
-    # Get logged-in student information
-    try:
-        student = Student.objects.get(id=request.user.id)
-        data = {
-            "student_number": student.id,
-            "email": student.email,
-            "status": student.status,
-            "contact_number": student.contact_number,
-            "program": student.program,
-            "year_level": student.year_level,
-            "section": student.section,
-        }
-        return JsonResponse(data, status=200)
-    except Student.DoesNotExist:
-        return JsonResponse({"error": "Student not found"}, status=404)
-
-@csrf_exempt
-def change_password(request):
-    """
-    Handle password change requests.
-
-    Accepts a POST request with the current_password, new_password, and confirm_password.
-    """
-    if request.method == "POST":
-        try:
-            # Parse the JSON body
-            data = json.loads(request.body)
-            current_password = data.get("current_password")
-            new_password = data.get("new_password")
-            confirm_password = data.get("confirm_password")
-
-            # Validate the input
-            if not current_password or not new_password or not confirm_password:
-                return JsonResponse({"error": "All fields are required."}, status=400)
-
-            if new_password != confirm_password:
-                return JsonResponse({"error": "New passwords do not match."}, status=400)
-
-            # Authenticate the user
-            user = request.user
-            if not user.is_authenticated:
-                return JsonResponse({"error": "User is not authenticated."}, status=403)
-
-            if not user.check_password(current_password):
-                return JsonResponse({"error": "Current password is incorrect."}, status=400)
-
-            # Update the password
-            user.set_password(new_password)
-            user.save()
-
-            return JsonResponse({"success": "Password updated successfully."}, status=200)
-
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON format."}, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Invalid request method."}, status=405)
-
-@login_required
-def get_user_profile(request):
-    """
-    API to fetch user profile 
-    """
-    try:
-        user = request.user
-        student = Student.objects.get(id=user.id)  
-        address = student.address
-
-        profile_data = {
-            "last_name": student.last_name,
-            "first_name": student.first_name,
-            "middle_name": student.middle_name,
-            "suffix": student.suffix,
-            "address": {
-                "street": address.street,
-                "barangay": address.barangay,
-                "city": address.city,
-                "province": address.province,
-            },
-            "gender": student.gender,
-            "birthday": student.date_of_birth,
-        }
-        return JsonResponse({"data": profile_data}, status=200)
-
-    except Student.DoesNotExist:
-        return JsonResponse({"error": "Student not found."}, status=404)
-
-# Registrar Dashboard
-@api_view(['GET'])
-def dashboard_data(request):
-    total_students = Student.objects.count()
-
-    # Classification counts
-    regular_count = Student.objects.filter(status="Regular").count()
-    irregular_count = Student.objects.filter(status="Irregular").count()
-    transferee_count = Student.objects.filter(status="Transfer").count()
-    returnee_count = Student.objects.filter(status="Returning").count()
-
-    # Students per program
-    program_distribution = (
-        Student.objects.values("program")
-        .annotate(count=Count("id"))
-        .order_by("program")
-    )
-
-    # Yearly breakdown for each program
-    year_level_distribution = {}
-    for program in program_distribution:
-        program_code = program["program"]
-        year_data = (
-            Student.objects.filter(program=program_code)
-            .values("year_level")
-            .annotate(count=Count("id"))
-            .order_by("year_level")
-        )
-        year_level_distribution[program_code] = {data["year_level"]: data["count"] for data in year_data}
-
-    # Prepare response data
-    data = {
-        "total_students": total_students,
-        "classification": {
-            "regular": regular_count,
-            "irregular": irregular_count,
-            "transferee": transferee_count,
-            "returnee": returnee_count,
-        },
-        "program_distribution": list(program_distribution),
-        "year_level_distribution": year_level_distribution,
-    }
-
-    return JsonResponse(data)
-
-def instructor_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Instructor,
-        serializer_class=InstructorSerializer,
-        search_fields=['first_name', 'last_name'],  # Search by first and last name
-        filter_fields={},  # Add filters if needed
-        export_headers=[
-            'Instructor ID', 
-            'Instructor Name', 
-            'Email', 
-            'Contact No.', 
-            'Address'
-            ],
-        export_fields=[
-            'id', 
-            'full_name', 
-            'email', 
-            'contact_number', 
-            'address'
-            ]
-    )
-
-def schedule_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Schedule, 
-         serializer_class=ScheduleSerializer,
-        search_fields=['course__code'],
-        filter_fields={
-            'course__program': 'program',
-            'year_level': 'year_level',
-        },
-        export_headers=[
-            'Course Code', 'Year Level', 'Section', 'Day', 'From Time',
-            'To Time', 'Room', 'Program', 'Instructor'
-        ],
-        export_fields=[
-            'course.code',
-            'year_level',
-            'section',
-            'day',
-            'from_time',
-            'to_time',
-            'room',
-            'course.program',
-            'instructor.full_name',  
-        ]
-
-    )
-
-def student_list_view(request):
-    return generalized_list_view(
-        request,
-        model=Student,
-        serializer_class=StudentSerializer,
-        search_fields=['first_name', 'last_name'],
-        filter_fields={'year_level': 'year_level', 'program': 'course'},  
-        export_headers=[
-            'Student Number', 
-            'Student Name', 
-            'Program', 
-            'Year Level', 
-            'Section', 
-            'Status'
-            ],
-        export_fields=[
-            'id', 
-            'full_name', 
-            'program', 
-            'year_level', 
-            'section', 
-            'status'
-            ]
-
-    )
+        return Response(response_data, status=200)
