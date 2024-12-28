@@ -38,6 +38,7 @@ class SCHEDULE_DAY(models.TextChoices):
 class ENROLLMENT_STATUS(models.TextChoices):
     ENROLLED = 'ENROLLED'
     WAITLISTED = 'WAITLISTED'
+    NOT_ENROLLED = "NOT_ENROLLED"
     
 # for Grade.remarks
 class GRADE_REMARKS(models.TextChoices):

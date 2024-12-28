@@ -63,7 +63,7 @@ class Student(models.Model):
     academic_year = models.CharField(max_length=20, blank=True, null=True)
     category = models.CharField(max_length=3, choices=STUDENT_CATEGORY.choices, blank=True, null=True)
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="students", blank=True, null=True)
-    enrollment_status = models.CharField(max_length=10, choices=ENROLLMENT_STATUS.choices)
+    enrollment_status = models.CharField(max_length=25, choices=ENROLLMENT_STATUS.choices, default=ENROLLMENT_STATUS.NOT_ENROLLED)
     # # Trigger
     # def save(self, *args, **kwargs):
     #     self.category = STUDENT_CATEGORY.NEW if self.year_level <= 1 else STUDENT_CATEGORY.OLD
@@ -125,7 +125,7 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="enrollments")
     enrollment_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=ENROLLMENT_STATUS.choices)
+    status = models.CharField(max_length=25, choices=ENROLLMENT_STATUS.choices)
     year_level_taken = models.PositiveIntegerField(default=1)
     semester_taken = models.PositiveIntegerField(default=1)
     school_year = models.CharField(max_length=20)
