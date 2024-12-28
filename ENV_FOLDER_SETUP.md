@@ -17,13 +17,9 @@ Note: You can now run the project with the virtual environment activated.
 `.\env\Scripts\activate` 
 #to activate enviroment
 
-# To deactivate just do this:
-`deactivate`
-
-Note: This would stop the virtual environment.
-
 # To activate seeders Go to
-1. backend > SEEDERS_SETUP.md manual
+1. `cd backend/enrollment`
+2. backend > SEEDERS_SETUP.md manual
 
 # If errors persist on the part of mysql connection check this manual before going to seeders:
 
@@ -31,3 +27,8 @@ Note: This would stop the virtual environment.
 1. backend > enrollment > .env
 2. Change the credentials of your mysqldb's in there
 
+
+# To deactivate just do this:
+`deactivate`
+
+Note: This would deactivate the virtual environment unable to use the dependencies needed
