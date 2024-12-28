@@ -1,25 +1,43 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
+import useData from "../../components/DataUtil";
 
 const EvaluateStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
 
-  const studentInfo = {
-    number: "2022101111",
-    name: "Karlos, Juan M.",
-    program: "BSCS",
-    yearLevel: 3,
-    section: "3",
-    academicYear: "2022-2024",
-    status: "Regular",
-    enrollmentStatus: "Not Enrolled", // Enrollment status
-  };
+  const location = useLocation();
+  const {student} = location.state || "No id selected."
+  const [evalCourses, setEvalCourses] = useState([]);
+
+  const { data, error, getData } = useData(`/api/grade/?student=${student?.id}&course__year_level=${student?.year_level}&course__semester=${student?.semester}`);
+
+  useEffect(() => {
+        // Fetch student data on component mount
+        const fetchData = async () => {
+          await getData(); // Fetch data
+        };
+        fetchData();
+      }, [getData]);
+  
+  useEffect (()=>{
+    if(data){
+      setEvalCourses(data);
+    } else if (error){
+      console.log(error.response);
+    }
+  }, [data]);
 
   const handleAddToPending = () => {
-    studentInfo.enrollmentStatus = "Pending";
-    navigate("/registrar/enrollmentList", { state: { updatedStudent: studentInfo } });
+    navigate("/registrar/enrollmentList");
+  };
+
+  // Handle student enrollment
+  const handleEnrollment = () => {
+    navigate("/registrar/enroll-student", {
+      state: { student: student },
+    });
   };
 
   const studentGrades = [
@@ -63,13 +81,13 @@ const EvaluateStudent = ({ onLogout }) => {
               </thead>
               <tbody>
                 <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-b">{studentInfo.number}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.name}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.program}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.yearLevel}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.section}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.academicYear}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.status}</td>
+                  <td className="px-6 py-4 border-b">{student?.id}</td>
+                  <td className="px-6 py-4 border-b">{student?.last_name}</td>
+                  <td className="px-6 py-4 border-b">{student?.program}</td>
+                  <td className="px-6 py-4 border-b">{student?.year_level}</td>
+                  <td className="px-6 py-4 border-b">{student?.section}</td>
+                  <td className="px-6 py-4 border-b">{student?.academic_year}</td>
+                  <td className="px-6 py-4 border-b">{student?.status}</td>
                 </tr>
               </tbody>
             </table>
@@ -90,14 +108,14 @@ const EvaluateStudent = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {studentGrades.map((grade, index) => (
+                {evalCourses.map((evaluate, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">{grade.courseCode}</td>
-                    <td className="px-6 py-4 border-b">{grade.title}</td>
-                    <td className="px-6 py-4 border-b">{grade.units}</td>
-                    <td className="px-6 py-4 border-b">{grade.grade}</td>
-                    <td className="px-6 py-4 border-b">{grade.creditUnit}</td>
-                    <td className="px-6 py-4 border-b">{grade.remarks}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.course?.code}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.course?.title}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.course?.lab_units + evaluate?.course?.lec_units}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.grade}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.course?.lab_units + evaluate?.course?.lec_units}</td>
+                    <td className="px-6 py-4 border-b">{evaluate?.remarks}</td>
                   </tr>
                 ))}
               </tbody>
@@ -114,7 +132,7 @@ const EvaluateStudent = ({ onLogout }) => {
             </button>
             <button
               className="bg-blue-500 text-white px-6 py-3 rounded-[1.875rem] hover:bg-blue-600"
-              onClick={() => navigate("/registrar/enroll-student")}
+              onClick={() => handleEnrollment(student)}
             >
               VERIFY STUDENT
             </button>

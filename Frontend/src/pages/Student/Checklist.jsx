@@ -170,12 +170,12 @@ const Checklist = ({ onLogout }) => {
                 <tbody>
                   {filteredCourses.map((courseData, index) => (
                     <tr key={index}>
-                      <td className="border p-2">{courseData.course.code}</td>
-                      <td className="border p-2">{courseData.course.title}</td>
-                      <td className="border p-2">{courseData.grade}</td>
-                      <td className="border p-2">{courseData.remarks}</td>
-                      <td className="border p-2">{courseData.course.year_level}</td>
-                      <td className="border p-2">{courseData.course.semester}</td>
+                      <td className="border p-2">{courseData?.course?.code}</td>
+                      <td className="border p-2">{courseData?.course?.title}</td>
+                      <td className="border p-2">{courseData?.grade}</td>
+                      <td className="border p-2">{courseData?.remarks}</td>
+                      <td className="border p-2">{courseData?.course?.year_level}</td>
+                      <td className="border p-2">{courseData?.course?.semester}</td>
                     </tr>
                   ))}
                   {filteredCourses.length === 0 && (

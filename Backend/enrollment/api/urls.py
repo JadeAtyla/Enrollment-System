@@ -27,7 +27,7 @@ urlpatterns = [
     path('sectioning/', SectioningView.as_view(), name='sectioning'),
 
     # Enrollment endpoints
-    path('batch/', BatchEnrollStudentAPIView.as_view(), name='batch'),
+    path('batch/<int:student_id>/', BatchEnrollStudentAPIView.as_view(), name='batch'),
 
     # Student Forms
     path('cor/', CORView.as_view(), name='cor'),

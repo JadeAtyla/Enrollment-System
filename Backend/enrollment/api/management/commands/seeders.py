@@ -96,7 +96,7 @@ class Command(BaseCommand):
         # Create user groups and permissions
         self.create_user_groups_and_permissions()
 
-        user_groups = ["Admin", "Student", "Registrar", "Instructor"]
+        user_groups = ["Admin", "Student", "Registrar", "Department"]
         group_objects = {}
 
         # Create user groups
@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
         # Seed users
         num_students = 10
-        num_instructors = 5
+        num_department = 5
         num_admins = 2
         num_registrars = 2
 
@@ -180,7 +180,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Student "{user.username}" created and added to the Student group.'))
 
         # Create Instructors
-        for _ in range(num_instructors):
+        for _ in range(num_department):
             user = User.objects.create_user(
                 username=fake.user_name(),
                 email=fake.email(),
@@ -188,9 +188,9 @@ class Command(BaseCommand):
                 first_name=fake.first_name(),
                 last_name=fake.last_name(),
             )
-            user.groups.add(group_objects['Instructor'])
+            user.groups.add(group_objects['Department'])
 
-            self.stdout.write(self.style.SUCCESS(f'Instructor "{user.username}" created and added to the Instructor group.'))
+            self.stdout.write(self.style.SUCCESS(f'Department "{user.username}" created and added to the Department group.'))
 
         # Create Admins
         for _ in range(num_admins):
@@ -217,40 +217,6 @@ class Command(BaseCommand):
             user.groups.add(group_objects['Registrar'])
 
             self.stdout.write(self.style.SUCCESS(f'Registrar "{user.username}" created and added to the Registrar group.'))
-
-        # Create sample grades
-        instructors = Instructor.objects.all()
-
-        for student in students:
-            for course in Course.objects.filter(program='BSCS'):
-                grade = "S" if course.code == "CvSU 101" else random.choice([
-                    "1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"
-                ])
-
-                remarks = self.determine_remarks(grade)
-
-                Grade.objects.create(
-                    student=student,
-                    course=course,
-                    grade=grade,
-                    instructor=random.choice(instructors),
-                    remarks=remarks
-                )
-
-            for course in Course.objects.filter(program='BSIT'):
-                grade = "S" if course.code == "ORNT 1" else random.choice([
-                    "1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"
-                ])
-
-                remarks = self.determine_remarks(grade)
-
-                Grade.objects.create(
-                    student=student,
-                    course=course,
-                    grade=grade,
-                    instructor=random.choice(instructors),
-                    remarks=remarks
-                )
         
         # Preparing instances for enrollment
         students = Student.objects.all()
@@ -317,6 +283,32 @@ class Command(BaseCommand):
 
             # Call create_billing with the required arguments
             self.create_billing(student, year_level, semester, school_year)
+
+        # Create sample grades
+        instructors = Instructor.objects.all()
+
+        for student in students:
+            # Get the enrolled courses for the student
+            enrolled_courses = Enrollment.objects.filter(student=student).values_list('course', flat=True)
+
+            # Generate grades for enrolled courses only
+            for course in Course.objects.filter(id__in=enrolled_courses):
+                grade = "S" if course.code == "CvSU 101" or course.code == "ORNT 1" else random.choice([
+                    "1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "4", "5"
+                ])
+
+                remarks = self.determine_remarks(grade)
+
+                Grade.objects.create(
+                    student=student,
+                    course=course,
+                    grade=grade,
+                    instructor=random.choice(instructors),
+                    remarks=remarks
+                )
+
+        self.stdout.write(self.style.SUCCESS("Grades have been successfully created for enrolled students."))
+
 
     def create_fake_addresses(self, num_addresses=10):
         fake = Faker()

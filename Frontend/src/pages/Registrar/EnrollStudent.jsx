@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 
 
@@ -7,6 +7,11 @@ const EnrollStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const {student} = location.state || "No id selected."
+
+  console.log(student);
 
   const studentInfo = {
     number: "202211111",
@@ -75,6 +80,12 @@ const EnrollStudent = ({ onLogout }) => {
     setStudentCourses([...studentCourses, newCourse]);
   };
 
+  const backToEvaluateStudent = () => {
+    navigate("/registrar/evaluate-student", {
+      state: { student: student },
+    });
+  };
+
   return (
     <div className="flex min-h-screen">
       <RegistrarSidebar
@@ -106,13 +117,13 @@ const EnrollStudent = ({ onLogout }) => {
               </thead>
               <tbody>
                 <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-b">{studentInfo.number}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.name}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.program}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.yearLevel}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.section}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.academicYear}</td>
-                  <td className="px-6 py-4 border-b">{studentInfo.status}</td>
+                  <td className="px-6 py-4 border-b">{student?.id}</td>
+                  <td className="px-6 py-4 border-b">{student?.last_name}</td>
+                  <td className="px-6 py-4 border-b">{student?.program}</td>
+                  <td className="px-6 py-4 border-b">{student?.year_level}</td>
+                  <td className="px-6 py-4 border-b">{student?.section}</td>
+                  <td className="px-6 py-4 border-b">{student?.academic_year}</td>
+                  <td className="px-6 py-4 border-b">{student?.status}</td>
                 </tr>
               </tbody>
             </table>
@@ -328,7 +339,7 @@ const EnrollStudent = ({ onLogout }) => {
           <div className="grid grid-cols-2 gap-4 mt-6">
             <button
               className="bg-[#595959] text-white px-6 py-3 rounded-[1.875rem] hover:bg-[#afaa6d]"
-              onClick={() => navigate("/registrar/evaluate-student")}
+              onClick={() => backToEvaluateStudent()}
               >
               BACK TO EVALUATION
             </button>

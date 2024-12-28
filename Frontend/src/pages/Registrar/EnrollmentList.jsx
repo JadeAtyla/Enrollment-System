@@ -4,6 +4,7 @@ import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 import RegistrarRegisterForm from "./RegistrarRegisterForm";
 import LimitStudentsModal from "./LimitStudentsModal";
+import useData from "../../components/DataUtil";
 
 const EnrollmentList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -25,18 +26,23 @@ const EnrollmentList = ({ onLogout }) => {
     setIsLimitModalOpen(false);
   };
 
+  const { data, error, getData } = useData("/api/student/?enrollment_status=WAITLISTED");
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/student/?enrollment_status=WAITLISTED");
-        const data = await response.json();
-        setStudents(data); // Set the API response directly
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
-    fetchData();
-  }, []);
+        // Fetch student data on component mount
+        const fetchData = async () => {
+          await getData(); // Fetch data
+        };
+        fetchData();
+      }, [getData]);
+  
+  useEffect (()=>{
+    if(data){
+      setStudents(data);
+    } else if (error){
+      console.log(error.response);
+    }
+  }, [data]);
 
   // Pagination function
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -44,6 +50,7 @@ const EnrollmentList = ({ onLogout }) => {
   // Handle student enrollment
   const handleEnrollment = (studentId) => {
     const selectedStudent = students.find((student) => student.id === studentId);
+    // console.log(selectedStudent.id);
     navigate("/registrar/evaluate-student", {
       state: { student: selectedStudent },
     });

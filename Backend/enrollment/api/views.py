@@ -437,6 +437,60 @@ class ChecklistView(APIView):
         return Response(data)
 
 class BatchEnrollStudentAPIView(APIView):
+    def get(self, request, student_id):
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the courses for the student's program
+        program_courses = Course.objects.filter(program=student.program)
+
+        eligible_courses = []
+
+        for course in program_courses:
+            # Check if the course is below or equal to the student's year level and semester
+            if student.status == "REGULAR":
+                if course.year_level != 0 or course.year_level > student.year_level or (course.year_level == student.year_level and course.semester > student.semester):
+                    continue
+            else:
+                if course.year_level > student.year_level or (course.year_level == student.year_level and course.semester > student.semester):
+                    continue
+
+            # Check prerequisites - If no prerequisites, automatically pass the check
+            prerequisites = course.pre_requisites.all()
+            if prerequisites:
+                has_all_prerequisites = all(
+                    Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists()
+                    for prerequisite in prerequisites
+                )
+                if not has_all_prerequisites:
+                    # If prerequisites are not met, check if the student has failed any prerequisite
+                    failed_courses = Grade.objects.filter(student=student, course__in=prerequisites).exclude(remarks="PASSED")
+                    if failed_courses.exists():
+                        # Allow retake if student has failed a prerequisite
+                        continue
+                    else:
+                        continue  # Skip course if prerequisites are not met and no failure record exists
+
+            # Check if the student has already passed the course
+            passed_course = Grade.objects.filter(student=student, course=course, remarks="PASSED").exists()
+            if passed_course:
+                continue  # Skip course if the student has already passed
+
+            # If eligible, append course data
+            eligible_courses.append({
+                "id": course.id,
+                "code": course.code,
+                "title": course.title,
+                "year_level": course.year_level,
+                "semester": course.semester,
+            })
+
+        # Return the list of eligible courses
+        return Response({"eligible_courses": eligible_courses}, status=status.HTTP_200_OK)
+
+
     def post(self, request):
         data = request.data
 
