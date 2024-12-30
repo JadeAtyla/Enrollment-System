@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
 import DepartmentAddCourse from "./DepartmentAddCourse";
+import { useNavigate } from "react-router-dom";
 
 const DepartmentMasterList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [students] = useState(
     Array.from({ length: 15 }).map((_, index) => ({
@@ -28,14 +30,33 @@ const DepartmentMasterList = ({ onLogout }) => {
     indexOfLastStudent
   );
 
+  
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="masterList"
+        currentPage="departmentDashboard"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(section) => {
+          switch (section) {
+            case "logout":
+              navigate("/department");
+              break;
+            case "enroll":
+              navigate("/departmentDashboard/enroll");
+              break;
+            case "list":
+              navigate("/departmentDashboard/list");
+              break;
+            case "account":
+              navigate("/departmentDashboard/account");
+              break;
+            default:
+              break;
+          }
+        }}
       />
 
       {/* Main Content */}

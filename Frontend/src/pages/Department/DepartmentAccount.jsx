@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { useNavigate } from "react-router-dom";
 
@@ -13,9 +13,27 @@ const DepartmentAccount = ({ onLogout }) => {
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentAccount"
+        currentPage="departmentDashboard"
         isCollapsed={isSidebarCollapsed}
-        onToggleSidebar={setIsSidebarCollapsed}
+        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(section) => {
+          switch (section) {
+            case "logout":
+              navigate("/department");
+              break;
+            case "enroll":
+              navigate("/departmentDashboard/enroll");
+              break;
+            case "list":
+              navigate("/departmentDashboard/list");
+              break;
+            case "account":
+              navigate("/departmentDashboard/account");
+              break;
+            default:
+              break;
+          }
+        }}
       />
 
       {/* Main Content */}
@@ -24,14 +42,14 @@ const DepartmentAccount = ({ onLogout }) => {
           isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
         } w-full`}
       >
-        <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem]">
+        <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem] w-full mx-4 sm:mx-auto">
           <h1 className="text-[1.875rem] font-semibold text-gray-800 mb-4 text-center">
             User Account
           </h1>
           <hr className="border-t-[0.125rem] border-blue-500 mb-6 mx-auto w-[90%]" />
 
           {/* Account Details */}
-          <div className="grid grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Name:</p>
               <p className="text-[1rem] text-gray-700">[Name of Department]</p>
@@ -63,11 +81,11 @@ const DepartmentAccount = ({ onLogout }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Modal for Editing */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg w-[40rem] py-8 px-8">
+          <div className="bg-white rounded-2xl shadow-lg w-[90%] sm:w-[40rem] py-8 px-8">
             {/* Modal Tabs */}
             <div className="flex justify-between text-lg font-semibold mb-6 border-b-2">
               <button
@@ -97,21 +115,27 @@ const DepartmentAccount = ({ onLogout }) => {
               {currentTab === "account" && (
                 <div className="grid gap-6">
                   <div>
-                    <label className="block text-sm font-medium">Old Password *</label>
+                    <label className="block text-sm font-medium">
+                      Old Password *
+                    </label>
                     <input
                       type="password"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">New Password *</label>
+                    <label className="block text-sm font-medium">
+                      New Password *
+                    </label>
                     <input
                       type="password"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">Confirm Password *</label>
+                    <label className="block text-sm font-medium">
+                      Confirm Password *
+                    </label>
                     <input
                       type="password"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
@@ -124,23 +148,29 @@ const DepartmentAccount = ({ onLogout }) => {
               )}
 
               {currentTab === "personalData" && (
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium">First Name *</label>
+                    <label className="block text-sm font-medium">
+                      First Name *
+                    </label>
                     <input
                       type="text"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">Middle Name</label>
+                    <label className="block text-sm font-medium">
+                      Middle Name
+                    </label>
                     <input
                       type="text"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">Last Name *</label>
+                    <label className="block text-sm font-medium">
+                      Last Name *
+                    </label>
                     <input
                       type="text"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
@@ -177,8 +207,7 @@ const DepartmentAccount = ({ onLogout }) => {
             </div>
           </div>
         </div>
-     
-    )}
+      )}
     </div>
   );
 };
