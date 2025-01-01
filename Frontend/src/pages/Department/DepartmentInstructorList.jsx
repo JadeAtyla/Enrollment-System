@@ -1,16 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
 import InstructorInfoModal from "./InformationModal";
 import DepartmentAddInstructor from "./DepartmentAddInstructor";
+import { useNavigate } from "react-router-dom";
 
 const DepartmentInstructorList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
-  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] =
-    useState(false);
+  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] = useState(false);
   const instructorsPerPage = 10;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Update the isMobile state based on window size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // Add event listener to check for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Initial check
+    handleResize();
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Set the initial state of instructors to an empty array
   const [instructors, setInstructors] = useState([]);
@@ -51,22 +69,38 @@ const DepartmentInstructorList = ({ onLogout }) => {
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="instructorList"
+        currentPage="departmentDashboard"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(section) => {
+          switch (section) {
+            case "logout":
+              navigate("/department");
+              break;
+            case "enroll":
+              navigate("/departmentDashboard/enroll");
+              break;
+            case "list":
+              navigate("/departmentDashboard/list");
+              break;
+            case "account":
+              navigate("/departmentDashboard/account");
+              break;
+            default:
+              break;
+          }
+        }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isSidebarCollapsed
-            ? "ml-[2rem]" // Margin for collapsed sidebar on mobile
-            : "ml-[5rem]" // Margin for expanded sidebar on mobile
-        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem] ${
-          isSidebarCollapsed
-            ? "md:pl-[7rem] sm:pl-[23rem]" // Padding-left for tablet and mobile view (collapsed sidebar)
-            : "md:pl-[12rem] sm:pl-[4rem]" // Padding-left for tablet and mobile view (expanded sidebar)
-        }`}
+          isMobile || isSidebarCollapsed
+            ? "ml-[5rem] sm:ml-[25rem] md:ml-[15rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[37rem] lg:ml-[18rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-4 sm:px-6">
           {/* Search and Filter Section */}

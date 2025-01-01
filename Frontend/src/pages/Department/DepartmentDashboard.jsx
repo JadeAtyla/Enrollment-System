@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState, useEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -12,7 +12,24 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const DepartmentDashboard = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Update the isMobile state based on window size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // Add event listener to check for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Initial check
+    handleResize();
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Data for the pie chart
   const pieData = {
@@ -37,9 +54,6 @@ const DepartmentDashboard = ({ onLogout }) => {
     responsive: true,
     maintainAspectRatio: false,
   };
-
-  
-  
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
@@ -67,17 +81,17 @@ const DepartmentDashboard = ({ onLogout }) => {
               break;
           }
         }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isSidebarCollapsed
-            ? "ml-[5rem]" // Margin for collapsed sidebar
-            : "ml-[15.625rem] md:ml-[20rem]" // Margin for expanded sidebar
-        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem] ${
-          isSidebarCollapsed ? "md:pl-[3rem]" : "md:pl-[8rem]" // Add padding-left specifically for tablet view
-        }`}
+          isMobile || isSidebarCollapsed
+            ? "ml-[5rem] lg:ml-[8rem] md:ml-[13rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem]  lg:ml-[18rem] md:ml-[37rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem]">
           {/* Department Welcome Header */}
@@ -109,7 +123,7 @@ const DepartmentDashboard = ({ onLogout }) => {
           </div>
 
           {/* Stats and Pie Chart Section */}
-          <div className="flex flex-col md:flex-row gap-[1rem] mb-[1.5rem] flex-wrap">
+          <div className="flex flex-col md:flex-row gap-[1rem] mb-[1.5rem] flex-wrap justify-center items-center">
             {/* Total Students Card */}
             <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21.5rem] w-full md:w-[48rem] lg:w-[14rem]">
               <img
@@ -135,7 +149,7 @@ const DepartmentDashboard = ({ onLogout }) => {
             </div>
 
             {/* Smaller Cards */}
-            <div className="grid grid-cols-2 gap-[1rem] w-full md:w-full lg:w-auto">
+            <div className="grid grid-cols-2 gap-[1rem] w-full md:w-full lg:w-auto justify-center items-center">
               <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                 <img
                   src={StudentIcon}
@@ -177,7 +191,7 @@ const DepartmentDashboard = ({ onLogout }) => {
             </div>
 
             {/* Pie Chart */}
-            <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21rem] w-full md:w-[48rem] lg:w-[45rem] flex flex-col items-center justify-center">
+            <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21rem] w-full md:w-[48rem] lg:w-[30rem] flex flex-col items-center justify-center">
               <div className="h-[12rem] w-[12rem] md:h-[15rem] md:w-[15rem] lg:h-[18rem] lg:w-[18rem]">
                 <Doughnut data={pieData} options={pieOptions} />
               </div>
@@ -243,7 +257,6 @@ const DepartmentDashboard = ({ onLogout }) => {
 
             {/* Data Section */}
             <div className="grid grid-cols-5 gap-y-4 text-center md:grid-cols-5 lg:grid-cols-5">
-              {/* Row 1: Number of Students */}
               <p className="font-semibold text-gray-700 col-span-1">
                 Number of Students
               </p>
@@ -274,11 +287,11 @@ const DepartmentDashboard = ({ onLogout }) => {
                   <div className="h-2 bg-red-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">4</p>
+                  <p className="text-lg font-medium text-gray-700">3</p>
                   <div className="h-2 bg-blue-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">2</p>
+                  <p className="text-lg font-medium text-gray-700">3</p>
                   <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">

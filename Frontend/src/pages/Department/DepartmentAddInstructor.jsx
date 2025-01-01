@@ -61,7 +61,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
       onClick={handleCancel} // Close modal when clicking outside
     >
       <div
-        className="bg-white rounded-2xl shadow-lg w-[52rem] py-[2rem] px-[3rem] h-[40rem] flex flex-col max-w-full sm:w-[40rem] md:w-[45rem]"
+        className="bg-white rounded-2xl shadow-lg lg:w-[52rem] md:w-[43rem] sm:w-[34rem] lg:h-[40rem] md:h-[38rem] sm:h-[36rem] py-[2rem] px-[3rem]   flex flex-col max-w-full  "
         onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
       >
         {/* Header */}

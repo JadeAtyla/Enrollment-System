@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const DepartmentMasterList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [students] = useState(
@@ -30,7 +31,22 @@ const DepartmentMasterList = ({ onLogout }) => {
     indexOfLastStudent
   );
 
-  
+  useEffect(() => {
+    // Update the isMobile state based on window size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // Add event listener to check for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Initial check
+    handleResize();
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -57,17 +73,21 @@ const DepartmentMasterList = ({ onLogout }) => {
               break;
           }
         }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
-        className={`flex flex-col flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } py-6`}
+        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+          isMobile || isSidebarCollapsed
+            ? "ml-[5rem] sm:ml-[25rem] md:ml-[15rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[37rem] lg:ml-[18rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
           {/* Search and Filter Section */}
-          <div className="flex justify-between bg-white items-center shadow rounded-[1.875rem] px-8 py-4 mb-6">
+          <div className="flex flex-wrap md:flex-nowrap flex-col md:flex-row justify-between items-center bg-white shadow-lg rounded-[1.875rem] px-4 sm:px-6 py-4 mb-4 sm:mb-6 gap-4">
             <div className="relative w-[20rem]">
               <input
                 type="text"

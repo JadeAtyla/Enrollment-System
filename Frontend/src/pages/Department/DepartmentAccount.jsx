@@ -6,7 +6,25 @@ const DepartmentAccount = ({ onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTab, setCurrentTab] = useState("account");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+      // Update the isMobile state based on window size
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768);
+      };
+  
+      // Add event listener to check for window resize
+      window.addEventListener("resize", handleResize);
+  
+      // Initial check
+      handleResize();
+  
+      // Cleanup the event listener on component unmount
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+  
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
@@ -34,13 +52,17 @@ const DepartmentAccount = ({ onLogout }) => {
               break;
           }
         }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
-        className={`flex justify-center items-center transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } w-full`}
+        className={`flex items-center flex-1 transition-all duration-300 ${
+          isMobile || isSidebarCollapsed
+            ? "ml-[5rem] md:ml-[5rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[17rem] lg:ml-[18.5rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem] w-full mx-4 sm:mx-auto">
           <h1 className="text-[1.875rem] font-semibold text-gray-800 mb-4 text-center">
@@ -85,7 +107,7 @@ const DepartmentAccount = ({ onLogout }) => {
       {/* Modal for Editing */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg w-[90%] sm:w-[40rem] py-8 px-8">
+          <div className="bg-white rounded-2xl shadow-lg w-[90%] lg:w-[45rem] md:w-[40rem] sm:w-[30rem] py-8 px-8">
             {/* Modal Tabs */}
             <div className="flex justify-between text-lg font-semibold mb-6 border-b-2">
               <button
