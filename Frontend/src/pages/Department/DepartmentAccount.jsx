@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { useNavigate } from "react-router-dom";
 
@@ -9,22 +9,12 @@ const DepartmentAccount = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-      // Update the isMobile state based on window size
-      const handleResize = () => {
-        setIsMobile(window.innerWidth <= 768);
-      };
-  
-      // Add event listener to check for window resize
-      window.addEventListener("resize", handleResize);
-  
-      // Initial check
-      handleResize();
-  
-      // Cleanup the event listener on component unmount
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-  
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
@@ -58,10 +48,10 @@ const DepartmentAccount = ({ onLogout }) => {
 
       {/* Main Content */}
       <div
-        className={`flex items-center flex-1 transition-all duration-300 ${
-          isMobile || isSidebarCollapsed
-            ? "ml-[5rem] md:ml-[5rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
-            : "ml-[15.625rem] md:ml-[17rem] lg:ml-[18.5rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        className={`flex flex-col items-center justify-center flex-1 transition-all duration-300 ${
+          isMobile
+            ? "ml-[5rem] sm:ml-[0rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[18rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem] w-full mx-4 sm:mx-auto">
@@ -85,7 +75,9 @@ const DepartmentAccount = ({ onLogout }) => {
               <p className="text-[1rem] text-gray-700">*************</p>
             </div>
             <div>
-              <p className="text-[1rem] font-bold text-gray-700">Date Joined:</p>
+              <p className="text-[1rem] font-bold text-gray-700">
+                Date Joined:
+              </p>
               <p className="text-[1rem] text-gray-700">[Date Joined]</p>
             </div>
           </div>

@@ -6,17 +6,15 @@ import StudentIcon from "../../images/Department/SidebarIcons/StudentListIcon.sv
 import AccountIcon from "../../images/Department/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Department/SidebarIcons/LogoutIcon.svg";
 import UniversityLogo from "../../images/universityLogo.svg";
-import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg"; // Add a new Course icon
+import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg";
 
-const DepartmentSidebar = ({
-  currentPage,
-  onLogout,
-  onToggleSidebar,
-  isCollapsed,
-}) => {
+const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem("sidebarCollapsed") === "true";
+  });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const menuItems = [
     {
@@ -53,44 +51,47 @@ const DepartmentSidebar = ({
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setIsMobile(true);
-      } else {
-        setIsMobile(false);
+      const isNowMobile = window.innerWidth <= 768;
+
+      if (isNowMobile !== isMobile) {
+        setIsMobile(isNowMobile);
+        if (isNowMobile) {
+          setIsCollapsed(true); // Auto-collapse on mobile view
+        }
       }
     };
 
-    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobile]);
 
   const handleToggle = () => {
-    onToggleSidebar(!isCollapsed);
+    if (!isMobile) {
+      const newCollapsedState = !isCollapsed;
+      setIsCollapsed(newCollapsedState);
+      localStorage.setItem("sidebarCollapsed", newCollapsedState);
+    }
   };
-
-  const handleLogoutClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const confirmLogout = () => {
-    setIsModalOpen(false);
-    onLogout();
-  };
-
-  const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
 
   const handleMenuClick = (path) => {
     navigate(path);
   };
 
+  const handleLogoutClick = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  const confirmLogout = () => {
+    closeModal();
+    onLogout();
+  };
+
+  const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
+  const contentMargin =
+    isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
+
   return (
-    <>
+    <div className="flex">
+      {/* Sidebar */}
       <div
         className={`fixed flex flex-col bg-gradient-to-b from-[#043674] to-[#0057b7] shadow-lg h-full top-0 left-0 ${sidebarWidth} transition-all duration-300 rounded-r-lg`}
       >
@@ -162,6 +163,11 @@ const DepartmentSidebar = ({
         </div>
       </div>
 
+      {/* Page Content */}
+      <div className={`transition-all duration-300 ${contentMargin} flex-1`}>
+        {children}
+      </div>
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[20rem]">
@@ -188,7 +194,7 @@ const DepartmentSidebar = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
