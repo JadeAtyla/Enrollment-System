@@ -21,7 +21,7 @@ const DepartmentAccount = ({ onLogout }) => {
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentDashboard"
+        currentPage="departmentAccount"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
@@ -30,13 +30,13 @@ const DepartmentAccount = ({ onLogout }) => {
               navigate("/department");
               break;
             case "enroll":
-              navigate("/departmentDashboard/enroll");
+              navigate("/departmentAccount/enroll");
               break;
             case "list":
-              navigate("/departmentDashboard/list");
+              navigate("/departmentAccount/list");
               break;
             case "account":
-              navigate("/departmentDashboard/account");
+              navigate("/departmentAccount/account");
               break;
             default:
               break;

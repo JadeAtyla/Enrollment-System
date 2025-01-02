@@ -122,7 +122,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
                 className={`flex items-center p-3 rounded-lg transition-all duration-300 ${
                   currentPage === item.name
                     ? "bg-[#02458c] text-white shadow-md"
-                    : "hover:bg-[#02458c] hover:text-white text-gray-200"
+                    : "hover:bg-[#6E85B7] hover:text-white text-gray-200"
                 }`}
                 onClick={() => handleMenuClick(item.path)}
               >
@@ -140,7 +140,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
 
           <div className="w-full px-4 mt-8">
             <button
-              className="flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-[#02458c] text-white w-full shadow-md"
+              className="flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-[#] text-white w-full shadow-md"
               onClick={handleLogoutClick}
             >
               <img
