@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import ProfileIcon from "../../images/Department/DashboardIcons/ProfileIcon.svg";
 import StudentIcon from "../../images/Department/DashboardIcons/StudentIcon.svg";
 import IrregularIcon from "../../images/Department/DashboardIcons/IrregularIcon.svg";
@@ -17,7 +12,15 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const DepartmentDashboard = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Data for the pie chart
   const pieData = {
@@ -69,219 +72,229 @@ const DepartmentDashboard = ({ onLogout }) => {
               break;
           }
         }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } py-[2rem] px-[2rem]`}
+          isMobile
+            ? "ml-[5rem] sm:ml-[0rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[18rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
-          <div className="w-full max-w-[87.5rem]">
-      
-            {/* Department Welcome Header */}
-            <header className="flex justify-between items-center mb-[1.5rem]">
-              <h1 className="text-[1.875rem] font-semibold text-gray-800">
-                Welcome! <span className="font-normal">[Department Name]</span>
-              </h1>
-            </header>
+        <div className="w-full max-w-[87.5rem]">
+          {/* Department Welcome Header */}
+          <header className="flex justify-between items-center mb-[1.5rem]">
+            <h1 className="text-[1.875rem] font-semibold text-gray-800">
+              Welcome! <span className="font-normal">[Department Name]</span>
+            </h1>
+          </header>
 
-            {/* Department Info Card */}
-            <div className="bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex items-center justify-between">
-              <div className="flex items-center">
-                <img
-                  src={ProfileIcon}
-                  alt="Profile Icon"
-                  className="h-[5rem] w-[5rem] rounded-full mr-[1rem]"
-                />
-                <div>
-                  <h2 className="text-[1.25rem] font-semibold">[Department Name]</h2>
-                  <p className="text-gray-600 text-[0.875rem]">[Username]</p>
-                  <p className="text-gray-600 text-[0.875rem]">[Date Joined]</p>
-                </div>
+          {/* Department Info Card */}
+          <div className="bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex items-center justify-between">
+            <div className="flex items-center">
+              <img
+                src={ProfileIcon}
+                alt="Profile Icon"
+                className="h-[5rem] w-[5rem] rounded-full mr-[1rem]"
+              />
+              <div>
+                <h2 className="text-[1.25rem] font-semibold">
+                  [Department Name]
+                </h2>
+                <p className="text-gray-600 text-[0.875rem]">[Username]</p>
+                <p className="text-gray-600 text-[0.875rem]">[Date Joined]</p>
               </div>
-              <div className="text-[1.125rem] font-semibold text-gray-700">
-                Role: Department
+            </div>
+            <div className="text-[1.125rem] font-semibold text-gray-700">
+              Role: Department
+            </div>
+          </div>
+
+          {/* Stats and Pie Chart Section */}
+          <div className="flex flex-col md:flex-row gap-[1rem] mb-[1.5rem] flex-wrap justify-center items-center">
+            {/* Total Students Card */}
+            <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21.5rem] w-full md:w-[48rem] lg:w-[14rem]">
+              <img
+                src={StudentIcon}
+                alt="Total Students"
+                className="h-[4rem] w-[4rem] mx-auto mb-[1rem]"
+              />
+              <h3 className="text-base font-medium text-gray-500">
+                Total Students
+              </h3>
+              <p className="text-2xl font-bold mb-[1rem]">3,000</p>
+              <hr className="border-t border-gray-300 mb-[1rem]" />
+              <div className="flex flex-col gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">BSCS</p>
+                  <p className="text-xl font-bold">1,500</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">BSIT</p>
+                  <p className="text-xl font-bold">1,500</p>
+                </div>
               </div>
             </div>
 
-
-            {/* Stats and Pie Chart Section */}
-            <div className="flex flex-cols gap-[1rem] mb-[1.5rem]">
-              {/* Total Students Card */}
-              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21.5rem] w-[10rem]">
+            {/* Smaller Cards */}
+            <div className="grid grid-cols-2 gap-[1rem] w-full md:w-full lg:w-auto justify-center items-center">
+              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                 <img
                   src={StudentIcon}
-                  alt="Total Students"
-                  className="h-[4rem] w-[4rem] mx-auto mb-[1rem]"
+                  alt="Regular Students"
+                  className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                 />
-                <h3 className="text-base font-medium text-gray-500">Total Students</h3>
-                <p className="text-2xl font-bold mb-[1rem]">3,000</p>
-                <hr className="border-t border-gray-300 mb-[1rem]" />
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">BSCS</p>
-                    <p className="text-xl font-bold">1,500</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">BSIT</p>
-                    <p className="text-xl font-bold">1,500</p>
-                  </div>
+                <h3 className="text-sm font-medium text-gray-500">Regular</h3>
+                <p className="text-xl font-bold">1,000</p>
+              </div>
+              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
+                <img
+                  src={IrregularIcon}
+                  alt="Irregular Students"
+                  className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
+                />
+                <h3 className="text-sm font-medium text-gray-500">Irregular</h3>
+                <p className="text-xl font-bold">800</p>
+              </div>
+              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
+                <img
+                  src={StudentIcon}
+                  alt="Returnee Students"
+                  className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
+                />
+                <h3 className="text-sm font-medium text-gray-500">Returnee</h3>
+                <p className="text-xl font-bold">50</p>
+              </div>
+              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
+                <img
+                  src={StudentIcon}
+                  alt="Transferee Students"
+                  className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
+                />
+                <h3 className="text-sm font-medium text-gray-500">
+                  Transferee
+                </h3>
+                <p className="text-xl font-bold">150</p>
+              </div>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21rem] w-full md:w-[48rem] lg:w-[30rem] flex flex-col items-center justify-center">
+              <div className="h-[12rem] w-[12rem] md:h-[15rem] md:w-[15rem] lg:h-[18rem] lg:w-[18rem]">
+                <Doughnut data={pieData} options={pieOptions} />
+              </div>
+              <div className="grid grid-cols-2 gap-[0.5rem] text-sm mt-4 text-center">
+                <div className="flex items-center justify-center">
+                  <span className="h-[1rem] w-[1rem] bg-green-500 rounded-full mr-2"></span>
+                  Regular
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="h-[1rem] w-[1rem] bg-red-500 rounded-full mr-2"></span>
+                  Irregular
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="h-[1rem] w-[1rem] bg-blue-500 rounded-full mr-2"></span>
+                  Transferee
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="h-[1rem] w-[1rem] bg-yellow-500 rounded-full mr-2"></span>
+                  Returnee
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Smaller Cards */}
-              <div className="grid grid-cols-2 gap-[1rem]">
-                <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
-                  <img
-                    src={StudentIcon}
-                    alt="Regular Students"
-                    className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
-                  />
-                  <h3 className="text-sm font-medium text-gray-500">Regular</h3>
-                  <p className="text-xl font-bold">1,000</p>
-                </div>
-                <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
-                  <img
-                    src={IrregularIcon}
-                    alt="Irregular Students"
-                    className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
-                  />
-                  <h3 className="text-sm font-medium text-gray-500">Irregular</h3>
-                  <p className="text-xl font-bold">800</p>
-                </div>
-                <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
-                  <img
-                    src={StudentIcon}
-                    alt="Returnee Students"
-                    className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
-                  />
-                  <h3 className="text-sm font-medium text-gray-500">Returnee</h3>
-                  <p className="text-xl font-bold">50</p>
-                </div>
-                <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
-                  <img
-                    src={StudentIcon}
-                    alt="Transferee Students"
-                    className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
-                  />
-                  <h3 className="text-sm font-medium text-gray-500">Transferee</h3>
-                  <p className="text-xl font-bold">150</p>
-                </div>
+          {/* Program Breakdown Section */}
+          <div className="bg-white shadow-lg rounded-[1.875rem] p-6">
+            {/* Top Section: Dropdown and Legend */}
+            <div className="flex justify-between items-center mb-6">
+              {/* Program Selector */}
+              <div className="flex items-center gap-4">
+                <label htmlFor="program" className="font-bold text-gray-800">
+                  PROGRAM
+                </label>
+                <select
+                  id="program"
+                  className="border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 w-[rem]"
+                >
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIT">BSIT</option>
+                </select>
               </div>
 
-              {/* Pie Chart */}
-              <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[21rem] w-[40rem] flex flex-col items-center justify-center">
-                <div className="h-[12rem] w-[12rem]">
-                  <Doughnut data={pieData} options={pieOptions} />
+              {/* Legend */}
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-red-500 rounded-full"></span>
+                  <p className="text-sm font-medium text-gray-700">1st Year</p>
                 </div>
-                <div className="grid grid-cols-2 gap-[0.5rem] text-sm mt-4 text-center">
-                  <div className="flex items-center justify-center">
-                    <span className="h-[1rem] w-[1rem] bg-green-500 rounded-full mr-2"></span>
-                    Regular
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <span className="h-[1rem] w-[1rem] bg-red-500 rounded-full mr-2"></span>
-                    Irregular
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <span className="h-[1rem] w-[1rem] bg-blue-500 rounded-full mr-2"></span>
-                    Transferee
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <span className="h-[1rem] w-[1rem] bg-yellow-500 rounded-full mr-2"></span>
-                    Returnee
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-blue-500 rounded-full"></span>
+                  <p className="text-sm font-medium text-gray-700">2nd Year</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-yellow-500 rounded-full"></span>
+                  <p className="text-sm font-medium text-gray-700">3rd Year</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-green-500 rounded-full"></span>
+                  <p className="text-sm font-medium text-gray-700">4th Year</p>
                 </div>
               </div>
             </div>
 
-            {/* Program Breakdown Section */}
-            <div className="bg-white shadow-lg rounded-[1.875rem] p-6">
-              {/* Top Section: Dropdown and Legend */}
-              <div className="flex justify-between items-center mb-6">
-                {/* Program Selector */}
-                <div className="flex items-center gap-4">
-                  <label htmlFor="program" className="font-bold text-gray-800">
-                    PROGRAM
-                  </label>
-                  <select
-                    id="program"
-                    className="border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 w-[rem]"
-                  >
-                    <option value="BSCS">BSCS</option>
-                    <option value="BSIT">BSIT</option>
-                  </select>
+            {/* Data Section */}
+            <div className="grid grid-cols-5 gap-y-4 text-center md:grid-cols-5 lg:grid-cols-5">
+              <p className="font-semibold text-gray-700 col-span-1">
+                Number of Students
+              </p>
+              <div className="col-span-4 grid grid-cols-4 gap-4">
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">1000</p>
+                  <div className="h-2 bg-red-500 rounded-full w-full"></div>
                 </div>
-
-                {/* Legend */}
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 bg-red-500 rounded-full"></span>
-                    <p className="text-sm font-medium text-gray-700">1st Year</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 bg-blue-500 rounded-full"></span>
-                    <p className="text-sm font-medium text-gray-700">2nd Year</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 bg-yellow-500 rounded-full"></span>
-                    <p className="text-sm font-medium text-gray-700">3rd Year</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 bg-green-500 rounded-full"></span>
-                    <p className="text-sm font-medium text-gray-700">4th Year</p>
-                  </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">1000</p>
+                  <div className="h-2 bg-blue-500 rounded-full w-full"></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">1000</p>
+                  <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">1000</p>
+                  <div className="h-2 bg-green-500 rounded-full w-full"></div>
                 </div>
               </div>
 
-              {/* Data Section */}
-              <div className="grid grid-cols-5 gap-y-4 text-center">
-                {/* Row 1: Number of Students */}
-                <p className="font-semibold text-gray-700 col-span-1">Number Students</p>
-                <div className="col-span-4 grid grid-cols-4 gap-4">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
+              {/* Row 2: Sections */}
+              <p className="font-semibold text-gray-700 col-span-1">Sections</p>
+              <div className="col-span-4 grid grid-cols-4 gap-4">
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <div className="h-2 bg-red-500 rounded-full w-full"></div>
                 </div>
-
-                {/* Row 2: Student Bars */}
-                <p className="font-semibold text-gray-700 col-span-1"></p>
-                <div className="col-span-4 grid grid-cols-4 gap-4">
-                  <div className="h-2 bg-red-500 rounded-full"></div>
-                  <div className="h-2 bg-blue-500 rounded-full"></div>
-                  <div className="h-2 bg-yellow-500 rounded-full"></div>
-                  <div className="h-2 bg-green-500 rounded-full"></div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <div className="h-2 bg-blue-500 rounded-full w-full"></div>
                 </div>
-
-                {/* Row 3: Number of Sections */}
-                <p className="font-semibold text-gray-700 col-span-1">Sections</p>
-                <div className="col-span-4 grid grid-cols-4 gap-4">
-                  <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">3</p>
-                    <div className="h-2 bg-red-500 rounded-full w-full"></div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">7</p>
-                    <div className="h-2 bg-blue-500 rounded-full w-full"></div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">4</p>
-                    <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">4</p>
-                    <div className="h-2 bg-green-500 rounded-full w-full"></div>
-                  </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <div className="h-2 bg-green-500 rounded-full w-full"></div>
                 </div>
               </div>
             </div>
+          </div>
         </div>
-      </div >
+      </div>
     </div>
-
-
   );
 };
 

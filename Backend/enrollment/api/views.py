@@ -286,8 +286,9 @@ class BaseUserView(CustomTokenObtainPairView):
                 return Response({
                     'success': False,
                     'detail': f"Unauthorized: User is not part of '{self.group_name}' group.",
-                    'group': f"{user.groups.values_list("name", flat=True).first().lower()}"
-                }, status=status.HTTP_403_FORBIDDEN)
+                    'group': f"{user.groups.values_list('name', flat=True).first().lower()}"
+                    }, status=status.HTTP_403_FORBIDDEN)
+
 
             # Add a success message to the response
             response.data.update({

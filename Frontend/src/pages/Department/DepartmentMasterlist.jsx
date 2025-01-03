@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
 import DepartmentAddCourse from "./DepartmentAddCourse";
+import { useNavigate } from "react-router-dom";
 
 const DepartmentMasterList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [students] = useState(
     Array.from({ length: 15 }).map((_, index) => ({
@@ -28,35 +31,65 @@ const DepartmentMasterList = ({ onLogout }) => {
     indexOfLastStudent
   );
 
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="masterList"
+        currentPage="departmentMasterList"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(section) => {
+          switch (section) {
+            case "logout":
+              navigate("/department");
+              break;
+            case "enroll":
+              navigate("/departmentMasterList/enroll");
+              break;
+            case "list":
+              navigate("/departmentMasterList/list");
+              break;
+            case "account":
+              navigate("/departmentMasterList/account");
+              break;
+            default:
+              break;
+          }
+        }}
+        // Hide sidebar on mobile view
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
       {/* Main Content */}
       <div
-        className={`flex flex-col flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } py-6`}
+        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+          isMobile
+            ? "ml-[12rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[19rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
           {/* Search and Filter Section */}
-          <div className="flex justify-between bg-white items-center shadow rounded-[1.875rem] px-8 py-4 mb-6">
-            <div className="relative w-[20rem]">
+          <div className="flex flex-wrap md:flex-nowrap flex-col md:flex-row justify-between items-center bg-white shadow-lg rounded-[1.875rem] px-4 sm:px-6 py-4 mb-4 sm:mb-6 gap-4">
+            <div className="relative flex items-center w-[20rem] border border-gray-300 rounded-full px-4 py-1">
+              <div className="flex-shrink-0 text-gray-500">
+                <FaSearch />
+              </div>
               <input
                 type="text"
                 placeholder="Search here..."
-                className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
+                className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
               />
-              <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
-                <FaSearch />
-              </span>
             </div>
+
             <div className="flex items-center gap-4">
               <select className="border border-gray-300 rounded-full px-4 py-2 pr-8">
                 <option>Course</option>

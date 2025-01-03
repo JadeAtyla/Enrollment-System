@@ -61,7 +61,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
       onClick={handleCancel} // Close modal when clicking outside
     >
       <div
-        className="bg-white rounded-2xl shadow-lg w-[52rem] py-[2rem] px-[3rem] h-[40rem] flex flex-col"
+        className="bg-white rounded-2xl shadow-lg lg:w-[52rem] md:w-[43rem] sm:w-[34rem] lg:h-[40rem] md:h-[38rem] sm:h-[36rem] py-[2rem] px-[3rem]   flex flex-col max-w-full  "
         onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
       >
         {/* Header */}
@@ -73,7 +73,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
 
         {/* Form Content */}
         <div className="flex-1 overflow-auto">
-          <form className="grid grid-cols-2 gap-x-8 gap-y-6">
+          <form className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-1 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium mb-1">
                 Last Name *

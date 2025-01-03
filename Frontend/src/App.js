@@ -37,7 +37,7 @@ import { validateCredentials } from "./StaticFunctions/staticFunctions";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
-import axios from "axios"
+import axios from "axios";
 
 function App() {
   const [user, setUser] = useState(null); // Holds user information
@@ -47,7 +47,7 @@ function App() {
     if (!username || !password) {
       return { error: "Username and password must be filled." };
     }
-  
+
     try {
       const res = await axios.post(`/api/login/${group}/`, {
         username,
@@ -55,29 +55,32 @@ function App() {
       });
       return res.data; // Return the successful response data
     } catch (err) {
-      return err.response.data
+      return err.response.data;
     }
   };
-  
+
   // For logging out all users
   const handleLogout = async () => {
     try {
       const logoutUrl = `/api/logout/`;
-  
+
       const res = await axios.post(logoutUrl);
-  
+
       console.log(res.data.success); // For debugging
-  
+
       // Redirect after successful logout
       if (res.data.success) {
-        <Navigate to={`/${res.data.group}/`}/>; // Navigate to the group's page
+        <Navigate to={`/${res.data.group}/`} />; // Navigate to the group's page
       }
     } catch (error) {
       // Handle any errors that occur during the axios request
-      console.log("Logout Failed:", error.response?.data?.detail || error.message);
+      console.log(
+        "Logout Failed:",
+        error.response?.data?.detail || error.message
+      );
     }
   };
-  
+
   // Redirect Component
   const RedirectToAdmin = () => {
     window.location.href = "http://127.0.0.1:8000/admin/login/";
@@ -91,7 +94,10 @@ function App() {
         <Route path="/" element={<Navigate to="/student" />} />
 
         {/* Student Routes */}
-        <Route path="/student" element={<StudentLoginCard onLogin={handleLogin} />} />
+        <Route
+          path="/student"
+          element={<StudentLoginCard onLogin={handleLogin} />}
+        />
         <Route
           path="/student/dashboard"
           element={
@@ -127,7 +133,10 @@ function App() {
         <Route path="/student/register" element={<RegisterForm />} />
 
         {/* Registrar Routes */}
-        <Route path="/registrar" element={<RegistrarLoginCard onLogin={handleLogin} />} />
+        <Route
+          path="/registrar"
+          element={<RegistrarLoginCard onLogin={handleLogin} />}
+        />
         <Route
           path="/registrar/dashboard"
           element={
@@ -202,7 +211,10 @@ function App() {
         />
 
         {/* Department Routes */}
-        <Route path="/department" element={<DepartmentLoginCard onLogin={handleLogin} />} />
+        <Route
+          path="/department"
+          element={<DepartmentLoginCard onLogin={handleLogin} />}
+        />
         <Route
           path="/department/dashboard"
           element={
@@ -227,6 +239,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/department/departmentMasterList"
+          element={
+            <ProtectedRoute group="masterlist">
+              <DepartmentMasterList onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/department/departmentAccount"
           element={
