@@ -1,27 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import useData from "../../components/DataUtil";
+import Alert, { triggerAlert } from "../../components/Alert";
 
 const RegistrarRegisterForm = ({ onClose, onSave }) => {
     const [step, setStep] = useState(1);
     const [studentData, setStudentData] = useState({
-        studentNumber: "",
-        yearLevel: "",
+        id: "",
+        email: "",
+        first_name: "",
+        last_name: "",
+        middle_name: "",
         section: "",
-        category: "",
-        program: "",
-        lastName: "",
-        firstName: "",
-        street: "",
-        barangay: "",
-        city: "",
-        province: "",
+        address: {
+            street: "",
+            barangay: "",
+            city: "",
+            province: ""
+        },
+        date_of_birth: "", 
         gender: "",
-        contactNumber: "",
-        dateOfBirth: "",
+        contact_number: "",
+        year_level: "",
+        semester: "",
+        enrollment_status: "WAITLISTED",
     });
+
+    const { data, error, createData } = useData(`/api/student/`);
+    const [trigger, setTrigger] = useState(false);
+
+    useEffect(() => {
+        if (data) {
+            setTrigger(true);
+            triggerAlert("success", "Success", "Student added successfully");
+        }
+        if (error) {
+            setTrigger(false);
+            console.log(error);
+            // triggerAlert("error", "Error", error.message || "An error occurred");
+        }
+    }, [data, error, createData]);
 
     const [showConfirmation, setShowConfirmation] = useState(false);
 
+    const requiredPageOneFields = [
+        studentData.id,
+        studentData.year_level,
+        studentData.semester,
+        studentData.email
+    ];
+
+    const requiredPageTwoFields = [
+        studentData.last_name,
+        studentData.first_name,
+        studentData.address.city,
+        studentData.address.province,
+        studentData.gender,
+        studentData.contact_number,
+        studentData.date_of_birth,
+    ];
+
     const handleNext = () => {
+        if (step === 1 && requiredPageOneFields.includes("")) {
+            triggerAlert("error", "Error", "Please fill out all required fields.");
+            return;
+        }
+
         setStep((prev) => prev + 1);
     };
 
@@ -31,10 +74,20 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setStudentData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        if (name in studentData.address) {
+            setStudentData((prev) => ({
+                ...prev,
+                address: {
+                    ...prev.address,
+                    [name]: value,
+                },
+            }));
+        } else {
+            setStudentData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
 
     const handleCancel = () => {
@@ -47,13 +100,37 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
         setShowConfirmation(true);
     };
 
-    const confirmRegister = () => {
-        if (onSave) {
-            onSave(studentData); // Save the student data
+    const confirmRegister = async () => {
+        if (step === 2 && requiredPageTwoFields.includes("")) {
+            triggerAlert("error", "Error", "Please fill out all required fields.");
+            return;
+        } else {
+            if (studentData) {
+                const payload = studentData;
+                await createData(payload);
+            }
+    
+            if (onSave) {
+                onSave(studentData); // Save the student data
+            }
+            console.log(error?.response);
+            setShowConfirmation(false);
+             // Move to the final step
         }
-        setShowConfirmation(false);
-        handleNext(); // Move to the final step
+
     };
+
+    useEffect(() => {
+        if(trigger) {
+            handleNext();
+            triggerAlert("success", "Success", "Student added successfully");
+        }
+
+        if(error){
+            triggerAlert("error", "Error", error?.message|| error?.detail || "An error occurred");
+        }
+        
+    }, [trigger]);
 
     const cancelRegister = () => {
         setShowConfirmation(false);
@@ -62,6 +139,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
     const handleFinish = () => {
         if (onClose) {
             onClose(); // Close the modal
+            window.location.reload();
         }
     };
 
@@ -110,27 +188,40 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                         </h3>
                         <form className="grid grid-cols-2 gap-x-8 gap-y-6">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Student Number *</label>
+                                <label className="block text-sm font-medium mb-1">Student Number * <span className="text-red-500">{error?.id}</span></label>
                                 <input
                                     type="text"
-                                    name="studentNumber"
-                                    value={studentData.studentNumber}
+                                    name="id"
+                                    value={studentData.id}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.id ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Year Level *</label>
+                                <label className="block text-sm font-medium mb-1">Year Level * <span className="text-red-500">{error?.year_level}</span></label>
                                 <input
                                     type="text"
-                                    name="yearLevel"
-                                    value={studentData.yearLevel}
+                                    name="year_level"
+                                    value={studentData.year_level}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.year_level ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Section *</label>
+                                <label className="block text-sm font-medium mb-1">Semester * <span className="text-red-500">{error?.semester}</span></label>
+                                <select
+                                    name="semester"
+                                    value={studentData.semester}
+                                    onChange={handleChange}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.semester ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                >
+                                    <option value="">Select Semester</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Section (Not Required)</label>
                                 <input
                                     type="text"
                                     name="section"
@@ -140,23 +231,13 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Category *</label>
+                                <label className="block text-sm font-medium mb-1">Email * <span className="text-red-500">{error?.email}</span></label>
                                 <input
                                     type="text"
-                                    name="category"
-                                    value={studentData.category}
+                                    name="email"
+                                    value={studentData.email}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Program *</label>
-                                <input
-                                    type="text"
-                                    name="program"
-                                    value={studentData.program}
-                                    onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.email ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                         </form>
@@ -170,41 +251,51 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                         </h3>
                         <form className="grid grid-cols-2 gap-x-8 gap-y-6">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Last Name *</label>
+                                <label className="block text-sm font-medium mb-1">Last Name * <span className="text-red-500">{error?.last_name}</span></label>
                                 <input
                                     type="text"
-                                    name="lastName"
-                                    value={studentData.lastName}
+                                    name="last_name"
+                                    value={studentData.last_name}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.last_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Street *</label>
+                                <label className="block text-sm font-medium mb-1">Street * <span className="text-red-500">{error?.street}</span></label>
                                 <input
                                     type="text"
                                     name="street"
-                                    value={studentData.street}
+                                    value={studentData.address.street}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.street ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">First Name *</label>
+                                <label className="block text-sm font-medium mb-1">First Name * <span className="text-red-500">{error?.first_name}</span></label>
                                 <input
                                     type="text"
-                                    name="firstName"
-                                    value={studentData.firstName}
+                                    name="first_name"
+                                    value={studentData.first_name}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.first_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Barangay *</label>
+                                <label className="block text-sm font-medium mb-1">Barangay * <span className="text-red-500">{error?.barangay}</span></label>
                                 <input
                                     type="text"
                                     name="barangay"
-                                    value={studentData.barangay}
+                                    value={studentData.address.barangay}
+                                    onChange={handleChange}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.barangay ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Middle Name (Optional)</label>
+                                <input
+                                    type="text"
+                                    name="middle_name"
+                                    value={studentData.middle_name}
                                     onChange={handleChange}
                                     className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                                 />
@@ -220,56 +311,56 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">City *</label>
+                                <label className="block text-sm font-medium mb-1">City * <span className="text-red-500">{error?.city}</span></label>
                                 <input
                                     type="text"
                                     name="city"
-                                    value={studentData.city}
+                                    value={studentData.address.city}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.city ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Gender *</label>
+                                <label className="block text-sm font-medium mb-1">Gender * <span className="text-red-500">{error?.gender}</span></label>
                                 <select
                                     name="gender"
                                     value={studentData.gender}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.gender ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 >
                                     <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
+                                    <option value="MALE">Male</option>
+                                    <option value="FEMALE">Female</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Province *</label>
+                                <label className="block text-sm font-medium mb-1">Province * <span className="text-red-500">{error?.province}</span></label>
                                 <input
                                     type="text"
                                     name="province"
-                                    value={studentData.province}
+                                    value={studentData.address.province}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.province ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Contact Number *</label>
+                                <label className="block text-sm font-medium mb-1">Contact Number * <span className="text-red-500">{error?.contact_number}</span></label>
                                 <input
                                     type="text"
-                                    name="contactNumber"
-                                    value={studentData.contactNumber}
+                                    name="contact_number"
+                                    value={studentData.contact_number}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.contact_number ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Date of Birth *</label>
+                                <label className="block text-sm font-medium mb-1">Date of Birth * <span className="text-red-500">{error?.date_of_birth}</span></label>
                                 <input
                                     type="date"
-                                    name="dateOfBirth"
-                                    value={studentData.dateOfBirth}
+                                    name="date_of_birth"
+                                    value={studentData.date_of_birth}
                                     onChange={handleChange}
-                                    className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.date_of_birth ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                         </form>
@@ -358,6 +449,8 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                     </div>
                 </div>
             </div>
+            {/* Include the Alert component */}
+            <Alert />
         </div>
     );
 };

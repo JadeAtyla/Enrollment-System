@@ -48,20 +48,20 @@ class StudentService:
     # def is_student_registered(student_id: int):
     #     #Checks if the student with the given ID is registered
     #     return User.objects.filter(username=student_id).exists()
-    @staticmethod
-    def set_year_level(enrollment_date: str):
-        # Retrieve year_level values for the given academic year
-        year_levels = Enrollment.objects.filter(enrollment_date=enrollment_date).values_list('year_level_taken', flat=True)
+    # @staticmethod
+    # def set_year_level(enrollment_date: str):
+    #     # Retrieve year_level values for the given academic year
+    #     year_levels = Enrollment.objects.filter(enrollment_date=enrollment_date).values_list('year_level_taken', flat=True)
         
-        if not year_levels:
-            return None  # Handle the case where no year_levels are found
+    #     if not year_levels:
+    #         return None  # Handle the case where no year_levels are found
 
-        # Count the occurrences of each year_level
-        year_level_counts = Counter(year_levels)
+    #     # Count the occurrences of each year_level
+    #     year_level_counts = Counter(year_levels)
         
-        # Find the year_level with the highest frequency
-        most_common_year_level = year_level_counts.most_common(1)  # Get the most common year_level
-        return most_common_year_level[0][0]  # Return the year_level value
+    #     # Find the year_level with the highest frequency
+    #     most_common_year_level = year_level_counts.most_common(1)  # Get the most common year_level
+    #     return most_common_year_level[0][0]  # Return the year_level value
 
     @staticmethod
     def set_category(year_level: int):

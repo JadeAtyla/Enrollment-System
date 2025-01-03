@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
-
+import useData from "../../components/DataUtil";
 
 const EnrollStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -9,48 +9,46 @@ const EnrollStudent = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const {student} = location.state || "No id selected."
+  const {student} = location.state || "No student"
+  const [defaultCourses, setDefaultCourses] = useState([])
+  const [eligiableCourses, setEligiableCourses] = useState([])
+  const [billings, setBillings] = useState([])
 
-  console.log(student);
+  const { data, error, getData } = useData(`/api/batch/?id=${student?.id}`);
+  
+  useEffect(() => {
+        // Fetch student data on component mount
+        const fetchData = async () => {
+          await getData(); // Fetch data
+        };
+        fetchData();
+      }, [getData]);
+    
+    useEffect (()=>{
+      if(data){
+        if(data.default_courses) setDefaultCourses(data.default_courses);
+        if(data.eligible_courses) setEligiableCourses(data.eligible_courses);
+        if(data.billings) setBillings(data.billings);
 
-  const studentInfo = {
-    number: "202211111",
-    name: "Karlios, Juan M.",
-    program: "BSCS",
-    yearLevel: 3,
-    section: "3",
-    academicYear: "2022-2024",
-    status: "Regular",
-  };
-
-  const [studentCourses, setStudentCourses] = useState([
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", unitLab: 3, unitLec: 3, contactHRLab: 3, contactHRLec: 3, yearLevel: 3, semester: 1 },
-  ]);
-
-  const studentSchedule = [
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-    { courseCode: "DCIT26", section: "3-3", day: "Monday", labTime: "3:00 PM - 4:00 PM", lecTime: "3:00 PM - 4:00 PM", room: "303", instructor: "Edan Belgica" },
-  ];
+        console.log(defaultCourses);
+        console.log(eligiableCourses);
+      } else if (error){
+        console.log(error.response);
+      }
+    }, [data]);
 
   const handleProceedToBilling = () => {
-    navigate("/registrar/billing"); // Navigate to the Billing page
+
+    const courseIds = defaultCourses.map(course => course?.id);  // Extract all course IDs
+
+    navigate("/registrar/billing", {
+    state: { student: student, courses: courseIds, billings: billings } 
+    }); // Navigate to the Billing page
   };
   
 
   const handleAddToPending = () => {
-    navigate("/registrar/enroll-student", { state: { updatedStudent: studentInfo } });
+    navigate("/registrar/enroll-student", { state: { updatedStudent: student } });
   };
 
   const toggleModal = () => {
@@ -58,27 +56,21 @@ const EnrollStudent = ({ onLogout }) => {
   };
 
   const removeCourse = (index) => {
-    const updatedCourses = studentCourses.filter((_, i) => i !== index);
-    setStudentCourses(updatedCourses);
+    const updatedCourses = defaultCourses.filter((_, i) => i !== index);
+    setDefaultCourses(updatedCourses);
   };
 
-  const updateCourse = (index, field, value) => {
-    const updatedCourses = [...studentCourses];
-    updatedCourses[index][field] = value;
-    setStudentCourses(updatedCourses);
-  };
+  const updateCourse = (index, newCourseData) => {
+    const updatedCourses = [...defaultCourses];  // Create a copy of the courses array
+    updatedCourses[index] = newCourseData;  // Replace the course at the given index with the new course data
+    setDefaultCourses(updatedCourses);  // Set the updated courses back to state
+  };    
 
   const addCourse = () => {
-    const newCourse = {
-      courseCode: "DCIT26",
-      schedule: "LAB - 1:00 PM to 3:00 PM",
-      day: "MONDAY",
-      room: "301",
-      yearLevel: "3",
-      section: "3",
-    };
-    setStudentCourses([...studentCourses, newCourse]);
-  };
+    const newCourse = eligiableCourses.length > 0 ? { ...eligiableCourses[0] } : {}; // Make a copy of the first eligible course or an empty object
+    // You can modify the newCourse here, if you need to set specific values (e.g., a new section, title, etc.)
+    setDefaultCourses((prevCourses) => [...prevCourses, newCourse]); // Add the new course to the list
+  };  
 
   const backToEvaluateStudent = () => {
     navigate("/registrar/evaluate-student", {
@@ -111,19 +103,21 @@ const EnrollStudent = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">PROGRAM</th>
                   <th className="px-6 py-4 border-b">YEAR LEVEL</th>
                   <th className="px-6 py-4 border-b">SECTION</th>
+                  <th className="px-6 py-4 border-b">SEMESTER</th>
                   <th className="px-6 py-4 border-b">ACADEMIC YEAR</th>
                   <th className="px-6 py-4 border-b">STATUS</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-b">{student?.id}</td>
-                  <td className="px-6 py-4 border-b">{student?.last_name}</td>
-                  <td className="px-6 py-4 border-b">{student?.program}</td>
-                  <td className="px-6 py-4 border-b">{student?.year_level}</td>
-                  <td className="px-6 py-4 border-b">{student?.section}</td>
-                  <td className="px-6 py-4 border-b">{student?.academic_year}</td>
-                  <td className="px-6 py-4 border-b">{student?.status}</td>
+                <td className="px-6 py-4 border-b">{student?.id || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.last_name || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.program || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.year_level || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.section || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.semester || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.academic_year || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.status || "N/A"}</td>
                 </tr>
               </tbody>
             </table>
@@ -155,16 +149,16 @@ const EnrollStudent = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {studentCourses.map((course, index) => (
+                {defaultCourses.map((course, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">{course.courseCode}</td>
-                    <td className="px-6 py-4 border-b">{course.title}</td>
-                    <td className="px-6 py-4 border-b">{course.unitLab}</td>
-                    <td className="px-6 py-4 border-b">{course.unitLec}</td>
-                    <td className="px-6 py-4 border-b">{course.contactHRLab}</td>
-                    <td className="px-6 py-4 border-b">{course.contactHRLec}</td>
-                    <td className="px-6 py-4 border-b">{course.yearLevel}</td>
-                    <td className="px-6 py-4 border-b">{course.semester}</td>
+                    <td className="px-6 py-4 border-b">{course?.code}</td>
+                    <td className="px-6 py-4 border-b">{course?.title}</td>
+                    <td className="px-6 py-4 border-b">{course?.lab_units}</td>
+                    <td className="px-6 py-4 border-b">{course?.lec_units}</td>
+                    <td className="px-6 py-4 border-b">{course?.contact_hr_lab}</td>
+                    <td className="px-6 py-4 border-b">{course?.contact_hr_lec}</td>
+                    <td className="px-6 py-4 border-b">{course?.year_level}</td>
+                    <td className="px-6 py-4 border-b">{course?.semester}</td>
                   </tr>
                 ))}
               </tbody>
@@ -180,16 +174,12 @@ const EnrollStudent = ({ onLogout }) => {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-6 py-4 border-b invisible">ACTION</th> {/* Invisible header */}
-                      <th className="px-6 py-4 border-b">COURSE CODE</th>
-                      <th className="px-6 py-4 border-b">SCHEDULE</th>
-                      <th className="px-6 py-4 border-b">DAY</th>
-                      <th className="px-6 py-4 border-b">ROOM</th>
-                      <th className="px-6 py-4 border-b">YEAR LEVEL</th>
+                      <th className="px-6 py-4 border-b">COURSE</th>
                       <th className="px-6 py-4 border-b">SECTION</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {studentCourses.map((course, index) => (
+                    {defaultCourses.map((course, index) => (
                       <tr key={index} className="hover:bg-gray-50">
                         {/* Action column (Delete) */}
                         <td className="px-6 py-4 border-b">
@@ -202,70 +192,37 @@ const EnrollStudent = ({ onLogout }) => {
                         </td>
                         {/* Dropdown for Course Code */}
                         <td className="px-6 py-4 border-b">
-                          <select
-                            value={course.courseCode}
-                            onChange={(e) => updateCourse(index, "courseCode", e.target.value)}
-                            className="w-full p-2 border rounded-md pr-8"
-                          >
-                            <option value="DCIT26">DCIT26</option>
-                            <option value="DCIT27">DCIT27</option>
-                            <option value="DCIT28">DCIT28</option>
-                            {/* Add more course options as needed */}
-                          </select>
-                        </td>
-                        {/* Dropdown for Schedule */}
-                        <td className="px-6 py-4 border-b">
-                          <select
-                            value={course.schedule}
-                            onChange={(e) => updateCourse(index, "schedule", e.target.value)}
-                            className="w-full p-2 border rounded-md pr-8"
-                          >
-                            <option value="LAB - 1:00 PM to 3:00 PM">LAB - 1:00 PM to 3:00 PM</option>
-                            <option value="LAB - 9:00 AM to 11:00 AM">LAB - 9:00 AM to 11:00 AM</option>
-                            {/* Add more schedule options */}
-                          </select>
-                        </td>
-                        {/* Dropdown for Day */}
-                        <td className="px-6 py-4 border-b">
-                          <select
-                            value={course.day}
-                            onChange={(e) => updateCourse(index, "day", e.target.value)}
-                            className="w-full p-2 border rounded-md pr-8"
-                          >
-                            <option value="MONDAY">MONDAY</option>
-                            <option value="TUESDAY">TUESDAY</option>
-                            <option value="WEDNESDAY">WEDNESDAY</option>
-                            <option value="THURSDAY">THURSDAY</option>
-                            <option value="FRIDAY">FRIDAY</option>
-                            <option value="SATURDAY">SATURDAY</option>
-                            {/* Add more day options */}
-                          </select>
-                        </td>
-                        {/* Dropdown for Room */}
-                        <td className="px-6 py-4 border-b">
-                          <select
-                            value={course.room}
-                            onChange={(e) => updateCourse(index, "room", e.target.value)}
-                            className="w-full p-2 border rounded-md pr-8"
-                          >
-                            <option value="301">301</option>
-                            <option value="302">302</option>
-                            <option value="303">303</option>
-                            {/* Add more room options */}
-                          </select>
-                        </td>
-                        {/* Dropdown for Year Level */}
-                        <td className="px-6 py-4 border-b">
-                          <select
-                            value={course.yearLevel}
-                            onChange={(e) => updateCourse(index, "yearLevel", e.target.value)}
-                            className="w-full p-2 border rounded-md pr-8"
-                          >
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            {/* Add more year level options */}
-                          </select>
+                        <select
+                          value={course?.code || ""}
+                          onChange={(e) => {
+                            const selectedCourse = eligiableCourses.find(
+                              (courseOption) => courseOption.code === e.target.value
+                            );
+                            if (selectedCourse) {
+                              updateCourse(index, selectedCourse);
+                            }
+                          }}
+                          className="p-2 border rounded-md w-full">
+                          {/* Display `defaultCourses` first */}
+                          {defaultCourses.map((courseOption, idx) => (
+                            <option key={`default-${idx}`} value={courseOption.code}>
+                              {courseOption.code}: {courseOption.title} ({courseOption.year_level}-{courseOption.semester})
+                            </option>
+                          ))}
+
+                          {/* Display `eligiableCourses`, excluding duplicates */}
+                          {eligiableCourses
+                            .filter(
+                              (courseOption) =>
+                                !defaultCourses.some((defaultCourse) => defaultCourse.code === courseOption.code)
+                            )
+                            .map((courseOption, idx) => (
+                              <option key={`eligible-${idx}`} value={courseOption.code}>
+                                {courseOption.code}: {courseOption.title} ({courseOption.year_level}-{courseOption.semester})
+                              </option>
+                            ))}
+                        </select>
+
                         </td>
                         {/* Dropdown for Section */}
                         <td className="px-6 py-4 border-b pr-8">
@@ -303,37 +260,6 @@ const EnrollStudent = ({ onLogout }) => {
               </div>
             </div>
           )}
-
-          {/* Schedule Section */}
-          <div className="mb-6 p-11 bg-white shadow-lg rounded-[1.875rem]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">SCHEDULE</h2>
-            <table className="w-full text-center border-collapse">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-6 py-4 border-b">COURSE CODE</th>
-                  <th className="px-6 py-4 border-b">YR. & SECTION</th>
-                  <th className="px-6 py-4 border-b">DAY</th>
-                  <th className="px-6 py-4 border-b">LAB TIME</th>
-                  <th className="px-6 py-4 border-b">LEC TIME</th>
-                  <th className="px-6 py-4 border-b">ROOM</th>
-                  <th className="px-6 py-4 border-b">INSTRUCTOR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {studentSchedule.map((schedule, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">{schedule.courseCode}</td>
-                    <td className="px-6 py-4 border-b">{schedule.section}</td>
-                    <td className="px-6 py-4 border-b">{schedule.day}</td>
-                    <td className="px-6 py-4 border-b">{schedule.labTime}</td>
-                    <td className="px-6 py-4 border-b">{schedule.lecTime}</td>
-                    <td className="px-6 py-4 border-b">{schedule.room}</td>
-                    <td className="px-6 py-4 border-b">{schedule.instructor}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-4 mt-6">

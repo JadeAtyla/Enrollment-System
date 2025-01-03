@@ -1,12 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
+import Alert, { triggerAlert } from "../../components/Alert";
 
 const RegistrarAccounts = ({ onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTab, setCurrentTab] = useState("account");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
+
+  const { data, error, getData, updateData } = useData("/api/user/");
+  const [user, setUser] = useState({});
+  const [fetchedError, setFectchedError] = useState({});
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  useEffect(() => {
+    // Fetch student and user data on component mount
+    const fetchData = async () => {
+      await getData();
+    };
+    fetchData();
+  }, [getData]);
+
+  useEffect(() => {
+    // Update student and user states when data is fetched
+    if (data) {
+      setUser(data[0]); // Access the first item in the array
+      setFormData({
+        ...formData,
+        first_name: user?.first_name || "",
+        last_name: user?.last_name || "",
+        email: user?.email || "",
+      });
+    }
+    if (error) {
+      // setFectchedError(error);
+      console.error("Error saving data:", error);
+      const errorMap = {};
+      if (error?.errors) {
+        error?.errors?.forEach(err => {
+          if (Array.isArray(err.fields)) {
+            err.fields.forEach(field => {
+              errorMap[field] = err.detail;
+            });
+          } else {
+            errorMap[err.fields] = err.detail;
+          }
+        });
+      }
+      setFectchedError(errorMap);
+      // console.log(fetchedError);
+    }
+  }, [data, error]);
+
+  const handleSave = async () => {
+    const payload = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+    };
+  
+    if (formData.oldPassword && formData.newPassword && formData.confirmPassword) {
+      payload.old_password = formData.oldPassword;
+      payload.new_password = formData.newPassword;
+      payload.confirm_password = formData.confirmPassword;
+    }
+  
+    try {
+      await updateData(user?.id, payload);
+      setIsEditing(false);
+      triggerAlert("success", "Success", "Data saved successfully!");
+      // window.location.reload();
+    } catch (error) {
+      triggerAlert("error", "Error", "Failed to save data.");
+    }
+  };  
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
@@ -34,19 +118,31 @@ const RegistrarAccounts = ({ onLogout }) => {
           <div className="grid grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Name:</p>
-              <p className="text-[1rem] text-gray-700">[Name of Registrar]</p>
+              <p className="text-[1rem] text-gray-700">
+                {user?.last_name && user?.first_name
+                  ? `${user?.last_name}, ${user?.first_name}`
+                  : "No Name"}
+              </p>
             </div>
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Username:</p>
-              <p className="text-[1rem] text-gray-700">[Username]</p>
+              <p className="text-[1rem] text-gray-700">
+                {user?.username || "No Username"}
+              </p>
             </div>
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Password:</p>
-              <p className="text-[1rem] text-gray-700">*************</p>
+              <p className="text-[1rem] text-gray-700">{"Password is secured"}</p>
             </div>
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Date Joined:</p>
-              <p className="text-[1rem] text-gray-700">[Date Joined]</p>
+              <p className="text-[1rem] text-gray-700">
+                {new Date(user?.date_joined).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
             </div>
           </div>
 
@@ -96,24 +192,33 @@ const RegistrarAccounts = ({ onLogout }) => {
               {currentTab === "account" && (
                 <div className="grid gap-6">
                   <div>
-                    <label className="block text-sm font-medium">Old Password *</label>
+                    <label className="block text-sm font-medium">Old Password *<span className="text-red-500">{fetchedError?.old_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="oldPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.old_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.oldPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">New Password *</label>
+                    <label className="block text-sm font-medium">New Password *<span className="text-red-500">{fetchedError?.new_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="newPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.new_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.newPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">Confirm Password *</label>
+                    <label className="block text-sm font-medium">Confirm Password *<span className="text-red-500">{fetchedError?.confirm_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="confirmPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.confirm_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <p className="text-sm text-gray-500">
@@ -128,28 +233,30 @@ const RegistrarAccounts = ({ onLogout }) => {
                     <label className="block text-sm font-medium">First Name *</label>
                     <input
                       type="text"
+                      name="first_name"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium">Middle Name</label>
-                    <input
-                      type="text"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.first_name}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Last Name *</label>
                     <input
                       type="text"
+                      name="last_name"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.last_name}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">Suffix</label>
+                    <label className="block text-sm font-medium">Email</label>
                     <input
                       type="text"
+                      name="email"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.email}
+                      onChange={handleChange}
                     />
                   </div>
                   <p className="text-sm text-gray-500 col-span-2">
@@ -169,15 +276,14 @@ const RegistrarAccounts = ({ onLogout }) => {
               </button>
               <button
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                onClick={() => setIsEditing(false)}
+                onClick={handleSave}
               >
                 Save
               </button>
             </div>
           </div>
         </div>
-     
-    )}
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ from faker import Faker
 from random import choice
 from django.db import transaction
 from decimal import Decimal
+from django.db.models import Sum
 
 class Command(BaseCommand):
     help = 'Seed the database with course data'
@@ -144,6 +145,8 @@ class Command(BaseCommand):
             else:
                 program = program_bscs  # Assign the BSCS program instance
 
+            acad_year = random.randint(2020, 2025)
+
             student_instance = Student.objects.create(
                 id=student_id,
                 email=email,
@@ -157,7 +160,7 @@ class Command(BaseCommand):
                 status=random.choice([choice[0] for choice in STUDENT_REG_STATUS.choices]),
                 section=random.randint(1, 5),
                 year_level=year_level,
-                academic_year="2023-2024",
+                academic_year=f'{acad_year}-{acad_year+1}',
                 category=category,
                 program=program,  # Use the actual Program instance
                 semester=semester,
@@ -255,8 +258,8 @@ class Command(BaseCommand):
                             student=student,
                             status="ENROLLED",  # Adjust if there are other statuses
                             year_level_taken=student.year_level,
-                            semester_taken=semester_taken,
-                            school_year=school_year,
+                            semester_taken=student.semester,
+                            school_year=student.academic_year,
                         )
                     )
                 else:
@@ -274,6 +277,8 @@ class Command(BaseCommand):
         Enrollment.objects.bulk_create(enrollments)
 
         self.stdout.write(self.style.SUCCESS(f"Successfully created {len(enrollments)} enrollments."))
+        
+        self.create_billing()
 
         # Example where create_billing is invoked
         for student in students:
@@ -282,7 +287,7 @@ class Command(BaseCommand):
             school_year = student.academic_year  # Use student's academic year or assign it as needed
 
             # Call create_billing with the required arguments
-            self.create_billing(student, year_level, semester, school_year)
+            self.create_billing_entry(student, year_level, semester, school_year)
 
         # Create sample grades
         instructors = Instructor.objects.all()
@@ -344,11 +349,11 @@ class Command(BaseCommand):
             return GRADE_REMARKS.DROPPED_SUBJECT
         return GRADE_REMARKS.NOT_GRADED_YET
 
-    def create_billing(self, student, year_level, semester, school_year):
+    def create_billing(self):
         """
-        Create billing and receipt for a student based on billing items, year level, and semester.
+        Create billing based on billing items, year levels, and semesters.
         """
-        
+
         # Billing items to ensure exist in BillingList
         billing_items = [
             {"name": "Com. Lab", "category": "LAB_FEES", "price": 800.00},
@@ -369,47 +374,57 @@ class Command(BaseCommand):
 
         # Begin atomic transaction to ensure data integrity
         with transaction.atomic():
-            total_amount = Decimal(0)  # Ensure total amount is Decimal
+            for current_year in range(4, 0, -1):  # Year levels from 4 to 1
+                for current_semester in [2, 1]:  # Semesters 2 and 1
+                    for item in billing_items:
+                        # Ensure the item price is treated as Decimal
+                        item_price = Decimal(item["price"]) if not isinstance(item["price"], Decimal) else item["price"]
 
-            # Create or get `BillingList` and `AcadTermBilling` entries
-            for item in billing_items:
-                # Ensure the item price is treated as Decimal for all categories
-                item_price = Decimal(item["price"]) if not isinstance(item["price"], Decimal) else item["price"]
+                        # Create or get the BillingList entry
+                        billing_list_entry, _ = BillingList.objects.get_or_create(
+                            name=item["name"], category=item["category"]
+                        )
 
-                # Create or get the BillingList entry
-                billing_list_entry, _ = BillingList.objects.get_or_create(
-                    name=item["name"], category=item["category"]
-                )
+                        # Create or get the AcadTermBilling entry
+                        acad_term_billing, created = AcadTermBilling.objects.get_or_create(
+                            billing=billing_list_entry,
+                            year_level=current_year,
+                            semester=current_semester,
+                            defaults={"price": item_price},
+                        )
 
-                # Create or get the AcadTermBilling entry
-                acad_term_billing, created = AcadTermBilling.objects.get_or_create(
-                    billing=billing_list_entry,
-                    year_level=year_level,
-                    semester=semester,
-                    defaults={"price": item_price},
-                )
+                        self.stdout.write(
+                            self.style.SUCCESS(f'Academic Term Billing "{acad_term_billing.id}" has been created".')
+                        )
 
-                # If the AcadTermBilling already exists, update the price if needed
-                if not created and acad_term_billing.price != item_price:
-                    acad_term_billing.price = item_price
-                    acad_term_billing.save()
+                        # Update the price if the AcadTermBilling already exists and has a different price
+                        if not created and acad_term_billing.price != item_price:
+                            acad_term_billing.price = item_price
+                            acad_term_billing.save()
 
-                # Add the billing price to the total amount only if the category is 'ASSESSMENT'
-                if item['category'] == 'ASSESSMENT':
-                    total_amount += Decimal(acad_term_billing.price)
+    def create_billing_entry(self, student, year_level, semester, school_year):
+        """
+        Create a billing entry for the student with the total amount and school year
+        based on existing billing data.
+        """
+        # Calculate the total amount from AcadTermBilling for the student's year level and semester
+        total_amount = AcadTermBilling.objects.filter(
+            year_level = year_level,
+            semester = semester,
+        ).aggregate(total=Sum('price'))['total'] or Decimal(0)
 
-            # Create a Receipt for the student with total_amount as Decimal
-            receipt = Receipt.objects.create(
-                student=student,
-                total=total_amount,
-                paid=total_amount,  # Default to total_amount
-                school_year=school_year,
-                # status="UNPAID",  # Default status
-                date=timezone.now(),
-            )
+        total_amount = Decimal(total_amount)
 
+        # Create and return the receipt
+        receipt = Receipt.objects.create(
+            student=student,
+            total=total_amount,
+            paid=Decimal(0),  # Default to 0.00 (unpaid)
+            school_year=school_year,
+            status="UNPAID",  # Default status
+            date=timezone.now(),
+        )
         return receipt
-
 
     def create_courses(self, courses):
         # Retrieve all program instances at once to avoid multiple queries

@@ -28,6 +28,13 @@ from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import Group
 from django.db.models import Sum
+from .utils.filterer import QuerysetFilter
+from decimal import Decimal
+
+class AcadTermBillingView(BaseView):
+    model = AcadTermBilling
+    serializer_class = AcadTermBillingSerializer
+    permission_classes = [GroupPermission]
 
 class AddressView(BaseView):
     model = Address
@@ -75,50 +82,57 @@ class UserView(BaseView):
     model = User
     serializer_class = UserSerializer
     permission_classes = [GroupPermission]
-    
+
     def put(self, request, *args, **kwargs):
+        errors = []
+
         # Extract data from the request
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
         confirm_password = request.data.get("confirm_password")
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+        email = request.data.get("email")
 
         # Get the currently authenticated user
         user = request.user
 
-        # Validate inputs
-        if not old_password or not new_password or not confirm_password:
-            return Response(
-                {"error": "All fields (old_password, new_password, confirm_password) are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # If password fields are provided, validate them
+        if old_password or new_password or confirm_password:
+            # Validate that all password fields are provided
+            if not (old_password and new_password and confirm_password):
+                errors.append({"fields": ["old_password", "confirm_password", "new_password"], "detail": "All password fields (old_password, new_password, confirm_password) must be provided together."})
+            else:
+                # Check if the old password is correct
+                if not check_password(old_password, user.password):
+                    errors.append({"fields": "old_password", "detail": "The old password is incorrect."})
+                # Check if new_password and confirm_password match
+                if new_password != confirm_password:
+                    errors.append({"fields": ["new_password", "confirm_password"], "detail": "New password and confirm password do not match."})
+                # Check if the new password is different from the old password
+                if old_password == new_password:
+                    errors.append({"fields": "new_password", "detail": "The new password cannot be the same as the old password."})
 
-        # Check if the old password is correct
-        if not check_password(old_password, user.password):
-            return Response(
-                {"success": False, "error": "The old password is incorrect."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # If there are any errors, return them
+        if errors:
+            return Response({"success": False, "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if new_password and confirm_password match
-        if new_password != confirm_password:
-            return Response(
-                {"success": False, "error": "New password and confirm password do not match."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Update the user's password if no errors
+        if new_password:
+            user.password = make_password(new_password)
 
-        # Check if the new password is different from the old password
-        if old_password == new_password:
-            return Response(
-                {"success": False, "error": "The new password cannot be the same as the old password."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Update the user's personal data
+        if first_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
+        if email:
+            user.email = email
 
-        # Update the user's password
-        user.password = make_password(new_password)
         user.save()
 
         return Response(
-            {"success": True,"detail": "Password updated successfully."},
+            {"success": True, "detail": "User data updated successfully."},
             status=status.HTTP_200_OK,
         )
 
@@ -319,35 +333,43 @@ class ProtectRegistrarView(ProtectedGroupView):
     permission_classes = [isRegistrar]
 
 class CORView(APIView):
-    permission_classes = [isStudent]
+    permission_classes = [isRegistrar | isDepartment | isStudent]
 
     def get(self, request, *args, **kwargs):
-        # Retrieve the authenticated user's student record
+        # Try to retrieve the authenticated user's student record based on the query parameters or the logged-in user
+        student = None
         try:
-            student = Student.objects.get(id=request.user.username)
+            # Check if query parameters are provided
+            if request.query_params:
+                # Filter the Student queryset based on query parameters
+                student = QuerysetFilter.filter_queryset(Student, request.query_params).first()
+                if not student:
+                    return Response({"error": "No student found matching the query parameters."}, status=404)   
+            else:
+                # Default: Retrieve the student using the logged-in user's username
+                student = Student.objects.get(id=request.user.username)
+        
         except Student.DoesNotExist:
             return Response({"error": "Student information not found for the logged-in user."}, status=404)
-        except Exception:
-            return Response({"error": "User is not a student."}, status=400)
+        except Exception as e:
+            return Response({"error": f"User {request.user.username} is not a student"}, status=400)
 
         # Serialize student data
         student_data = StudentSerializer(student).data
 
-        # Fetch all enrollments for the student according to its present enrollment
+        # Fetch enrollments for the student based on academic year
         enrollments = Enrollment.objects.filter(student=student, school_year=student_data['academic_year'])
         enrollments_data = EnrollmentSerializer(enrollments, many=True).data
 
-        # Fetch all BillingList items
+        # Fetch and annotate BillingList with AcadTermBilling for the student's year level and semester
         billing_list = BillingList.objects.all()
-
-        # Annotate BillingList with related AcadTermBilling data (if exists) for the student's year level and semester
         joined_data = []
         for billing in billing_list:
             acad_term_billing = AcadTermBilling.objects.filter(
                 billing=billing,
                 year_level=student_data['year_level'],
                 semester=student_data['semester']
-            ).first()  # Use `first` to handle potential multiple matches (shouldn't occur due to unique constraint)
+            ).first()  # Use `first` to get the first matching record or None
 
             joined_data.append({
                 "billing_list": {
@@ -359,21 +381,19 @@ class CORView(APIView):
                 }
             })
         
-        # Collects data that is needed for total
-        billing_list = BillingList.objects.filter(category='ASSESSMENT')
-
-        # Calculate total price of academic term billings
+        # Filter for 'ASSESSMENT' category to calculate total
+        assessment_billing_list = BillingList.objects.filter(category='ASSESSMENT')
         total_acad_term_billings = AcadTermBilling.objects.filter(
-            billing__in = billing_list,
+            billing__in=assessment_billing_list,
             year_level=student_data['year_level'],
-            semester=student_data['semester'], 
+            semester=student_data['semester']
         ).aggregate(total_price=Sum('price'))['total_price'] or 0
 
         # Fetch all receipts for the student
         receipts = Receipt.objects.filter(student=student, school_year=student_data['academic_year'])
         receipts_data = ReceiptSerializer(receipts, many=True).data
 
-        # Combine and return the response
+        # Return the response with all the data
         return Response({
             "student": student_data,
             "enrollments": enrollments_data,
@@ -381,7 +401,6 @@ class CORView(APIView):
             "total_acad_term_billing_price": total_acad_term_billings,
             "receipts": receipts_data
         })
-
     
 class ChecklistView(APIView):
     permission_classes = [isStudent]  # Ensure the user is a student
@@ -437,59 +456,123 @@ class ChecklistView(APIView):
         return Response(data)
 
 class BatchEnrollStudentAPIView(APIView):
-    def get(self, request, student_id):
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request):
+        # Initialize `billings` with a default value
+        billings = []
 
-        # Get the courses for the student's program
+        # Filter students using QuerysetFilter
+        students_queryset = QuerysetFilter.filter_queryset(Student, request.query_params)
+
+        # Ensure only one student is provided (or handle multiple students as needed)
+        if students_queryset.count() > 1:
+            return Response({"detail": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
+        if not students_queryset.exists():
+            return Response({"detail": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the single student object
+        student = students_queryset.first()
+
+        # Get all courses for the student's program
         program_courses = Course.objects.filter(program=student.program)
-
         eligible_courses = []
+        default_courses = []
 
-        for course in program_courses:
-            # Check if the course is below or equal to the student's year level and semester
-            if student.status == "REGULAR":
-                if course.year_level != 0 or course.year_level > student.year_level or (course.year_level == student.year_level and course.semester > student.semester):
-                    continue
-            else:
-                if course.year_level > student.year_level or (course.year_level == student.year_level and course.semester > student.semester):
-                    continue
+        # Helper function to get unmet prerequisites recursively
+        def get_unmet_prerequisites(course, student):
+            unmet_prerequisites = []
+            for prerequisite in course.pre_requisites.all():
+                if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
+                    unmet_prerequisites.append(prerequisite)
+                    unmet_prerequisites += get_unmet_prerequisites(prerequisite, student)
+            return unmet_prerequisites
 
-            # Check prerequisites - If no prerequisites, automatically pass the check
-            prerequisites = course.pre_requisites.all()
-            if prerequisites:
-                has_all_prerequisites = all(
-                    Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists()
-                    for prerequisite in prerequisites
-                )
-                if not has_all_prerequisites:
-                    # If prerequisites are not met, check if the student has failed any prerequisite
-                    failed_courses = Grade.objects.filter(student=student, course__in=prerequisites).exclude(remarks="PASSED")
-                    if failed_courses.exists():
-                        # Allow retake if student has failed a prerequisite
-                        continue
-                    else:
-                        continue  # Skip course if prerequisites are not met and no failure record exists
+        # Determine the next semester and year level for REGULAR students
+        if student.year_level > 4 or (student.year_level >= 4 and student.semester >= 2):
+            next_year_level, next_semester = 4, 2  # Reset to year 4, semester 2
+        else:
+            next_year_level, next_semester = (student.year_level, 2) if student.semester == 1 else (student.year_level + 1, 1)
 
-            # Check if the student has already passed the course
-            passed_course = Grade.objects.filter(student=student, course=course, remarks="PASSED").exists()
-            if passed_course:
-                continue  # Skip course if the student has already passed
+        # Ensure `billings` is set properly
+        billings = AcadTermBillingSerializer(
+            AcadTermBilling.objects.filter(
+                year_level=next_year_level,
+                semester=next_semester
+                ), many=True
+        ).data
 
-            # If eligible, append course data
-            eligible_courses.append({
+        if not billings:
+            # Billing information not found, raise an error and rollback
+            raise serializers.ValidationError(
+                {"error": "Billing information not found for the student's year level and semester."}
+            )
+                
+        # Calculate total price from academic term billings
+        total_amount = sum(float(item['price']) for item in billings)
+
+        # Ensure both values are Decimal
+        total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
+
+        # Helper function to add course data
+        def add_course(course, target_list):
+            target_list.append({
                 "id": course.id,
                 "code": course.code,
                 "title": course.title,
+                "lab_units": course.lab_units,
+                "lec_units": course.lec_units,
+                "contact_hr_lab": course.contact_hr_lab,
+                "contact_hr_lec": course.contact_hr_lec,
                 "year_level": course.year_level,
                 "semester": course.semester,
+                "program": course.program.id,
+                "pre_requisites": [prerequisite.id for prerequisite in course.pre_requisites.all()],
             })
 
-        # Return the list of eligible courses
-        return Response({"eligible_courses": eligible_courses}, status=status.HTTP_200_OK)
+        for course in program_courses:
+            if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
+                continue  # Skip course if already passed
+            
+            if Enrollment.objects.filter(student=student, course=course).exists():
+                continue
 
+            # Special condition for mid-year courses
+            if course.year_level == 0 and course.semester == 0:
+                if (student.program.id == "BSIT" and student.year_level > 2) or \
+                (student.program.id == "BSCS" and student.year_level > 3):
+                    add_course(course, default_courses)
+                else:
+                    add_course(course, eligible_courses)
+                continue  # Skip other logic for mid-year courses
+                    
+            # Handle REGULAR students
+            if student.status == "REGULAR":
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    add_course(course, default_courses)
+                else:
+                    add_course(course, eligible_courses)
+                continue
+
+            # Handle NON-REGULAR students: Check for unmet prerequisites
+            unmet_prerequisites = get_unmet_prerequisites(course, student)
+            if unmet_prerequisites:
+                for prerequisite in unmet_prerequisites:
+                    if not any(c["id"] == prerequisite.id for c in default_courses):
+                        add_course(prerequisite, default_courses)
+            else:
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    add_course(course, default_courses)
+
+            # Add eligible courses (same for both REGULAR and NON-REGULAR students)
+            if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
+                add_course(course, eligible_courses)
+                print(next_year_level, next_semester)
+
+        return Response({
+            "default_courses": default_courses,
+            "eligible_courses": eligible_courses,
+            "billings": billings,
+            "billlings_total": total_amount
+        }, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data
@@ -497,6 +580,7 @@ class BatchEnrollStudentAPIView(APIView):
         # Extract data from the request
         student_id = data.get("student_id")
         course_ids = data.get("course_ids", [])  # List of course IDs
+        voucher = data.get("voucher")
         paid_amount = data.get("paid")
         current_year = datetime.now().year
         acad_year = f"{current_year}-{current_year + 1}"
@@ -516,59 +600,87 @@ class BatchEnrollStudentAPIView(APIView):
                 # Validate student residency
                 EnrollmentValidator.valid_residency(student.id)
 
-                # Step 2: Process enrollments for all courses
+                # Step 2: Update Student status
+                # Determine the next semester and year level for REGULAR students
+                if student.year_level > 4 or (student.year_level >= 4 and student.semester >= 2):
+                    next_year_level, next_semester = 4, 2  # Reset to year 4, semester 2
+                else:
+                    next_year_level, next_semester = (student.year_level, 2) if student.semester == 1 else (student.year_level + 1, 1)
+                
+                student.year_level = next_year_level
+                student.semester = next_semester
+                student.academic_year = acad_year
+                student.status = "REGULAR"
+                student.enrollment_status = "ENROLLED"
+                student.save()
+
+                # Step 3: Process enrollments for all courses
                 successful_enrollments = []
-                errors = []  # Collect validation or course-related errors
+                failed_enrollments = []  # Collect failed enrollments with reasons
                 enrollment_date = None  # Store the enrollment date
 
                 for course_id in course_ids:
                     try:
-                        # Validate if the student can enroll in the course
-                        EnrollmentValidator.valid_to_enroll_course(student.id, course_id)
+                        # Start an independent transaction for each course enrollment
+                        with transaction.atomic():
+                            # Check if the student is already enrolled in this course
+                            existing_enrollment = Enrollment.objects.filter(student=student, course_id=course_id).exists()
+                            if existing_enrollment:
+                                raise serializers.ValidationError(
+                                    {"error": f"Student is already enrolled in course {course_id}."}
+                                )
 
-                        # If validation succeeds, retrieve the course
-                        course = Course.objects.get(id=course_id)
+                            # Validate if the student can enroll in the course
+                            EnrollmentValidator.valid_to_enroll_course(student.id, course_id)
 
-                        # Create the enrollment
-                        enrollment = Enrollment.objects.create(
-                            student=student,
-                            course=course,
-                            status="ENROLLED",
-                            school_year=acad_year,
-                        )
-                        successful_enrollments.append(course_id)  # Append course_id to response
+                            # Retrieve the course and validate its program
+                            course = Course.objects.get(id=course_id)
+                            if course.program != student.program:  # Assuming `program_id` exists on both models
+                                raise serializers.ValidationError(
+                                    {"error": f"Course {course_id} is not related to the student's program."}
+                                )
 
-                        enrollment_date = enrollment.enrollment_date
+                            # Create the enrollment
+                            enrollment = Enrollment.objects.create(
+                                student=student,
+                                course=course,
+                                status="ENROLLED",
+                                school_year=acad_year,
+                                year_level_taken=student.year_level,
+                                semester_taken=student.semester,
+                            )
+                            successful_enrollments.append(course_id)  # Append course_id to response
+                            enrollment_date = enrollment.enrollment_date
                     except serializers.ValidationError as e:
-                        # Add validation error to errors list
-                        error_message = f"Course {course_id}: {str(e.detail['error'])}"
-                        errors.append(error_message)
+                        # Add validation error to failed enrollments
+                        failed_enrollments.append({
+                            # "course_id": course_id,
+                            "error": str(e.detail["error"])
+                        })
                     except Course.DoesNotExist:
-                        # Add course not found error to errors list
-                        error_message = f"Course {course_id}: Course not found."
-                        errors.append(error_message)
+                        # Add course not found error to failed enrollments
+                        failed_enrollments.append({
+                            # "course_id": course_id,
+                            "error": "Course not found."
+                        })
 
-                # Check for errors and return if any exist
-                if errors:
+                # Check if all courses failed
+                if not successful_enrollments and failed_enrollments:
+                    # If no courses were successfully enrolled, raise a validation error
                     raise serializers.ValidationError(
                         {
                             "message": "Some courses could not be enrolled.",
-                            "errors": errors,  # List of all errors
-                            "successful_enrollments": successful_enrollments,  # Successfully enrolled courses
+                            "errors": failed_enrollments,
                         }
                     )
 
-                # Step 3: Update Student status
-                student.year_level = StudentService.set_year_level(enrollment_date)
-                student.academic_year = acad_year
-                student.status = "REGULAR"
-                student.save()
-
                 # Step 4: Compute `total_amount` based on `AcadTermBilling`
-                acad_term_billing = AcadTermBilling.objects.filter(
-                    year_level=student.year_level,
-                    semester=student.semester,
-                )
+                acad_term_billing = AcadTermBillingSerializer(
+                    AcadTermBilling.objects.filter(
+                        year_level=next_year_level, 
+                        semester=next_semester
+                        ), many=True
+                ).data
 
                 if not acad_term_billing:
                     # Billing information not found, raise an error and rollback
@@ -576,11 +688,17 @@ class BatchEnrollStudentAPIView(APIView):
                         {"error": "Billing information not found for the student's year level and semester."}
                     )
                 
-                # Calculate total price from academic term billings
-                total_amount = acad_term_billing.aggregate(total_price=Sum('price'))['total_price'] or 0
+                # Calculate total price from academic term
+                total_amount = sum(float(item['price']) for item in acad_term_billing)
+
+                # Ensure both values are Decimal
+                total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
                 
+                # Checks if the paid amount is voucher ready or not
+                paid_amount = total_amount if voucher else Decimal(paid_amount)
+
                 # Step 5: Create a Receipt
-                remaining_balance = float(total_amount) - float(paid_amount)
+                remaining_balance = total_amount - paid_amount
                 receipt = Receipt.objects.create(
                     student=student,
                     total=total_amount,
@@ -592,8 +710,10 @@ class BatchEnrollStudentAPIView(APIView):
             # Success response
             return Response(
                 {
+                    "success": True,
                     "message": "Student enrolled successfully",
-                    "enrollments": successful_enrollments,  # Return course_ids
+                    "successful_enrollments": successful_enrollments,  # Return successful course_ids
+                    "failed_enrollments": failed_enrollments,  # Include failed enrollments with issues
                     "receipt_id": receipt.id,
                 },
                 status=status.HTTP_201_CREATED,
@@ -605,7 +725,7 @@ class BatchEnrollStudentAPIView(APIView):
             )
         except serializers.ValidationError as e:
             return Response(
-                {"error": e.detail['error']},
+                {"error": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
@@ -614,7 +734,7 @@ class BatchEnrollStudentAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-class DashboarView(APIView):
+class DashboardView(APIView):
     permission_classes = [isRegistrar | isDepartment]
 
     def get(self, request):
@@ -640,6 +760,14 @@ class DashboarView(APIView):
                 key = f"{program.lower()}_{year_name[year - 1]}_year_students"
                 year_level_counts[key] = Student.objects.filter(program=program, year_level=year).count()
 
+        # Dynamic filters for sections per program
+        section_counts = {}
+        sections = Student.objects.values_list('section', flat=True).distinct()
+        for program in programs:
+            for section in sections:
+                key = f"{program.lower()}_section_{section if section else 'none'}_students"
+                section_counts[key] = Student.objects.filter(program=program, section=section).count()
+
         # Combine results
         response_data = {
             "user": user,
@@ -648,6 +776,7 @@ class DashboarView(APIView):
                 **status_counts,
                 **program_counts,
                 **year_level_counts,
+                **section_counts,
             }
         }
 

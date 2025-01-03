@@ -17,7 +17,6 @@ class STUDENT_REG_STATUS(models.TextChoices):
     IRREGULAR = 'IRREGULAR'
     TRANFEREE = 'TRANFEREE'
     RETURNEE = 'RETURNEE'
-    NOT_ENROLLED = 'NOT ENROLLED'
 
 # for Schedule.category
 class LAB_OR_LEC(models.TextChoices):

@@ -38,15 +38,23 @@ class AddressAdmin(Searchable, admin.ModelAdmin):
     list_display = ["id", "barangay", "street", "city", "province"]
     list_filter = ["city", "province"]
 
+class EnrollmentAdmin(Searchable, admin.ModelAdmin):
+    # list_display = ["id", "barangay", "street", "city", "province"]
+    list_filter = ["student", "course", "school_year"]
+
+class AcadTermBillingAdmin(Searchable, admin.ModelAdmin):
+    # list_display = ["id", "barangay", "street", "city", "province"]
+    list_filter = ["year_level", "semester"]
+
 
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Instructor, Searchable)
 admin.site.register(Course, Searchable)
-admin.site.register(Enrollment, Searchable)
+admin.site.register(Enrollment, EnrollmentAdmin)
 admin.site.register(Grade, Searchable)
 admin.site.register(Receipt, Searchable)
 admin.site.register(Sectioning, Searchable)
 admin.site.register(Program, Searchable)
-admin.site.register(AcadTermBilling)
+admin.site.register(AcadTermBilling, AcadTermBillingAdmin)
 admin.site.register(BillingList)

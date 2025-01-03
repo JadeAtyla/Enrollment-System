@@ -39,22 +39,30 @@ const useData = (endpoint) => {
     }
   };
 
-  // Update data (PUT)
-  const updateData = async (id, updatedData) => {
+// Update data (PUT)
+const updateData = async (id, updatedData) => {
 
-    if (!endpoint) {
-      setError({ status: null, message: "Endpoint is required" });
-      return;
-    }
+  if (!endpoint) {
+    setError({ status: null, message: "Endpoint is required" });
+    return;
+  }
 
-    try {
-      const response = await axios.put(`${endpoint}/?id=${id}`, updatedData);
-      setData(response.data); // Update state with the updated data
-      setError(null); // Clear any previous error
-    } catch (err) {
-      handleError(err);
-    }
-  };
+  let endpoint_param = `${endpoint}?id=${id}`;
+
+  // // Check if the endpoint ends with a "/"
+  // if (!endpoint.endsWith("/")) {
+  //   endpoint_param = `${endpoint}&id=${id}`;
+  // }
+
+  try {
+    const response = await axios.put(`${endpoint_param}`, updatedData);
+    setData(response.data); // Update state with the updated data
+    setError(null); // Clear any previous error
+  } catch (err) {
+    handleError(err);
+  }
+};
+
 
   // Delete data (DELETE)
   const deleteData = async (id) => {

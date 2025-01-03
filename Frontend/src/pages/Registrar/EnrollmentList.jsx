@@ -14,9 +14,16 @@ const EnrollmentList = ({ onLogout }) => {
   const studentsPerPage = 10;
   const navigate = useNavigate();
 
-  const [studentLimit, setStudentLimit] = useState(50);
+  const [studentLimit, setStudentLimit] = useState(0);
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [filters, setFilters] = useState({
+    year_level: "",
+    program: "",
+    section: "",
+    search: "",
+  });
 
   const handleLimitModal = () => setIsLimitModalOpen(true);
   const closeLimitModal = () => setIsLimitModalOpen(false);
@@ -29,17 +36,17 @@ const EnrollmentList = ({ onLogout }) => {
   const { data, error, getData } = useData("/api/student/?enrollment_status=WAITLISTED");
 
   useEffect(() => {
-        // Fetch student data on component mount
-        const fetchData = async () => {
-          await getData(); // Fetch data
-        };
-        fetchData();
-      }, [getData]);
-  
-  useEffect (()=>{
-    if(data){
+    // Fetch student data on component mount
+    const fetchData = async () => {
+      await getData(); // Fetch data
+    };
+    fetchData();
+  }, [getData]);
+
+  useEffect(() => {
+    if (data) {
       setStudents(data);
-    } else if (error){
+    } else if (error) {
       console.log(error.response);
     }
   }, [data]);
@@ -56,13 +63,22 @@ const EnrollmentList = ({ onLogout }) => {
     });
   };
 
-  // Filter students by search term across all table data
-const filteredStudents = students.filter((student) =>
-  `${student.id} ${student.first_name} ${student.last_name} ${student.program} ${student.year_level} ${student.section} ${student.status} ${student.enrollment_status}`
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase())
-);
+  // Filter students based on selected filters
+  const filteredStudents = students?.filter((student) => {
+    const matchesYearLevel =
+      !filters.year_level || student?.year_level?.toString() === filters.year_level;
+    const matchesProgram =
+      !filters.program || student?.program?.toLowerCase() === filters.program.toLowerCase();
+    const matchesSection =
+      !filters.section || student?.section?.toLowerCase() === filters.section.toLowerCase();
+    const matchesSearch =
+      !filters.search ||
+      student?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      student?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      student?.id?.toString().includes(filters.search);
 
+    return matchesYearLevel && matchesProgram && matchesSection && matchesSearch;
+  }) || [];
 
   // Get current students for pagination
   const indexOfLastStudent = currentPage * studentsPerPage;
@@ -71,6 +87,11 @@ const filteredStudents = students.filter((student) =>
 
   // Handle the opening and closing of modals
   const handleAddStudent = () => setIsAddStudentModalOpen(true);
+
+  const handleConfirmAddStudent = (newStudent) => {
+    setStudents((prevStudents) => [...prevStudents, newStudent]);
+    setIsAddStudentModalOpen(false);
+  };
   const closeAddStudentModal = () => setIsAddStudentModalOpen(false);
 
   return (
@@ -96,13 +117,49 @@ const filteredStudents = students.filter((student) =>
               <input
                 type="text"
                 placeholder="Search here..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
               />
               <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
                 <FaSearch />
               </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <select
+                name="year_level"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
+                onChange={(e) => setFilters({ ...filters, year_level: e.target.value })}
+                value={filters.year_level}
+              >
+                <option value="">Year Level</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+              <select
+                name="program"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
+                onChange={(e) => setFilters({ ...filters, program: e.target.value })}
+                value={filters.program}
+              >
+                <option value="">Course</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIT">BSIT</option>
+              </select>
+              <select
+                name="section"
+                className="border border-gray-300 rounded-full px-4 py-2 pr-8"
+                onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                value={filters.section}
+              >
+                <option value="">Section</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
             </div>
           </div>
 

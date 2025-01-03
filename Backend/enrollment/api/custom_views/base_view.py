@@ -12,7 +12,6 @@ class BaseView(APIView):
         """Override this method to customize queryset filtering."""
         return QuerysetFilter.filter_queryset(self.model, request.query_params)
 
-    # Check if the user belongs to the "student" group
     def get(self, request, pk=None):
         user = request.user
 
@@ -43,22 +42,26 @@ class BaseView(APIView):
                 raise NotFound(detail=f"Invalid ID format: {e}")
 
         # For other user groups or non-student users
+        if self.model.__name__.lower() == "user" and not user.groups.filter(name__iexact='admin').exists():
+            try:
+                instances = self.model.objects.filter(username=user.username)
+                if not instances.exists():
+                    raise NotFound(detail=f"No records found for user {user.username}.")
+                
+                serializer = self.serializer_class(instances, many=True, context={"request": request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except self.model.DoesNotExist:
+                raise NotFound(detail=f"No records found for user {user.username}.")
+            except ValueError as e:
+                raise NotFound(detail=f"Invalid ID format: {e}")
+
         if pk:
             try:
-                # If the model is User, fetch records based on username
-                if self.model.__name__.lower() == "user" and not user.groups.filter(name__iexact='admin').exists():
-                        instances = self.model.objects.filter(username=user.username)
-                else:
-                    instances = self.model.objects.all() # Fetch all records
-
-                # Fetch the specific instance by primary key
                 instance = self.model.objects.get(id=pk)
                 serializer = self.serializer_class(instance, context={"request": request})
                 return Response(serializer.data)
-
             except self.model.DoesNotExist:
                 raise NotFound(detail=f"{self.model.__name__} with ID {pk} not found")
-
             except ValueError as e:
                 raise NotFound(detail=f"Invalid ID format: {e}")
 
@@ -100,7 +103,7 @@ class BaseView(APIView):
                 serializer.save()
                 updated_instances.append(serializer.data)
 
-        return Response(updated_instances, status=status.HTTP_200_OK)
+        return Response({"success": True, "updated_instances": updated_instances}, status=status.HTTP_200_OK)
 
     def delete(self, request, pk=None):
         if pk:

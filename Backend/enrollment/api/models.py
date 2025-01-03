@@ -56,8 +56,8 @@ class Student(models.Model):
         blank=True,
         null=True,
     )
-    status = models.CharField(max_length=15, choices=STUDENT_REG_STATUS.choices, default=STUDENT_REG_STATUS.NOT_ENROLLED)
-    section = models.IntegerField(blank=True, null=True)
+    status = models.CharField(max_length=15, choices=STUDENT_REG_STATUS.choices, default=STUDENT_REG_STATUS.REGULAR)
+    section = models.CharField(max_length=15, blank=True, null=True, default='TBA')
     year_level = models.PositiveIntegerField()
     semester = models.PositiveIntegerField()
     academic_year = models.CharField(max_length=20, blank=True, null=True)

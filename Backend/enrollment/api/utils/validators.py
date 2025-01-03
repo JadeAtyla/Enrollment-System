@@ -114,13 +114,13 @@ class EnrollmentValidator:
     def valid_to_enroll_course(student_id: int, course_id: int) -> bool:
         try:
             student = Student.objects.get(id=student_id)
-            student_program = student.program
+            student_program = student.program.id
 
             # print(f"Validating enrollment for student: {student_id}, course: {course_id}, program: {student_program}")
 
             # Ensure course matches the student's program
             course = Course.objects.get(id=course_id)
-            if course.program != student_program:
+            if course.program.id != student_program:
                 raise serializers.ValidationError(
                     {"error": f"Course {course.title} is not part of the student's program ({student_program})."}
                 )

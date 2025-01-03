@@ -42,7 +42,7 @@ const Dashboard = ({ onLogout }) => {
         first_name: studentInstance.first_name,
         full_name: `${studentInstance.last_name}, ${studentInstance.first_name} ${studentInstance.middle_name}`,
         program: `${studentInstance.program} ${studentInstance.year_level}-${studentInstance.section || "TBA"}`,
-        enrollment_status: "" || "Not enrolled yet.",
+        enrollment_status: studentInstance.enrollment_status || "Not enrolled yet.",
         student_status: studentInstance.status || "Not enrolled yet.",
       }); // Assuming the first item in the data array is the student
     } else if(error){
@@ -85,7 +85,7 @@ const Dashboard = ({ onLogout }) => {
             Welcome! <span className="font-regular">{student.first_name}</span>
           </h2>
           <p className="text-[#555] text-[1rem] sm:text-[1.125rem] mt-2 md:mt-0 text-center md:text-left">
-            Enrollment Status: <span className="font-bold">{student.enrollment_status}</span>
+            Enrollment Status: <span className="font-bold">{student?.enrollment_status}</span>
           </p>
         </div>
 
