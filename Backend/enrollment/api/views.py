@@ -337,32 +337,24 @@ class CORView(APIView):
     permission_classes = [isRegistrar | isDepartment | isStudent]
 
     def get(self, request, *args, **kwargs):
-        # Try to retrieve the authenticated user's student record based on the query parameters or the logged-in user
         student = None
         try:
-            # Check if query parameters are provided
-            if request.query_params:
-                # Filter the Student queryset based on query parameters
-                student = QuerysetFilter.filter_queryset(Student, request.query_params).first()
-                if not student:
-                    return Response({"error": "No student found matching the query parameters."}, status=404)   
+            if request.query_params.get('id'):
+                student_id = request.query_params.get('id')
+                student = Student.objects.get(id=student_id)
             else:
-                # Default: Retrieve the student using the logged-in user's username
                 student = Student.objects.get(id=request.user.username)
         
         except Student.DoesNotExist:
-            return Response({"error": "Student information not found for the logged-in user."}, status=404)
+            return Response({"error": "Student information not found."}, status=404)
         except Exception as e:
-            return Response({"error": f"User {request.user.username} is not a student"}, status=400)
+            return Response({"error": f"An error occurred: {str(e)}"}, status=400)
 
-        # Serialize student data
         student_data = StudentSerializer(student).data
 
-        # Fetch enrollments for the student based on academic year
         enrollments = Enrollment.objects.filter(student=student, school_year=student_data['academic_year'])
         enrollments_data = EnrollmentSerializer(enrollments, many=True).data
 
-        # Fetch and annotate BillingList with AcadTermBilling for the student's year level and semester
         billing_list = BillingList.objects.all()
         joined_data = []
         for billing in billing_list:
@@ -370,7 +362,7 @@ class CORView(APIView):
                 billing=billing,
                 year_level=student_data['year_level'],
                 semester=student_data['semester']
-            ).first()  # Use `first` to get the first matching record or None
+            ).first()
 
             joined_data.append({
                 "billing_list": {
@@ -382,7 +374,6 @@ class CORView(APIView):
                 }
             })
         
-        # Filter for 'ASSESSMENT' category to calculate total
         assessment_billing_list = BillingList.objects.filter(category='ASSESSMENT')
         total_acad_term_billings = AcadTermBilling.objects.filter(
             billing__in=assessment_billing_list,
@@ -390,11 +381,9 @@ class CORView(APIView):
             semester=student_data['semester']
         ).aggregate(total_price=Sum('price'))['total_price'] or 0
 
-        # Fetch all receipts for the student
         receipts = Receipt.objects.filter(student=student, school_year=student_data['academic_year'])
         receipts_data = ReceiptSerializer(receipts, many=True).data
 
-        # Return the response with all the data
         return Response({
             "student": student_data,
             "enrollments": enrollments_data,
@@ -457,6 +446,8 @@ class ChecklistView(APIView):
         return Response(data)
 
 class BatchEnrollStudentAPIView(APIView):
+    permission_classes = [isRegistrar]
+
     def get(self, request):
         # Initialize `billings` with a default value
         billings = []

@@ -1,6 +1,8 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
+import Alert, { triggerAlert } from "../../components/Alert";
 
 const DepartmentAccount = ({ onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,12 +11,91 @@ const DepartmentAccount = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
+  const { data, error, getData, updateData } = useData("/api/user/");
+  const [user, setUser] = useState({});
+  const [fetchedError, setFectchedError] = useState({});
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   useLayoutEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    // Fetch user data on component mount
+    const fetchData = async () => {
+      await getData();
+    };
+    fetchData();
+  }, [getData]);
+
+  useEffect(() => {
+    // Update user state when data is fetched
+    if (data) {
+      setUser(data[0]); // Access the first item in the array
+      setFormData({
+        ...formData,
+        first_name: user?.first_name || "",
+        last_name: user?.last_name || "",
+        email: user?.email || "",
+      });
+    }
+    if (error) {
+      console.error("Error saving data:", error);
+      const errorMap = {};
+      if (error?.errors) {
+        error?.errors?.forEach(err => {
+          if (Array.isArray(err.fields)) {
+            err.fields.forEach(field => {
+              errorMap[field] = err.detail;
+            });
+          } else {
+            errorMap[err.fields] = err.detail;
+          }
+        });
+      }
+      setFectchedError(errorMap);
+    }
+  }, [data, error]);
+
+  const handleSave = async () => {
+    const payload = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+    };
+  
+    if (formData.oldPassword && formData.newPassword && formData.confirmPassword) {
+      payload.old_password = formData.oldPassword;
+      payload.new_password = formData.newPassword;
+      payload.confirm_password = formData.confirmPassword;
+    }
+  
+    try {
+      await updateData(user?.id, payload);
+      setIsEditing(false);
+      triggerAlert("success", "Success", "Data saved successfully!");
+    } catch (error) {
+      triggerAlert("error", "Error", "Failed to save data.");
+    }
+  };  
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
@@ -42,7 +123,6 @@ const DepartmentAccount = ({ onLogout }) => {
               break;
           }
         }}
-        // Hide sidebar on mobile view
         className={isMobile ? "sidebar-collapsed" : ""}
       />
 
@@ -50,8 +130,8 @@ const DepartmentAccount = ({ onLogout }) => {
       <div
         className={`flex flex-col items-center justify-center flex-1 transition-all duration-300 ${
           isMobile
-            ? "ml-[5rem] sm:ml-[0rem]" // No margin when sidebar is collapsed or on mobile view
-            : "ml-[15.625rem] md:ml-[18rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+            ? "ml-[5rem] sm:ml-[0rem]"
+            : "ml-[15.625rem] md:ml-[18rem] lg:ml-[0rem]"
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem] w-full mx-4 sm:mx-auto">
@@ -64,21 +144,31 @@ const DepartmentAccount = ({ onLogout }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Name:</p>
-              <p className="text-[1rem] text-gray-700">[Name of Department]</p>
+              <p className="text-[1rem] text-gray-700">
+                {user?.last_name && user?.first_name
+                  ? `${user?.last_name}, ${user?.first_name}`
+                  : "No Name"}
+              </p>
             </div>
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Username:</p>
-              <p className="text-[1rem] text-gray-700">[Username]</p>
+              <p className="text-[1rem] text-gray-700">
+                {user?.username || "No Username"}
+              </p>
             </div>
             <div>
               <p className="text-[1rem] font-bold text-gray-700">Password:</p>
-              <p className="text-[1rem] text-gray-700">*************</p>
+              <p className="text-[1rem] text-gray-700">{"Password is secured"}</p>
             </div>
             <div>
-              <p className="text-[1rem] font-bold text-gray-700">
-                Date Joined:
+              <p className="text-[1rem] font-bold text-gray-700">Date Joined:</p>
+              <p className="text-[1rem] text-gray-700">
+                {new Date(user?.date_joined).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
-              <p className="text-[1rem] text-gray-700">[Date Joined]</p>
             </div>
           </div>
 
@@ -99,7 +189,7 @@ const DepartmentAccount = ({ onLogout }) => {
       {/* Modal for Editing */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg w-[90%] lg:w-[45rem] md:w-[40rem] sm:w-[30rem] py-8 px-8">
+          <div className="bg-white rounded-2xl shadow-lg w-[40rem] py-8 px-8">
             {/* Modal Tabs */}
             <div className="flex justify-between text-lg font-semibold mb-6 border-b-2">
               <button
@@ -129,30 +219,33 @@ const DepartmentAccount = ({ onLogout }) => {
               {currentTab === "account" && (
                 <div className="grid gap-6">
                   <div>
-                    <label className="block text-sm font-medium">
-                      Old Password *
-                    </label>
+                    <label className="block text-sm font-medium">Old Password *<span className="text-red-500">{fetchedError?.old_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="oldPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.old_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.oldPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">
-                      New Password *
-                    </label>
+                    <label className="block text-sm font-medium">New Password *<span className="text-red-500">{fetchedError?.new_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="newPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.new_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.newPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">
-                      Confirm Password *
-                    </label>
+                    <label className="block text-sm font-medium">Confirm Password *<span className="text-red-500">{fetchedError?.confirm_password || ""}</span></label>
                     <input
                       type="password"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      name="confirmPassword"
+                      className={`border rounded-lg w-full p-2 focus:ring-2 ${fetchedError?.confirm_password ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
                     />
                   </div>
                   <p className="text-sm text-gray-500">
@@ -162,39 +255,35 @@ const DepartmentAccount = ({ onLogout }) => {
               )}
 
               {currentTab === "personalData" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium">
-                      First Name *
-                    </label>
+                    <label className="block text-sm font-medium">First Name *</label>
                     <input
                       type="text"
+                      name="first_name"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.first_name}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">
-                      Middle Name
-                    </label>
+                    <label className="block text-sm font-medium">Last Name *</label>
                     <input
                       type="text"
+                      name="last_name"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.last_name}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium">
-                      Last Name *
-                    </label>
+                    <label className="block text-sm font-medium">Email</label>
                     <input
                       type="text"
+                      name="email"
                       className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium">Suffix</label>
-                    <input
-                      type="text"
-                      className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+                      value={formData.email}
+                      onChange={handleChange}
                     />
                   </div>
                   <p className="text-sm text-gray-500 col-span-2">
@@ -214,7 +303,7 @@ const DepartmentAccount = ({ onLogout }) => {
               </button>
               <button
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                onClick={() => setIsEditing(false)}
+                onClick={handleSave}
               >
                 Save
               </button>

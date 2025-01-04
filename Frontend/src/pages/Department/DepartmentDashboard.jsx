@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -6,6 +6,7 @@ import ProfileIcon from "../../images/Department/DashboardIcons/ProfileIcon.svg"
 import StudentIcon from "../../images/Department/DashboardIcons/StudentIcon.svg";
 import IrregularIcon from "../../images/Department/DashboardIcons/IrregularIcon.svg";
 import { useNavigate } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 // Register chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -14,6 +15,10 @@ const DepartmentDashboard = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+  const { data, error, getData } = useData("/api/dashboard/");
+  const [userData, setUserData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [program, setProgram] = useState("BSCS");
 
   useLayoutEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -22,13 +27,36 @@ const DepartmentDashboard = ({ onLogout }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    // Fetch student and course data on component mount
+    const fetchData = async () => {
+      await getData();
+    };
+    fetchData();
+  }, [getData]);
+
+  useEffect(() => {
+    // Update state when data changes
+    if (data) {
+      if (data.user) setUserData(data.user);
+      if (data.dashboard) setDashboardData(data.dashboard);
+    } else if (error) {
+      console.error(error?.error);
+    }
+  }, [data, error]);
+
   // Data for the pie chart
   const pieData = {
     labels: ["Regular", "Irregular", "Transferee", "Returnee"],
     datasets: [
       {
         label: "Students",
-        data: [1000, 800, 150, 50],
+        data: [
+          dashboardData?.regular_students || 0,
+          dashboardData?.irregular_students || 0,
+          dashboardData?.transferee_students || 0,
+          dashboardData?.returnee_students || 0,
+        ],
         backgroundColor: ["#22C55E", "#EF4444", "#3B82F6", "#FACC15"],
         borderWidth: 1,
       },
@@ -88,7 +116,7 @@ const DepartmentDashboard = ({ onLogout }) => {
           {/* Department Welcome Header */}
           <header className="flex justify-between items-center mb-[1.5rem]">
             <h1 className="text-[1.875rem] font-semibold text-gray-800">
-              Welcome! <span className="font-normal">[Department Name]</span>
+              Welcome! <span className="font-normal">{userData?.first_name || "No first name."}</span>
             </h1>
           </header>
 
@@ -101,11 +129,9 @@ const DepartmentDashboard = ({ onLogout }) => {
                 className="h-[5rem] w-[5rem] rounded-full mr-[1rem]"
               />
               <div>
-                <h2 className="text-[1.25rem] font-semibold">
-                  [Department Name]
-                </h2>
-                <p className="text-gray-600 text-[0.875rem]">[Username]</p>
-                <p className="text-gray-600 text-[0.875rem]">[Date Joined]</p>
+                <h2 className="text-[1.25rem] font-semibold">{`${userData?.last_name || ""}, ${userData?.first_name || ""}`}</h2>
+                <p className="text-gray-600 text-[0.875rem]"><strong>Username:</strong> <em>{userData?.username || "No username."}</em></p>
+                <p className="text-gray-600 text-[0.875rem]"><strong>First joined:</strong> <em>{new Date(userData?.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || "First joined not detected."}</em></p>
               </div>
             </div>
             <div className="text-[1.125rem] font-semibold text-gray-700">
@@ -125,16 +151,16 @@ const DepartmentDashboard = ({ onLogout }) => {
               <h3 className="text-base font-medium text-gray-500">
                 Total Students
               </h3>
-              <p className="text-2xl font-bold mb-[1rem]">3,000</p>
+              <p className="text-2xl font-bold mb-[1rem]">{dashboardData?.total_students || 0}</p>
               <hr className="border-t border-gray-300 mb-[1rem]" />
               <div className="flex flex-col gap-4">
                 <div>
                   <p className="text-sm text-gray-500">BSCS</p>
-                  <p className="text-xl font-bold">1,500</p>
+                  <p className="text-xl font-bold">{dashboardData?.bscs_students || 0}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">BSIT</p>
-                  <p className="text-xl font-bold">1,500</p>
+                  <p className="text-xl font-bold">{dashboardData?.bsit_students || 0}</p>
                 </div>
               </div>
             </div>
@@ -148,7 +174,7 @@ const DepartmentDashboard = ({ onLogout }) => {
                   className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                 />
                 <h3 className="text-sm font-medium text-gray-500">Regular</h3>
-                <p className="text-xl font-bold">1,000</p>
+                <p className="text-xl font-bold">{dashboardData?.regular_students || 0}</p>
               </div>
               <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                 <img
@@ -157,7 +183,7 @@ const DepartmentDashboard = ({ onLogout }) => {
                   className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                 />
                 <h3 className="text-sm font-medium text-gray-500">Irregular</h3>
-                <p className="text-xl font-bold">800</p>
+                <p className="text-xl font-bold">{dashboardData?.irregular_students || 0}</p>
               </div>
               <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                 <img
@@ -166,7 +192,7 @@ const DepartmentDashboard = ({ onLogout }) => {
                   className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                 />
                 <h3 className="text-sm font-medium text-gray-500">Returnee</h3>
-                <p className="text-xl font-bold">50</p>
+                <p className="text-xl font-bold">{dashboardData?.returnee_students || 0}</p>
               </div>
               <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
                 <img
@@ -174,10 +200,8 @@ const DepartmentDashboard = ({ onLogout }) => {
                   alt="Transferee Students"
                   className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
                 />
-                <h3 className="text-sm font-medium text-gray-500">
-                  Transferee
-                </h3>
-                <p className="text-xl font-bold">150</p>
+                <h3 className="text-sm font-medium text-gray-500">Transferee</h3>
+                <p className="text-xl font-bold">{dashboardData?.transferee_students || 0}</p>
               </div>
             </div>
 
@@ -219,6 +243,7 @@ const DepartmentDashboard = ({ onLogout }) => {
                 <select
                   id="program"
                   className="border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 w-[rem]"
+                  onChange={(e) => setProgram(e.target.value)}
                 >
                   <option value="BSCS">BSCS</option>
                   <option value="BSIT">BSIT</option>
@@ -252,41 +277,38 @@ const DepartmentDashboard = ({ onLogout }) => {
                 Number of Students
               </p>
               <div className="col-span-4 grid grid-cols-4 gap-4">
-                <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <div className="h-2 bg-red-500 rounded-full w-full"></div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <div className="h-2 bg-blue-500 rounded-full w-full"></div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <div className="h-2 bg-green-500 rounded-full w-full"></div>
-                </div>
+                <p className="text-lg font-medium text-gray-700">{program === "BSCS" ? dashboardData?.bscs_first_year_students : dashboardData?.bsit_first_year_students}</p>
+                <p className="text-lg font-medium text-gray-700">{program === "BSCS" ? dashboardData?.bscs_second_year_students : dashboardData?.bsit_second_year_students}</p>
+                <p className="text-lg font-medium text-gray-700">{program === "BSCS" ? dashboardData?.bscs_third_year_students : dashboardData?.bsit_third_year_students}</p>
+                <p className="text-lg font-medium text-gray-700">{program === "BSCS" ? dashboardData?.bscs_fourth_year_students : dashboardData?.bsit_fourth_year_students}</p>
               </div>
 
-              {/* Row 2: Sections */}
+              {/* Row 2: Student Bars */}
+              <p className="font-semibold text-gray-700 col-span-1"></p>
+              <div className="col-span-4 grid grid-cols-4 gap-4">
+                <div className="h-2 bg-red-500 rounded-full"></div>
+                <div className="h-2 bg-blue-500 rounded-full"></div>
+                <div className="h-2 bg-yellow-500 rounded-full"></div>
+                <div className="h-2 bg-green-500 rounded-full"></div>
+              </div>
+
+              {/* Row 3: Number of Sections */}
               <p className="font-semibold text-gray-700 col-span-1">Sections</p>
               <div className="col-span-4 grid grid-cols-4 gap-4">
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_1_students || 0}</p>
                   <div className="h-2 bg-red-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_2_students || 0}</p>
                   <div className="h-2 bg-blue-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_3_students || 0}</p>
                   <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-lg font-medium text-gray-700">3</p>
+                  <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_4_students || 0}</p>
                   <div className="h-2 bg-green-500 rounded-full w-full"></div>
                 </div>
               </div>

@@ -83,9 +83,10 @@ const updateData = async (id, updatedData) => {
 
   // Error handling function
   const handleError = (err) => {
-    if (err.response) {
+    if (err?.response) {
       // console.error("API Error:", err.response.status, err.response.data);
-      setError(err.response.data);
+      setError(err?.response);
+      console.log(err?.response);
     } else {
       console.error("Network Error:", err.message);
       setError({ status: null, message: "Network error, please try again later." });

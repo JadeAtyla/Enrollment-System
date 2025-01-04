@@ -1,18 +1,90 @@
 import React, { useState } from "react";
+import useData from "../../components/DataUtil";
 
-const InstructorInfoModal = ({ instructor, onClose, onSave }) => {
-  const [updatedInstructor, setUpdatedInstructor] = useState({ ...instructor });
+const InformationModal = ({ url, data, onClose, onSave }) => {
+  const [updatedData, setUpdatedData] = useState({ ...data });
+
+  const { updateData } = useData(url);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUpdatedInstructor((prev) => ({ ...prev, [name]: value }));
+    setUpdatedData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (onSave) {
-      onSave(updatedInstructor); // Pass updated instructor to the parent component
+      onSave(updatedData); // Pass updated data to the parent component
+      await updateData(data?.id, updatedData);
     }
     onClose(); // Close modal
+  };
+
+  const renderFormFields = () => {
+    return Object.keys(updatedData).map((key) => {
+      if (typeof updatedData[key] === 'object' && updatedData[key] !== null) {
+        return Object.keys(updatedData[key]).map((subKey) => (
+          <div key={`${key}.${subKey}`}>
+            <label className="block text-sm font-medium mb-1">{subKey.replace(/_/g, ' ')} *</label>
+            <input
+              type="text"
+              name={`${key}.${subKey}`}
+              value={updatedData[key][subKey] || ""}
+              onChange={(e) => handleChange({ target: { name: key, value: { ...updatedData[key], [subKey]: e.target.value } } })}
+              className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        ));
+      } else {
+        const selectOptions = {
+          gender: ["MALE", "FEMALE", "PREFER NOT TO SAY"],
+          enrollment_status: ["ENROLLED", "WAITLISTED", "NOT_ENROLLED"],
+          program: ["BSCS", "BSIT"],
+          status: ["REGULAR", "IRREGULAR", "TRANSFEREE", "RETURNEE"],
+          category: ["OLD", "NEW"],
+          year_level: ["1", "2", "3", "4"],
+          semester: ["1", "2"],
+        };
+
+        const isDateField = key.toLowerCase().includes("date");
+
+        return (
+          <div key={key}>
+            <label className="block text-sm font-medium mb-1">{key.replace(/_/g, ' ')} *</label>
+            {selectOptions[key] ? (
+              <select
+                name={key}
+                value={updatedData[key] || ""}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select {key.replace(/_/g, ' ')}</option>
+                {selectOptions[key].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : isDateField ? (
+              <input
+                type="date"
+                name={key}
+                value={updatedData[key] || ""}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <input
+                type="text"
+                name={key}
+                value={updatedData[key] || ""}
+                onChange={handleChange}
+                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+          </div>
+        );
+      }
+    });
   };
 
   return (
@@ -23,127 +95,13 @@ const InstructorInfoModal = ({ instructor, onClose, onSave }) => {
       >
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-700">Edit Instructor</h2>
+          <h2 className="text-lg font-semibold text-gray-700">Edit Information</h2>
         </div>
 
         {/* Form Content */}
         <div className="flex-1 overflow-auto">
           <form className="grid grid-cols-2 gap-x-8 gap-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Last Name *</label>
-              <input
-                type="text"
-                name="lastName"
-                value={updatedInstructor.lastName || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Street *</label>
-              <input
-                type="text"
-                name="street"
-                value={updatedInstructor.street || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">First Name *</label>
-              <input
-                type="text"
-                name="firstName"
-                value={updatedInstructor.firstName || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Barangay *</label>
-              <input
-                type="text"
-                name="barangay"
-                value={updatedInstructor.barangay || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Middle Name *</label>
-              <input
-                type="text"
-                name="middleName"
-                value={updatedInstructor.middleName || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={updatedInstructor.email || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Gender *</label>
-              <select
-                name="gender"
-                value={updatedInstructor.gender || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Non-binary">Non-binary</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Contact Number *</label>
-              <input
-                type="text"
-                name="contact"
-                value={updatedInstructor.contact || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">City *</label>
-              <input
-                type="text"
-                name="city"
-                value={updatedInstructor.city || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Suffix</label>
-              <input
-                type="text"
-                name="suffix"
-                value={updatedInstructor.suffix || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Province *</label>
-              <input
-                type="text"
-                name="province"
-                value={updatedInstructor.province || ""}
-                onChange={handleChange}
-                className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {renderFormFields()}
           </form>
         </div>
 
@@ -170,4 +128,4 @@ const InstructorInfoModal = ({ instructor, onClose, onSave }) => {
   );
 };
 
-export default InstructorInfoModal;
+export default InformationModal;

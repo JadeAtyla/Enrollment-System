@@ -141,6 +141,20 @@ class InstructorSerializer(serializers.ModelSerializer):
 
         return Instructor.objects.create(**validated_data)
 
+    def update(self, instance, validated_data):
+        address_data = validated_data.pop('address', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        if address_data:
+            address_instance = instance.address
+            for attr, value in address_data.items():
+                setattr(address_instance, attr, value)
+            address_instance.save()
+        
+        instance.save()
+        return instance
+
 
 # Student Serializer
 class StudentSerializer(serializers.ModelSerializer):
@@ -169,6 +183,20 @@ class StudentSerializer(serializers.ModelSerializer):
         validated_data['program'] = StudentService.set_program(student_id)
 
         return Student.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        address_data = validated_data.pop('address', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        if address_data:
+            address_instance = instance.address
+            for attr, value in address_data.items():
+                setattr(address_instance, attr, value)
+            address_instance.save()
+        
+        instance.save()
+        return instance
 
 
 # Sectioning Serializer

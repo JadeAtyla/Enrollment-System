@@ -243,7 +243,7 @@ function App() {
         <Route
           path="/department/departmentMasterList"
           element={
-            <ProtectedRoute group="masterlist">
+            <ProtectedRoute group="department">
               <DepartmentMasterList onLogout={handleLogout} />
             </ProtectedRoute>
           }

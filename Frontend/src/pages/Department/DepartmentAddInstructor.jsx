@@ -1,29 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import useData from "../../components/DataUtil";
 
 const DepartmentAddInstructor = ({ onClose, onSave }) => {
   const [instructorData, setInstructorData] = useState({
-    lastName: "",
-    firstName: "",
-    middleName: "",
+    last_name: "",
+    first_name: "",
+    middle_name: "",
     suffix: "",
     gender: "",
     email: "",
-    contactNumber: "",
-    street: "",
-    barangay: "",
-    city: "",
-    province: "",
+    contact_number: "",
+    address: {
+      street: "",
+      barangay: "",
+      city: "",
+      province: ""
+    }
   });
 
   const [isSaved, setIsSaved] = useState(false); // New state to track if data was saved
   const [isSaving, setIsSaving] = useState(false); // Track saving state to prevent multiple saves
 
+  const { data, error, createData } = useData("/api/instructor/");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setInstructorData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name in instructorData.address) {
+      setInstructorData((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [name]: value,
+        },
+      }));
+    } else {
+      setInstructorData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -32,13 +47,14 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true); // Start saving
 
-    // Simulate saving process (e.g., API call or validation)
-    setTimeout(() => {
+    try {
+      const response = await createData(instructorData);
+      
       if (onSave) {
-        onSave(instructorData); // Save the instructor data
+        onSave(response); // Save the instructor data
       }
       setIsSaving(false); // Stop saving
 
@@ -52,8 +68,19 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
           onClose(); // Close the modal
         }
       }, 2000); // Modal closes after 2 seconds
-    }, 1000); // Simulated delay for saving
+    } catch (error) {
+      console.error("Error saving instructor:", error);
+      setIsSaving(false); // Stop saving
+    }
   };
+
+  useEffect(() => {
+      if (data) {
+        console.log(data);
+      } else if (error) {
+        console.log(error.response);
+      }
+    }, [data, error, createData]);
 
   return (
     <div
@@ -80,8 +107,8 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               </label>
               <input
                 type="text"
-                name="lastName"
-                value={instructorData.lastName}
+                name="last_name"
+                value={instructorData.last_name}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -92,8 +119,8 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               </label>
               <input
                 type="text"
-                name="firstName"
-                value={instructorData.firstName}
+                name="first_name"
+                value={instructorData.first_name}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -104,8 +131,8 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               </label>
               <input
                 type="text"
-                name="middleName"
-                value={instructorData.middleName}
+                name="middle_name"
+                value={instructorData.middle_name}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -131,10 +158,10 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Non-binary">Non-binary</option>
-                <option value="Other">Other</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                {/* <option value="Non-binary">Non-binary</option> */}
+                <option value="PREFER NOT TO SAY">Other</option>
               </select>
             </div>
             <div>
@@ -153,8 +180,8 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               </label>
               <input
                 type="text"
-                name="contactNumber"
-                value={instructorData.contactNumber}
+                name="contact_number"
+                value={instructorData.contact_number}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -164,7 +191,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               <input
                 type="text"
                 name="street"
-                value={instructorData.street}
+                value={instructorData.address.street}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -176,7 +203,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               <input
                 type="text"
                 name="barangay"
-                value={instructorData.barangay}
+                value={instructorData.address.barangay}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -186,7 +213,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               <input
                 type="text"
                 name="city"
-                value={instructorData.city}
+                value={instructorData.address.city}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
@@ -198,7 +225,7 @@ const DepartmentAddInstructor = ({ onClose, onSave }) => {
               <input
                 type="text"
                 name="province"
-                value={instructorData.province}
+                value={instructorData.address.province}
                 onChange={handleChange}
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />

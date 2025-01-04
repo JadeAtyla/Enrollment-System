@@ -1,26 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import useData from "../../components/DataUtil";
 
-const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
-  const [updatedStudent, setUpdatedStudent] = useState({ ...studentData });
+const DepartmentAddStudent = ({ onClose, onSave }) => {
+  const [studentData, setStudentData] = useState({
+    studentNumber: "",
+    email: "",
+    status: "",
+    contactNumber: "",
+    course: "",
+    yearLevel: "",
+    section: "",
+    lastName: "",
+    street: "",
+    middleName: "",
+    suffix: "",
+    gender: "",
+    firstName: "",
+    barangay: "",
+    city: "",
+    province: "",
+    dateOfBirth: "",
+    contactNo: "",
+  });
+
+  const [isSaved, setIsSaved] = useState(false); // New state to track if data was saved
+  const [isSaving, setIsSaving] = useState(false); // Track saving state to prevent multiple saves
   const [activeTab, setActiveTab] = useState("studentInfo"); // State to track active tab
+
+  const { data, error, createData } = useData("/api/student/");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUpdatedStudent((prev) => ({ ...prev, [name]: value }));
+    setStudentData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    onSave(updatedStudent);
-    onClose();
+  const handleCancel = () => {
+    if (onClose) {
+      onClose(); // Close the modal
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true); // Start saving
+
+    try {
+      const response = await createData(studentData);
+      
+      if (onSave) {
+        onSave(response); // Save the student data
+      }
+      setIsSaving(false); // Stop saving
+
+      // Set saved state and show feedback message
+      setIsSaved(true);
+
+      // Close modal after 2 seconds (optional, you can change this)
+      setTimeout(() => {
+        setIsSaved(false); // Reset saved state
+        if (onClose) {
+          onClose(); // Close the modal
+        }
+      }, 2000); // Modal closes after 2 seconds
+    } catch (error) {
+      console.error("Error saving student:", error);
+      setIsSaving(false); // Stop saving
+    }
   };
 
   const toggleTab = (tab) => {
     setActiveTab(tab);
   };
 
+  useEffect(() => {
+      if (data) {
+        console.log(data);
+      } else if (error) {
+        console.log(error.response);
+      }
+    }, [data, error, createData]);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-[50rem] py-8 px-10">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      onClick={handleCancel} // Close modal when clicking outside
+    >
+      <div
+        className="bg-white rounded-2xl shadow-lg w-[50rem] py-8 px-10"
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+      >
         <div className="flex justify-between mb-6">
           {/* Toggleable Headers */}
           <h2
@@ -57,7 +124,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="studentNumber"
-                  value={updatedStudent.studentNumber || ""}
+                  value={studentData.studentNumber || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -69,7 +136,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="email"
                   name="email"
-                  value={updatedStudent.email || ""}
+                  value={studentData.email || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -80,7 +147,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 </label>
                 <select
                   name="status"
-                  value={updatedStudent.status || ""}
+                  value={studentData.status || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 >
@@ -96,7 +163,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="contactNumber"
-                  value={updatedStudent.contactNumber || ""}
+                  value={studentData.contactNumber || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -112,7 +179,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="course"
-                  value={updatedStudent.course || ""}
+                  value={studentData.course || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -124,7 +191,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="yearLevel"
-                  value={updatedStudent.yearLevel || ""}
+                  value={studentData.yearLevel || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -136,7 +203,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="section"
-                  value={updatedStudent.section || ""}
+                  value={studentData.section || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -156,7 +223,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="lastName"
-                  value={updatedStudent.lastName || ""}
+                  value={studentData.lastName || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -168,7 +235,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="street"
-                  value={updatedStudent.street || ""}
+                  value={studentData.street || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -180,7 +247,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="middleName"
-                  value={updatedStudent.middleName || ""}
+                  value={studentData.middleName || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -190,7 +257,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="suffix"
-                  value={updatedStudent.suffix || ""}
+                  value={studentData.suffix || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -201,7 +268,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 </label>
                 <select
                   name="gender"
-                  value={updatedStudent.gender || ""}
+                  value={studentData.gender || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 >
@@ -222,7 +289,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="firstName"
-                  value={updatedStudent.firstName || ""}
+                  value={studentData.firstName || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -234,7 +301,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="barangay"
-                  value={updatedStudent.barangay || ""}
+                  value={studentData.barangay || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -246,7 +313,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="city"
-                  value={updatedStudent.city || ""}
+                  value={studentData.city || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -258,7 +325,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="province"
-                  value={updatedStudent.province || ""}
+                  value={studentData.province || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -270,7 +337,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="date"
                   name="dateOfBirth"
-                  value={updatedStudent.dateOfBirth || ""}
+                  value={studentData.dateOfBirth || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -282,7 +349,7 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
                 <input
                   type="text"
                   name="contactNo"
-                  value={updatedStudent.contactNo || ""}
+                  value={studentData.contactNo || ""}
                   onChange={handleChange}
                   className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
                 />
@@ -298,17 +365,25 @@ const DepartmentAddStudent = ({ studentData, onClose, onSave }) => {
         <div className="flex justify-end mt-6">
           <button
             className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg mr-4"
-            onClick={onClose}
+            onClick={handleCancel}
           >
             Back
           </button>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded-lg"
             onClick={handleSave}
+            disabled={isSaving} // Disable button while saving
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
+
+        {/* Feedback message */}
+        {isSaved && (
+          <div className="mt-4 text-green-500 text-center">
+            Student data saved successfully!
+          </div>
+        )}
       </div>
     </div>
   );
