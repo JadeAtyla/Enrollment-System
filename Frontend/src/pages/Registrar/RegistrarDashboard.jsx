@@ -22,6 +22,7 @@ const RegistrarDashboard = ({ onLogout }) => {
   const { data, error, getData } = useData("/api/dashboard/");
   const [userData, setUserData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
+  const [program, setProgram] = useState("BSCS");
   
   useEffect(() => {
       // Fetch student and course data on component mount
@@ -47,7 +48,12 @@ const RegistrarDashboard = ({ onLogout }) => {
     datasets: [
       {
         label: "Students",
-        data: [dashboardData?.regular_students, dashboardData?.irregular_students, dashboardData?.transferee_students, dashboardData?.returnee_students],
+        data: [
+          dashboardData?.regular_students || 0,
+          dashboardData?.irregular_students || 0,
+          dashboardData?.transferee_students || 0,
+          dashboardData?.returnee_students || 0
+        ],
         backgroundColor: ["#22C55E", "#EF4444", "#3B82F6", "#FACC15"],
         borderWidth: 1,
       },
@@ -104,7 +110,7 @@ const RegistrarDashboard = ({ onLogout }) => {
             {/* Registrar Welcome Header */}
             <header className="flex justify-between items-center mb-[1.5rem]">
               <h1 className="text-[1.875rem] font-semibold text-gray-800">
-                Welcome! <span className="font-normal">{userData?.firs_name || "No first name."}</span>
+                Welcome! <span className="font-normal">{userData?.first_name || "No first name."}</span>
               </h1>
             </header>
 
@@ -119,7 +125,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                 <div>
                   <h2 className="text-[1.25rem] font-semibold">{`${userData?.last_name || ""}, ${userData?.first_name || ""}`}</h2>
                   <p className="text-gray-600 text-[0.875rem]"><strong>Username:</strong> <em>{userData?.username || "No username."}</em></p>
-                  <p className="text-gray-600 text-[0.875rem]"><strong>First joined:</strong> <em>{userData?.date_joined || "First joined not detected."}</em></p>
+                  <p className="text-gray-600 text-[0.875rem]"><strong>First joined:</strong> <em>{new Date(userData?.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || "First joined not detected."}</em></p>
                 </div>
               </div>
               <div className="text-[1.125rem] font-semibold text-gray-700">
@@ -231,6 +237,7 @@ const RegistrarDashboard = ({ onLogout }) => {
                     id="program"
                     className="border border-gray-300 rounded-lg px-4 py-2 
                     pr-8 text-gray-700 w-[rem]"
+                    onChange={(e)=>setProgram(e.target.value)}
                   >
                     <option value="BSCS">BSCS</option>
                     <option value="BSIT">BSIT</option>
@@ -263,10 +270,10 @@ const RegistrarDashboard = ({ onLogout }) => {
                 {/* Row 1: Number of Students */}
                 <p className="font-semibold text-gray-700 col-span-1">Number Students</p>
                 <div className="col-span-4 grid grid-cols-4 gap-4">
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
-                  <p className="text-lg font-medium text-gray-700">1000</p>
+                  <p className="text-lg font-medium text-gray-700">{ program === "BSCS" ? dashboardData?.bscs_first_year_students : dashboardData?.bsit_first_year_students}</p>
+                  <p className="text-lg font-medium text-gray-700">{ program === "BSCS" ? dashboardData?.bscs_second_year_students : dashboardData?.bsit_second_year_students}</p>
+                  <p className="text-lg font-medium text-gray-700">{ program === "BSCS" ? dashboardData?.bscs_third_year_students : dashboardData?.bsit_third_year_students}</p>
+                  <p className="text-lg font-medium text-gray-700">{ program === "BSCS" ? dashboardData?.bscs_fourth_year_students : dashboardData?.bsit_fourth_year_students}</p>
                 </div>
 
                 {/* Row 2: Student Bars */}
@@ -282,19 +289,19 @@ const RegistrarDashboard = ({ onLogout }) => {
                 <p className="font-semibold text-gray-700 col-span-1">Sections</p>
                 <div className="col-span-4 grid grid-cols-4 gap-4">
                   <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">3</p>
+                    <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_1_students || 0}</p>
                     <div className="h-2 bg-red-500 rounded-full w-full"></div>
                   </div>
                   <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">7</p>
+                    <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_2_students || 0}</p>
                     <div className="h-2 bg-blue-500 rounded-full w-full"></div>
                   </div>
                   <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">4</p>
+                    <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_3_students || 0}</p>
                     <div className="h-2 bg-yellow-500 rounded-full w-full"></div>
                   </div>
                   <div className="flex flex-col items-center">
-                    <p className="text-lg font-medium text-gray-700">4</p>
+                    <p className="text-lg font-medium text-gray-700">{dashboardData?.bscs_section_4_students || 0}</p>
                     <div className="h-2 bg-green-500 rounded-full w-full"></div>
                   </div>
                 </div>
@@ -303,8 +310,6 @@ const RegistrarDashboard = ({ onLogout }) => {
         </div>
       </div >
     </div>
-
-
   );
 };
 

@@ -438,15 +438,15 @@ const COR = ({ onLogout }) => {
               <div className="text-sm">
                 <div className="flex justify-start mb-2">
                   <p className="font-bold mr-2 w-1/6">Old/New Student:</p>
-                  <p className="ml-2">[Old Student]</p>
+                  <p className="ml-2">{student?.category}</p>
                 </div>
                 <div className="flex justify-start mb-2">
                   <p className="font-bold mr-2 w-1/6">Registration Status:</p>
-                  <p className="ml-2">[Transferee]</p>
+                  <p className="ml-2">{student?.status}</p>
                 </div>
                 <div className="flex justify-start mb-2">
                   <p className="font-bold mr-2 w-1/6">Date of Birth:</p>
-                  <p className="ml-2">[Month Day, Year]</p>
+                  <p className="ml-2">{student?.date_of_birth}</p>
                 </div>
                 <div className="flex justify-start mb-2">
                   <p className="font-bold mr-2 w-1/6">Gender:</p>

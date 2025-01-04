@@ -6,17 +6,15 @@ import StudentIcon from "../../images/Department/SidebarIcons/StudentListIcon.sv
 import AccountIcon from "../../images/Department/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Department/SidebarIcons/LogoutIcon.svg";
 import UniversityLogo from "../../images/universityLogo.svg";
-import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg"; // Add a new Course icon
+import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg";
 
-const DepartmentSidebar = ({
-  currentPage,
-  onLogout,
-  onToggleSidebar,
-  isCollapsed,
-}) => {
+const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem("sidebarCollapsed") === "true";
+  });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const menuItems = [
     {
@@ -53,44 +51,47 @@ const DepartmentSidebar = ({
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setIsMobile(true);
-      } else {
-        setIsMobile(false);
+      const isNowMobile = window.innerWidth <= 768;
+
+      if (isNowMobile !== isMobile) {
+        setIsMobile(isNowMobile);
+        if (isNowMobile) {
+          setIsCollapsed(true); // Auto-collapse on mobile view
+        }
       }
     };
 
-    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobile]);
 
   const handleToggle = () => {
-    onToggleSidebar(!isCollapsed);
+    if (!isMobile) {
+      const newCollapsedState = !isCollapsed;
+      setIsCollapsed(newCollapsedState);
+      localStorage.setItem("sidebarCollapsed", newCollapsedState);
+    }
   };
-
-  const handleLogoutClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const confirmLogout = () => {
-    setIsModalOpen(false);
-    onLogout();
-  };
-
-  const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
 
   const handleMenuClick = (path) => {
     navigate(path);
   };
 
+  const handleLogoutClick = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  const confirmLogout = () => {
+    closeModal();
+    onLogout();
+  };
+
+  const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
+  const contentMargin =
+    isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
+
   return (
-    <>
+    <div className="flex">
+      {/* Sidebar */}
       <div
         className={`fixed flex flex-col bg-gradient-to-b from-[#043674] to-[#0057b7] shadow-lg h-full top-0 left-0 ${sidebarWidth} transition-all duration-300 rounded-r-lg`}
       >
@@ -121,7 +122,7 @@ const DepartmentSidebar = ({
                 className={`flex items-center p-3 rounded-lg transition-all duration-300 ${
                   currentPage === item.name
                     ? "bg-[#02458c] text-white shadow-md"
-                    : "hover:bg-[#02458c] hover:text-white text-gray-200"
+                    : "hover:bg-[#6E85B7] hover:text-white text-gray-200"
                 }`}
                 onClick={() => handleMenuClick(item.path)}
               >
@@ -139,7 +140,7 @@ const DepartmentSidebar = ({
 
           <div className="w-full px-4 mt-8">
             <button
-              className="flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-[#02458c] text-white w-full shadow-md"
+              className="flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-[#] text-white w-full shadow-md"
               onClick={handleLogoutClick}
             >
               <img
@@ -160,6 +161,11 @@ const DepartmentSidebar = ({
         >
           {isCollapsed || isMobile ? "➡️" : "⬅️"}
         </div>
+      </div>
+
+      {/* Page Content */}
+      <div className={`transition-all duration-300 ${contentMargin} flex-1`}>
+        {children}
       </div>
 
       {isModalOpen && (
@@ -188,7 +194,7 @@ const DepartmentSidebar = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

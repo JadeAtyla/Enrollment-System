@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
 import InstructorInfoModal from "./InformationModal";
@@ -10,23 +10,15 @@ const DepartmentInstructorList = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
-  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] = useState(false);
+  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] =
+    useState(false);
   const instructorsPerPage = 10;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Update the isMobile state based on window size
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    // Add event listener to check for window resize
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
-    // Initial check
     handleResize();
-
-    // Cleanup the event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -69,7 +61,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentDashboard"
+        currentPage="departmentInstructorList"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
@@ -78,13 +70,13 @@ const DepartmentInstructorList = ({ onLogout }) => {
               navigate("/department");
               break;
             case "enroll":
-              navigate("/departmentDashboard/enroll");
+              navigate("/departmentInstructorList/enroll");
               break;
             case "list":
-              navigate("/departmentDashboard/list");
+              navigate("/departmentInstructorList/list");
               break;
             case "account":
-              navigate("/departmentDashboard/account");
+              navigate("/departmentInstructorList/account");
               break;
             default:
               break;
@@ -97,30 +89,36 @@ const DepartmentInstructorList = ({ onLogout }) => {
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isMobile || isSidebarCollapsed
-            ? "ml-[5rem] sm:ml-[25rem] md:ml-[15rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
-            : "ml-[15.625rem] md:ml-[37rem] lg:ml-[18rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
-        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+          isMobile
+            ? currentInstructors.length > 0
+              ? "ml-[18rem]" // Apply a smaller margin on mobile if instructors are listed
+              : "ml-[6rem]" // Default margin when no instructors are listed
+            : "ml-[15.625rem] md:ml-[19rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem] ${
+          currentInstructors.length > 0 ? "max-w-[70rem]" : "max-w-[87.5rem]"
+        }`}
       >
+        {" "}
+        {/* Add dynamic class based on instructor list size */}
         <div className="w-full max-w-[87.5rem] px-4 sm:px-6">
           {/* Search and Filter Section */}
           <div className="flex flex-wrap md:flex-nowrap flex-col md:flex-row justify-between items-center bg-white shadow-lg rounded-[1.875rem] px-4 sm:px-6 py-4 mb-4 sm:mb-6 gap-4">
             {/* Search Bar and Filters in Mobile View */}
-            <div className="flex flex-col sm:flex-row sm:gap-4 w-full items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:gap-4 w-full items-center gap-4 md:justify-between">
               {/* Search Bar */}
-              <div className="relative w-full sm:w-[8rem] md:w-[20rem] flex-1 mb-4 md:mb-0">
+              <div className="relative flex items-center w-[20rem] border border-gray-300 rounded-full px-4 py-1">
+                <div className="flex-shrink-0 text-gray-500">
+                  <FaSearch />
+                </div>
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
+                  className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
                 />
-                <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
-                  <FaSearch />
-                </span>
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap sm:flex-nowrap sm:gap-4 w-full sm:w-auto md:flex-nowrap flex-col md:flex-row items-center gap-4">
+              <div className="flex flex-wrap sm:flex-nowrap md:flex-nowrap flex-col md:flex-row items-center gap-4 sm:gap-4 md:ml-auto">
                 <select className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto">
                   <option value="" disabled selected>
                     Select Year Level

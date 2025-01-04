@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -15,19 +15,10 @@ const DepartmentDashboard = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Update the isMobile state based on window size
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    // Add event listener to check for window resize
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
-    // Initial check
     handleResize();
-
-    // Cleanup the event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -88,9 +79,9 @@ const DepartmentDashboard = ({ onLogout }) => {
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isMobile || isSidebarCollapsed
-            ? "ml-[5rem] lg:ml-[8rem] md:ml-[13rem]" // No margin when sidebar is collapsed or on mobile view
-            : "ml-[15.625rem]  lg:ml-[18rem] md:ml-[37rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+          isMobile
+            ? "ml-[5rem] sm:ml-[0rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[18rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem]">

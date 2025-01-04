@@ -7,12 +7,6 @@ from django.db.models import Sum
 from django.db import IntegrityError
 from api.utils.validators import EmailValidator, ContactNumberValidator, StudentNumberValidator
 
-# Acad Term Billing Serializer
-class AcadTermBillingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AcadTermBilling
-        fields = '__all__'
-
 # Receipt Serializer
 class ReceiptSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,6 +17,14 @@ class ReceiptSerializer(serializers.ModelSerializer):
 class BillingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillingList
+        fields = '__all__'
+
+# Acad Term Billing Serializer
+class AcadTermBillingSerializer(serializers.ModelSerializer):
+    billing = BillingListSerializer()
+
+    class Meta:
+        model = AcadTermBilling
         fields = '__all__'
 
 # Address Serializer

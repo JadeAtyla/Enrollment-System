@@ -1,39 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import useData from "../../components/DataUtil";
 
 const Billing = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [receivedMoney, setReceivedMoney] = useState("");
-  const [applyFreeTuition, setApplyFreeTuition] = useState(false);
+  const [receivedMoney, setReceivedMoney] = useState(0);
+  const [applyFreeTuition, setApplyFreeTuition] = useState(true);
+  const [change, setChange] = useState("P 0.00"); // Initialize `change` with a default value
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { student, courses, billings } = location.state || {}; // Default billings to an empty array
+  const { data, error, createData } = useData("/api/batch/");
 
   const totalAmount = 8290.0;
-  const amountNeeded = applyFreeTuition ? 0 : totalAmount;
-  const change = applyFreeTuition
-    ? "P 0.00"
-    : `P ${Math.max(0, receivedMoney - amountNeeded).toFixed(2)}`; // Format change as P 0.00 when CHED is applied
+  const amountNeeded = applyFreeTuition ? 2000 : totalAmount;
 
-  const handleConfirmPayment = () => {
-    // If CHED is applied, consider receivedMoney as 0
-    const paymentReceived = applyFreeTuition ? 0 : parseFloat(receivedMoney);
+  // Dynamically calculate `change` when `receivedMoney` or `applyFreeTuition` changes
+  useEffect(() => {
+    const numericMoney = parseFloat(receivedMoney) || 0; // Ensure receivedMoney is a valid number
+    const calculatedChange = applyFreeTuition
+      ? 0 // No change when CHED is applied
+      : Math.max(0, amountNeeded - numericMoney);
 
-    // Validate if payment is complete
-    if (paymentReceived >= amountNeeded) {
-      // Redirect to EvaluationPayment page
-      navigate("/registrar/evaluate-payment", {
-        state: { totalAmount, receivedMoney: paymentReceived, change },
-      });
-    } else {
-      alert(
-        "Please ensure the payment is complete before confirming payment."
-      );
+    setChange(`P ${calculatedChange.toFixed(2)}`); // Update `change`
+  }, [receivedMoney, applyFreeTuition]);
+
+  const labFess = billings.filter(item => item.billing?.category === "LAB_FEES");
+  const otherFess = billings.filter(item => item.billing?.category === "OTHER_FEES");
+  const assessmentFees = billings.filter(item => item.billing?.category === "ASSESSMENT");
+
+  const handleConfirmPayment = async () => {
+    try {
+      const payload = {
+        student_id: student?.id,
+        course_ids: courses || [],
+        voucher: applyFreeTuition,
+        paid: parseFloat(receivedMoney) || 0, // Ensure valid numeric data
+      };
+      
+      await createData(payload);
+
+    } catch (err) {
+      console.error("Error in payment confirmation:", err);
+      alert("An unexpected error occurred. Please contact support.");
     }
+  };
+
+  useEffect(()=>{
+    if (data?.success) {
+      console.log("Student enrolled successfully");
+      // navigate("/registrar/evaluate-payment", { state: { totalAmount, receivedMoney, change } });
+      navigate("/registrar/certificate-of-registration");
+    } 
+    if (error){
+      console.log(error.error?.message);
+    }
+  }, [data, error]);
+
+  const handleBack = () => {
+    navigate("/registrar/enroll-student", { state: { student: student } });
   };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
-      {/* Sidebar */}
       <RegistrarSidebar
         onLogout={onLogout}
         currentPage="billing"
@@ -41,7 +72,6 @@ const Billing = ({ onLogout }) => {
         onToggleSidebar={setIsSidebarCollapsed}
       />
 
-      {/* Main Content */}
       <div
         className={`flex flex-col transition-all duration-300 ${
           isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
@@ -50,42 +80,32 @@ const Billing = ({ onLogout }) => {
         <div className="w-full max-w-[87.5rem] px-6">
           <h1 className="text-3xl font-semibold text-gray-800 mb-6">BILLING</h1>
 
-          {/* Cards Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column */}
             <div className="lg:col-span-5 space-y-6">
-              {/* Laboratory Fees */}
               <div className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Laboratory Fees
-                </h2>
-                <p className="text-sm text-gray-600">ComLab: P800.00</p>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Lab Fees</h2>
+                {labFess.map((fees, index) => (
+                  <p key={index} className="text-sm text-gray-600">
+                    {fees?.billing?.name}: P{fees?.price || 0.0}
+                  </p>
+                ))}
               </div>
 
-              {/* Other Fees */}
               <div className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Other Fees
-                </h2>
-                <p className="text-sm text-gray-600">NSTP: P0.00</p>
-                <p className="text-sm text-gray-600">Reg. Fee: P55.00</p>
-                <p className="text-sm text-gray-600">ID: P0.00</p>
-                <p className="text-sm text-gray-600">Late Reg: P0.00</p>
-                <p className="text-sm text-gray-600">Insurance: P25.00</p>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Other Fees</h2>
+                {otherFess.map((fees, index) => (
+                  <p key={index} className="text-sm text-gray-600">
+                    {fees?.billing?.name}: P{fees?.price || 0.0}
+                  </p>
+                ))}
               </div>
 
-              {/* Payment Section */}
               <div className="bg-white shadow-md rounded-lg p-6 mt-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Payment
-                </h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Payment</h2>
                 <div className="space-y-4">
-                  {/* Conditionally render "Received Money" input */}
                   {!applyFreeTuition && (
                     <div className="flex items-center">
-                      <label className="w-1/4 text-sm text-gray-600">
-                        Received Money:
-                      </label>
+                      <label className="w-1/4 text-sm text-gray-600">Received Money:</label>
                       <input
                         type="number"
                         value={receivedMoney}
@@ -96,17 +116,11 @@ const Billing = ({ onLogout }) => {
                     </div>
                   )}
                   <div className="flex items-center">
-                    <label className="w-1/4 text-sm text-gray-600">
-                      Amount Needed to Pay:
-                    </label>
-                    <p className="w-full text-sm text-gray-600">
-                      P {amountNeeded.toFixed(2)}
-                    </p>
+                    <label className="w-1/4 text-sm text-gray-600">Amount Needed to Pay:</label>
+                    <p className="w-full text-sm text-gray-600">P {amountNeeded.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center">
-                    <label className="w-1/4 text-sm text-gray-600">
-                      Change:
-                    </label>
+                    <label className="w-1/4 text-sm text-gray-600">Change:</label>
                     <p className="w-full text-sm text-gray-600">{change}</p>
                   </div>
                   <div className="flex items-center">
@@ -117,10 +131,7 @@ const Billing = ({ onLogout }) => {
                       checked={applyFreeTuition}
                       onChange={() => setApplyFreeTuition(!applyFreeTuition)}
                     />
-                    <label
-                      htmlFor="chedFreeTuition"
-                      className="ml-2 text-sm text-gray-600"
-                    >
+                    <label htmlFor="chedFreeTuition" className="ml-2 text-sm text-gray-600">
                       Apply CHED Free Tuition and Misc. Free
                     </label>
                   </div>
@@ -128,39 +139,27 @@ const Billing = ({ onLogout }) => {
               </div>
             </div>
 
-            {/* Right Column */}
             <div className="lg:col-span-7 space-y-6">
-              {/* Assessment */}
               <div className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Assessment
-                </h2>
-                <p className="text-sm text-gray-600">Tuition Fee: P3200.00</p>
-                <p className="text-sm text-gray-600">SFDF: P1500.00</p>
-                <p className="text-sm text-gray-600">SRF: P2025.00</p>
-                <p className="text-sm text-gray-600">Misc.: P435.00</p>
-                <p className="text-sm text-gray-600">Athletics: P100.00</p>
-                <p className="text-sm text-gray-600">SCUAA: P100.00</p>
-                <p className="text-sm text-gray-600">Library Fee: P50.00</p>
-                <p className="text-sm text-gray-600">Lab Fees: P800.00</p>
-                <p className="text-sm text-gray-600">Other Fees: P80.00</p>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Assessment</h2>
+                {assessmentFees.map((fees, index) => (
+                  <p key={index} className="text-sm text-gray-600">
+                    {fees?.billing?.name}: P{fees?.price || 0.0}
+                  </p>
+                ))}
               </div>
 
-              {/* Summary */}
               <div className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Total Summary
-                </h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">Total Summary</h2>
                 <p className="text-sm text-gray-600">Total Units: 21</p>
                 <p className="text-sm text-gray-600">Total Hours: 31</p>
                 <p className="text-sm text-gray-600">Total Amount: P8290.00</p>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex justify-between mt-6">
                 <button
                   className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400"
-                  onClick={() => navigate("/registrar/enroll-student")}
+                  onClick={() => handleBack()}
                 >
                   Back to Course
                 </button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
@@ -8,48 +8,68 @@ const EvaluateStudent = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const {student} = location.state || "No id selected."
+  const { student } = location.state || {};
+  const [courseParam, setCourseParam] = useState(""); // State for course parameters
   const [evalCourses, setEvalCourses] = useState([]);
 
-  const { data, error, getData } = useData(`/api/grade/?student=${student?.id}&course__year_level=${student?.year_level}&course__semester=${student?.semester}`);
+  // Validate endpoint
+  const enrollmentEndpoint = student
+    ? `/api/enrollment/?student=${student.id}&school_year=${student.academic_year}`
+    : null;
+  const gradeEndpoint = courseParam
+    ? `/api/grade/?student=${student?.id}&${courseParam}`
+    : null;
 
+  const {
+    data: enrollmentData,
+    error: enrollmentError,
+    getData: enrollmentGetData,
+  } = useData(enrollmentEndpoint);
+
+  const {
+    data: gradeData,
+    error: gradeError,
+    getData: gradeGetData,
+  } = useData(gradeEndpoint);
+
+  // Fetch enrollment data
   useEffect(() => {
-        // Fetch student data on component mount
-        const fetchData = async () => {
-          await getData(); // Fetch data
-        };
-        fetchData();
-      }, [getData]);
-  
-  useEffect (()=>{
-    if(data){
-      setEvalCourses(data);
-    } else if (error){
-      console.log(error.response);
+    if (enrollmentEndpoint) enrollmentGetData();
+  }, [enrollmentEndpoint, enrollmentGetData]);
+
+  // Update course parameters when enrollment data changes
+  useEffect(() => {
+    if (enrollmentData) {
+      const courseIds = enrollmentData.map((course) => course.course.id);
+      const params = new URLSearchParams();
+      courseIds.forEach((id) => params.append("course__id", id));
+      setCourseParam(`${params.toString()}&`);
+      console.log(courseParam);
     }
-  }, [data]);
+  }, [enrollmentData]);
+
+  // Fetch grade data
+  useEffect(() => {
+    if (gradeEndpoint) gradeGetData();
+  }, [gradeEndpoint, gradeGetData]);
+
+  // Update evaluated courses and log errors
+  useEffect(() => {
+    if (gradeData) setEvalCourses(gradeData);
+
+    if (enrollmentError) console.error("Enrollment Error:", enrollmentError);
+    if (gradeError) console.error("Grade Error:", gradeError);
+  }, [enrollmentError, gradeError, gradeData]);
 
   const handleAddToPending = () => {
     navigate("/registrar/enrollmentList");
   };
 
-  // Handle student enrollment
   const handleEnrollment = () => {
     navigate("/registrar/enroll-student", {
       state: { student: student },
     });
   };
-
-  const studentGrades = [
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-    { courseCode: "DCIT26", title: "Application Development and Emerging Technologies", units: 3, grade: 1.75, creditUnit: 3, remarks: "PASSED" },
-  ];
 
   return (
     <div className="flex min-h-screen">
@@ -60,13 +80,20 @@ const EvaluateStudent = ({ onLogout }) => {
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
       />
       <div
-        className={`flex flex-col items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"} py-6`}
+        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
+        } py-6`}
       >
         {/* Main Content */}
-        <div className="w-full max-w-[70rem] px-6">  {/* Adjusted max width */}
-          <h1 className="text-3xl font-semibold text-gray-800 mb-6">EVALUATING STUDENT</h1>
+        <div className="w-full max-w-[70rem] px-6">
+          <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+            EVALUATING STUDENT
+          </h1>
+          {/* Student Information */}
           <div className="mb-6 p-11 bg-white shadow-lg rounded-[1.875rem]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">STUDENT INFORMATION</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              STUDENT INFORMATION
+            </h2>
             <table className="w-full text-center border-collapse">
               <thead className="bg-gray-100 rounded-[1.875rem]">
                 <tr>
@@ -75,28 +102,31 @@ const EvaluateStudent = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">PROGRAM</th>
                   <th className="px-6 py-4 border-b">YEAR LEVEL</th>
                   <th className="px-6 py-4 border-b">SECTION</th>
+                  <th className="px-6 py-4 border-b">SEMESTER</th>
                   <th className="px-6 py-4 border-b">ACADEMIC YEAR</th>
                   <th className="px-6 py-4 border-b">STATUS</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-b">{student?.id}</td>
-                  <td className="px-6 py-4 border-b">{student?.last_name}</td>
-                  <td className="px-6 py-4 border-b">{student?.program}</td>
-                  <td className="px-6 py-4 border-b">{student?.year_level}</td>
-                  <td className="px-6 py-4 border-b">{student?.section}</td>
-                  <td className="px-6 py-4 border-b">{student?.academic_year}</td>
-                  <td className="px-6 py-4 border-b">{student?.status}</td>
+                  <td className="px-6 py-4 border-b">{student?.id || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.last_name || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.program || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.year_level || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.section || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.semester || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.academic_year || "N/A"}</td>
+                  <td className="px-6 py-4 border-b">{student?.status || "N/A"}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          {/* Student Grades Card */}
+          {/* Student Grades */}
           <div className="mb-6 p-11 bg-white shadow-lg rounded-[1.875rem] ">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">STUDENT GRADES</h2>
-            <table className="w-full text-center border-collapse ">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              STUDENT GRADES
+            </h2>
+            <table className="w-full text-center border-collapse">
               <thead className="bg-gray-100 rounded-[1.875rem]">
                 <tr>
                   <th className="px-6 py-4 border-b">COURSE CODE</th>
@@ -112,16 +142,19 @@ const EvaluateStudent = ({ onLogout }) => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 border-b">{evaluate?.course?.code}</td>
                     <td className="px-6 py-4 border-b">{evaluate?.course?.title}</td>
-                    <td className="px-6 py-4 border-b">{evaluate?.course?.lab_units + evaluate?.course?.lec_units}</td>
+                    <td className="px-6 py-4 border-b">
+                      {evaluate?.course?.lab_units + evaluate?.course?.lec_units}
+                    </td>
                     <td className="px-6 py-4 border-b">{evaluate?.grade}</td>
-                    <td className="px-6 py-4 border-b">{evaluate?.course?.lab_units + evaluate?.course?.lec_units}</td>
+                    <td className="px-6 py-4 border-b">
+                      {evaluate?.course?.lab_units + evaluate?.course?.lec_units}
+                    </td>
                     <td className="px-6 py-4 border-b">{evaluate?.remarks}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-4 mt-6">
             <button
@@ -132,7 +165,7 @@ const EvaluateStudent = ({ onLogout }) => {
             </button>
             <button
               className="bg-blue-500 text-white px-6 py-3 rounded-[1.875rem] hover:bg-blue-600"
-              onClick={() => handleEnrollment(student)}
+              onClick={handleEnrollment}
             >
               VERIFY STUDENT
             </button>

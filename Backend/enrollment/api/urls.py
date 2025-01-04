@@ -25,14 +25,15 @@ urlpatterns = [
     path('student/', StudentView.as_view(), name='student'),
     path('user/', UserView.as_view(), name='user'),
     path('sectioning/', SectioningView.as_view(), name='sectioning'),
+    path('acadtermbilling/', AcadTermBillingView.as_view(), name='acad term billing'),
 
     # Enrollment endpoints
-    path('batch/<int:student_id>/', BatchEnrollStudentAPIView.as_view(), name='batch'),
+    path('batch/', BatchEnrollStudentAPIView.as_view(), name='batch'),
 
     # Student Forms
     path('cor/', CORView.as_view(), name='cor'),
     path('checklist/', ChecklistView.as_view(), name='checklist'),
 
     # Officers Accessible Data's
-    path('dashboard/', DashboarView.as_view(), name='dashboard'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
 ]

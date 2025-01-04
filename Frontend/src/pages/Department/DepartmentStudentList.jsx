@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
 import StudentInfoModal from "./InformationModal"; // Import for editing student info
@@ -50,19 +50,10 @@ const DepartmentStudentList = ({ onLogout }) => {
     setIsEditModalOpen(false);
   };
 
-  useEffect(() => {
-    // Update the isMobile state based on window size
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    // Add event listener to check for window resize
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
-    // Initial check
     handleResize();
-
-    // Cleanup the event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -71,7 +62,7 @@ const DepartmentStudentList = ({ onLogout }) => {
       {/* Sidebar */}
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentDashboard"
+        currentPage="departmentStudentList"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
@@ -80,13 +71,13 @@ const DepartmentStudentList = ({ onLogout }) => {
               navigate("/department");
               break;
             case "enroll":
-              navigate("/departmentDashboard/enroll");
+              navigate("/departmentStudentList/enroll");
               break;
             case "list":
-              navigate("/departmentDashboard/list");
+              navigate("/departmentStudentList/list");
               break;
             case "account":
-              navigate("/departmentDashboard/account");
+              navigate("/departmentStudentList/account");
               break;
             default:
               break;
@@ -99,9 +90,9 @@ const DepartmentStudentList = ({ onLogout }) => {
       {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isMobile || isSidebarCollapsed
-            ? "ml-[5rem] sm:ml-[25rem] md:ml-[15rem] lg:ml-[7.5rem]" // No margin when sidebar is collapsed or on mobile view
-            : "ml-[15.625rem] md:ml-[37rem] lg:ml-[18rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
+          isMobile
+            ? "ml-[12rem]" // No margin when sidebar is collapsed or on mobile view
+            : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]" // Adjusted margin for expanded sidebar (desktop/tablet)
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
@@ -110,19 +101,19 @@ const DepartmentStudentList = ({ onLogout }) => {
             {/* Search Bar and Filters in Mobile View */}
             <div className="flex flex-col sm:flex-row sm:gap-4 w-full items-center gap-4">
               {/* Search Bar */}
-              <div className="relative w-full sm:w-[8rem] md:w-[20rem] flex-1 mb-4 md:mb-0">
+              <div className="relative flex items-center w-[20rem] border border-gray-300 rounded-full px-4 py-1">
+                <div className="flex-shrink-0 text-gray-500">
+                  <FaSearch />
+                </div>
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
+                  className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
                 />
-                <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
-                  <FaSearch />
-                </span>
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap sm:flex-nowrap sm:gap-4 w-full sm:w-auto md:flex-nowrap flex-col md:flex-row items-center gap-4">
+              <div className="flex flex-wrap sm:flex-nowrap md:flex-nowrap flex-col md:flex-row items-center gap-4 sm:gap-4 md:ml-auto">
                 <select className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto">
                   <option value="" disabled selected>
                     Select Year Level
