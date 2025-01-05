@@ -343,92 +343,73 @@ class GradeService:
 
 class EnrollmentService:
     pass
-
 # Class for Excel Operations
-class ExcelProcessor(ABC):
-    @abstractmethod
-    def read(self, file_path):
-        pass
-
-    @abstractmethod
-    def process(self, data):
-        pass
-
-    @abstractmethod
-    def export(self, queryset):
-        pass
-
-
-# Concrete Implementation for Students
-class StudentExcelService(ExcelProcessor):
-    def read(self, file_path):
-       # Reads Excel data for students and returns a DataFrame.
-        return pd.read_excel(file_path, engine="openpyxl")
+class ExcelServiceBase:
+    # Base class for Excel processing services  
+    def read(self, file):
+        # Reads Excel data and returns a DataFrame
+        try:
+            return pd.read_excel(file, engine="openpyxl")
+        except Exception as e:
+            raise ValueError(f"Error reading file: {str(e)}")
 
     def process(self, data):
-        #Processes Excel data and creates Student objects.
-        students = []
-        for _, row in data.iterrows():
-            student = Student(
-                id=row['id'],
-                first_name=row['first_name'],
-                last_name=row['last_name'],
-                email=row['email'],
-                contact_number=row['contact_number'],
-                program_id=row['program'],  # Foreign key to Program
-                gender=row['gender'],
-                year_level=row['year_level'],
-                status=row['status']
+        #Processes DataFrame data. To be implemented by subclasses.
+        raise NotImplementedError
+
+    def export(self, queryset, filename):
+        #Exports queryset data to an Excel file
+        data = list(queryset.values())
+        df = pd.DataFrame(data)
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        df.to_excel(response, index=False, engine="openpyxl")
+        return response
+
+class StudentExcelService(ExcelServiceBase):
+    # Service for handling Student Excel data
+    def process(self, data):
+        required_columns = [
+            "id", "first_name", "last_name", "email",
+            "contact_number", "program", "gender", "year_level", "status"
+        ]
+        if not all(col in data.columns for col in required_columns):
+            raise ValueError(f"Missing required columns: {set(required_columns) - set(data.columns)}")
+
+        students = [
+            Student(
+                id=row["id"],
+                first_name=row["first_name"],
+                last_name=row["last_name"],
+                email=row["email"],
+                contact_number=row["contact_number"],
+                program_id=row["program"],
+                gender=row["gender"],
+                year_level=row["year_level"],
+                status=row["status"],
             )
-            students.append(student)
+            for _, row in data.iterrows()
+        ]
         Student.objects.bulk_create(students, ignore_conflicts=True)
         return f"Successfully processed {len(students)} students."
 
-    def export(self, queryset):
-        #Exports Student objects to an Excel file.
-        data = list(queryset.values(
-            'id', 'first_name', 'last_name', 'email',
-            'contact_number', 'program_id', 'gender',
-            'year_level', 'status'
-        ))
-        df = pd.DataFrame(data)
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response['Content-Disposition'] = 'attachment; filename="students.xlsx"'
-        df.to_excel(response, index=False, engine="openpyxl")
-        return response
-
-
-# Concrete Implementation for Billing
-class BillingExcelService(ExcelProcessor):
-    def read(self, file_path):
-        #Reads Excel data for billing and returns a DataFrame.
-        return pd.read_excel(file_path, engine="openpyxl")
-
+class BillingExcelService(ExcelServiceBase):
+    #Service for handling Billing Excel data
     def process(self, data):
-        #Processes Excel data and creates Billing objects.
-        billings = []
-        for _, row in data.iterrows():
-            billing = AcadTermBilling(
-                billing_id=row['billing_id'], 
-                price=row['price'],
-                year_level=row['year_level'],
-                semester=row['semester']
+        required_columns = ["billing_id", "price", "year_level", "semester"]
+        if not all(col in data.columns for col in required_columns):
+            raise ValueError(f"Missing required columns: {set(required_columns) - set(data.columns)}")
+
+        billings = [
+            AcadTermBilling(
+                billing_id=row["billing_id"],
+                price=row["price"],
+                year_level=row["year_level"],
+                semester=row["semester"],
             )
-            billings.append(billing)
+            for _, row in data.iterrows()
+        ]
         AcadTermBilling.objects.bulk_create(billings, ignore_conflicts=True)
         return f"Successfully processed {len(billings)} billing records."
-
-    def export(self, queryset):
-        #Exports Billing objects to an Excel file.
-        data = list(queryset.values(
-            'billing_id', 'price', 'year_level', 'semester'
-        ))
-        df = pd.DataFrame(data)
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response['Content-Disposition'] = 'attachment; filename="billing.xlsx"'
-        df.to_excel(response, index=False, engine="openpyxl")
-        return response
