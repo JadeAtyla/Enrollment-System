@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from api.custom_views.excel_views import *
 
 urlpatterns = [
     # Authentication endpoints
@@ -16,7 +17,7 @@ urlpatterns = [
     path('protect/registrar/', ProtectRegistrarView.as_view(), name='protect_registrar'),
     path('protect/department/', ProtectDepartmentView.as_view(), name='protect_department'),  
     
-    # Example CRUD endpoints for resources
+    # CRUD endpoints for resources
     path('address/', AddressView.as_view(), name='address'),
     path('course/', CourseView.as_view(), name='course'),
     path('enrollment/', EnrollmentView.as_view(), name='enrollment'),
@@ -36,4 +37,9 @@ urlpatterns = [
 
     # Officers Accessible Data's
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+
+    # Excel
+    path('excel/student/', StudentExcelAPI.as_view(), name='student_excel'),
+    path('excel/billing/', BillingExcelAPI.as_view(), name='billing_excel'),
+    path('excel/cor/<int:student_id>/', GenerateCORAPI.as_view(), name='generate_cor'),
 ]
