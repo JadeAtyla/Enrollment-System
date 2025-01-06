@@ -30,6 +30,12 @@ from django.contrib.auth.models import Group
 from django.db.models import Sum
 from .utils.filterer import QuerysetFilter
 from decimal import Decimal
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image
+from io import BytesIO
+import cairosvg
+import os
+from django.conf import settings
 
 class AcadTermBillingView(BaseView):
     model = AcadTermBilling
@@ -391,6 +397,85 @@ class CORView(APIView):
             "total_acad_term_billing_price": total_acad_term_billings,
             "receipts": receipts_data
         })
+        
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get the data from the request
+            student_id = request.data.get('studentId')
+            logo_svg = request.data.get('logoSvg')
+
+            if not student_id or not logo_svg:
+                return Response({"error": "Student ID and logo SVG are required."}, status=400)
+
+            # Generate the COR file
+            file_path = self.generate_COR(student_id, logo_svg)
+
+            # Return the file as a downloadable response
+            with open(file_path, 'rb') as file:
+                response = Response(file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                response['Content-Disposition'] = f'attachment; filename=registration_form_{student_id}.xlsx'
+                return response
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=500)
+
+    def generate_COR(self, student_id, logo_svg):
+        student = Student.objects.get(id=student_id)
+        address = student.address
+
+        # Create a workbook and sheet
+        wb = Workbook()
+        sheet = wb.active
+        sheet.title = "Registration Form"
+
+        # Convert SVG to PNG
+        png_data = BytesIO()
+        cairosvg.svg2png(bytestring=logo_svg.encode('utf-8'), write_to=png_data)
+        png_data.seek(0)
+
+        # Add logo to the workbook
+        image = Image(png_data)
+        image.width, image.height = 150, 75
+        sheet.add_image(image, "A1")
+
+        # Add header information
+        sheet["A6"] = "CAVITE STATE UNIVERSITY - Bacoor Campus"
+        sheet["A7"] = "REGISTRATION FORM"
+
+        # Add student information
+        sheet["A9"] = "Student Number:"
+        sheet["B9"] = student.id
+
+        sheet["A10"] = "Student Name:"
+        sheet["B10"] = f"{student.last_name}, {student.first_name} {student.middle_name or ''}"
+
+        sheet["A11"] = "Address:"
+        sheet["B11"] = f"{address.street}, {address.barangay}, {address.city}, {address.province}"
+
+        # Add course details
+        sheet["A13"] = "Course Code"
+        sheet["B13"] = "Course Title"
+        sheet["C13"] = "Units"
+        sheet["D13"] = "Day"
+        sheet["E13"] = "Time"
+        sheet["F13"] = "Room"
+
+        row = 14
+        for enrollment in student.enrollments.all():
+            course = enrollment.course
+            schedule = course.schedule_set.first()  # Adjust based on your data structure
+            sheet[f"A{row}"] = course.code
+            sheet[f"B{row}"] = course.title
+            sheet[f"C{row}"] = course.lab_units + course.lec_units
+            sheet[f"D{row}"] = schedule.day if schedule else "N/A"
+            sheet[f"E{row}"] = f"{schedule.start_time} - {schedule.end_time}" if schedule else "N/A"
+            sheet[f"F{row}"] = schedule.room if schedule else "N/A"
+            row += 1
+
+        # Save the file
+        file_path = os.path.join(settings.MEDIA_ROOT, f"registration_form_{student_id}.xlsx")
+        wb.save(file_path)
+        return file_path
+
     
 class ChecklistView(APIView):
     permission_classes = [isStudent]  # Ensure the user is a student
