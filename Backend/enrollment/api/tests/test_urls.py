@@ -6,11 +6,8 @@ class TestUrls(SimpleTestCase):
 
     def test_register_url_is_resolved(self):
         url = reverse('register')
-        print(resolve(url))
         self.assertEqual(resolve(url).func, RegisterView)
 
-
-'''
     def test_login_url_is_resolved(self):
         url = reverse('login')
         self.assertEqual(resolve(url).func.view_class, CustomTokenObtainPairView)
@@ -23,6 +20,6 @@ class TestUrls(SimpleTestCase):
         url = reverse('student-login')
         self.assertEqual(resolve(url).func.view_class, StudentUserView)
 
-'''
+
         
     
