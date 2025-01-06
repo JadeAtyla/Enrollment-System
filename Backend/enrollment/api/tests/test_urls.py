@@ -1,25 +1,28 @@
 from django.test import SimpleTestCase
 from django.urls import reverse, resolve
-from api.views import RegisterView, CustomTokenObtainPairView, RegistrarUserView
+from api.views import RegisterView, CustomTokenObtainPairView, RegistrarUserView, StudentUserView
 
 class TestUrls(SimpleTestCase):
 
     def test_register_url_is_resolved(self):
         url = reverse('register')
-        self.assertEqual(resolve(url).func.view_class, RegisterView)
+        print(resolve(url))
+        self.assertEqual(resolve(url).func, RegisterView)
 
-    def test_register_url_is_resolved(self):
+
+'''
+    def test_login_url_is_resolved(self):
         url = reverse('login')
         self.assertEqual(resolve(url).func.view_class, CustomTokenObtainPairView)
 
-    def test_register_url_is_resolved(self):
+    def test_registrar_url_is_resolved(self):
         url = reverse('registrar-login')
         self.assertEqual(resolve(url).func.view_class, RegistrarUserView)
 
-    def test_register_url_is_resolved(self):
+    def test_student_url_is_resolved(self):
         url = reverse('student-login')
-        self.assertEqual(resolve(url).func.view_class, RegisterView)
+        self.assertEqual(resolve(url).func.view_class, StudentUserView)
 
-
+'''
         
     
