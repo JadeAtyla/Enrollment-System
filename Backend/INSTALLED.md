@@ -1,6 +1,7 @@
 # Guidelines
 
 # Put you backend codes here
+pip install cairosvg
 pip install djangorestframework pandas openpyxl
 
 pip install django djangorestframework
