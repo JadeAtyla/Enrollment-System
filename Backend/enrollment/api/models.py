@@ -16,6 +16,7 @@ class Address(models.Model):
 class Program(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     description = models.CharField(max_length=255)
+    enrollment_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'program'

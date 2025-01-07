@@ -6,7 +6,7 @@ class TestUrls(SimpleTestCase):
 
     def test_register_url_is_resolved(self):
         url = reverse('register')
-        self.assertEqual(resolve(url).func, RegisterView)
+        self.assertEqual(resolve(url).func.view_class, RegisterView)
 
     def test_login_url_is_resolved(self):
         url = reverse('login')

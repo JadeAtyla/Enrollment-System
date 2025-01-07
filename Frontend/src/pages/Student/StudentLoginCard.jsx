@@ -58,6 +58,10 @@ const StudentLoginCard = ({ onLogin }) => {
     navigate("/student/register");
   };
 
+  const handleForgotPassword = () => {
+    navigate('/forget-password/');
+  }
+
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">
       <div className="relative flex flex-col lg:flex-row items-center justify-center rounded-[32px] shadow-lg overflow-hidden w-full max-w-[1027px] h-auto lg:h-[641px] mx-4 lg:mx-0">
@@ -124,7 +128,7 @@ const StudentLoginCard = ({ onLogin }) => {
             </div>
 
             <div className="flex flex-col items-center text-sm mb-6">
-              <button className="text-blue-600 hover:underline mb-2" onClick={() => console.log("Forgot Password clicked")}>
+              <button className="text-blue-600 hover:underline mb-2" onClick={() => handleForgotPassword()}>
                 Forgot Password?
               </button>
               <p>

@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 from django.contrib.auth.models import Group, Permission
 from django.apps import apps
+from time import timezone
 
 class Command(BaseCommand):
     help = 'Seed the database with course data'
