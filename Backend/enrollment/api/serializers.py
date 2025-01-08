@@ -220,12 +220,19 @@ class SectioningSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    groups = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,  # Make the groups field read-only
+        slug_field="name"  # Display group names instead of IDs
+    )
+
     class Meta:
         model = User
         fields = '__all__'
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
+        # Groups won't be processed here since they are read-only
         user = User.objects.create_user(**validated_data)
         return user
     
