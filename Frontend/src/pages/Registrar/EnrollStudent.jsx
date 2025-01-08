@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
 
@@ -12,7 +12,13 @@ const EnrollStudent = ({ onLogout }) => {
   const {student} = location.state || "No student"
   const [defaultCourses, setDefaultCourses] = useState([])
   const [eligiableCourses, setEligiableCourses] = useState([])
-  const [billings, setBillings] = useState([])
+  const [billings, setBillings] = useState([]);
+
+  const { studentId } = useParams();
+      
+  useEffect(()=>{
+      if (!studentId) navigate(`/registrar/evaluate-student/${student.id}`, {state: {student: student}});
+  }, [studentId]);
 
   const { data, error, getData } = useData(`/api/batch/?id=${student?.id}`);
   
@@ -41,7 +47,7 @@ const EnrollStudent = ({ onLogout }) => {
 
     const courseIds = defaultCourses.map(course => course?.id);  // Extract all course IDs
 
-    navigate("/registrar/billing", {
+    navigate(`/registrar/billing/${student.id}`, {
     state: { student: student, courses: courseIds, billings: billings } 
     }); // Navigate to the Billing page
   };
@@ -73,7 +79,7 @@ const EnrollStudent = ({ onLogout }) => {
   };  
 
   const backToEvaluateStudent = () => {
-    navigate("/registrar/evaluate-student", {
+    navigate(`/registrar/evaluate-student/${student.id}`, {
       state: { student: student },
     });
   };

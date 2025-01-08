@@ -7,7 +7,6 @@ const useData = (endpoint) => {
 
   // Fetch data
   const getData = useCallback(async () => {
-
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -24,7 +23,6 @@ const useData = (endpoint) => {
 
   // Create data (POST)
   const createData = async (newData) => {
-
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -34,41 +32,38 @@ const useData = (endpoint) => {
       const response = await axios.post(endpoint, newData);
       setData(response.data); // Update state with the new data
       setError(null); // Clear any previous error
+      return response.data; // Return data after creation
     } catch (err) {
       handleError(err);
     }
   };
 
-// Update data (PUT)
-const updateData = async (id, updatedData) => {
+  // Update data (PUT)
+  const updateData = async (id, updatedData) => {
+    if (!endpoint) {
+      setError({ status: null, message: "Endpoint is required" });
+      return;
+    }
 
-  if (!endpoint) {
-    setError({ status: null, message: "Endpoint is required" });
-    return;
-  }
+    let endpoint_param = `${endpoint}?id=${id}`;
 
-  let endpoint_param = `${endpoint}?id=${id}`;
+    // Check if the endpoint ends with a "/"
+    if (!endpoint.endsWith("/")) {
+      endpoint_param = `${endpoint}&id=${id}`;
+    }
 
-  // Check if the endpoint ends with a "/"
-  if (!endpoint.endsWith("/")) {
-    endpoint_param = `${endpoint}&id=${id}`;
-  }
-
-  console.log(endpoint_param);
-
-  try {
-    const response = await axios.put(`${endpoint_param}`, updatedData);
-    setData(response.data); // Update state with the updated data
-    setError(null); // Clear any previous error
-  } catch (err) {
-    handleError(err);
-  }
-};
-
+    try {
+      const response = await axios.put(endpoint_param, updatedData);
+      setData(response.data); // Update state with the updated data
+      setError(null); // Clear any previous error
+      return response.data; // Return updated data
+    } catch (err) {
+      handleError(err);
+    }
+  };
 
   // Delete data (DELETE)
   const deleteData = async (id) => {
-    
     if (!endpoint) {
       setError({ status: null, message: "Endpoint is required" });
       return;
@@ -86,15 +81,9 @@ const updateData = async (id, updatedData) => {
   // Error handling function
   const handleError = (err) => {
     if (err?.response) {
-      // console.error("API Error:", err.response.status, err.response.data);
       setError(err?.response);
-      console.log(err?.response);
     } else {
-      console.error("Network Error:", err.message);
       setError({ status: null, message: "Network error, please try again later." });
-        // setError(err?.response);
-        // setError(err.response.data);
-        // console.log({"DATA UTIL": err.response.data});
     }
     setData(null); // Clear data if an error occurs
   };

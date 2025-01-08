@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import RegistrarRegisterForm from "./RegistrarRegisterForm";
 import LimitStudentsModal from "./LimitStudentsModal";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const EnrollmentList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -24,6 +25,7 @@ const EnrollmentList = ({ onLogout }) => {
     section: "",
     search: "",
   });
+  const {triggerAlert} = useAlert();
 
   const handleLimitModal = () => setIsLimitModalOpen(true);
   const closeLimitModal = () => setIsLimitModalOpen(false);
@@ -58,7 +60,7 @@ const EnrollmentList = ({ onLogout }) => {
   const handleEnrollment = (studentId) => {
     const selectedStudent = students.find((student) => student.id === studentId);
     // console.log(selectedStudent.id);
-    navigate("/registrar/evaluate-student", {
+    navigate(`/registrar/evaluate-student/${selectedStudent?.id}`, {
       state: { student: selectedStudent },
     });
   };

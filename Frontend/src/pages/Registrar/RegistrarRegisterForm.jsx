@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useData from "../../components/DataUtil";
-import Alert, { triggerAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert";
 
 const RegistrarRegisterForm = ({ onClose, onSave }) => {
     const [step, setStep] = useState(1);
@@ -27,6 +27,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
 
     const { data, error, createData } = useData(`/api/student/`);
     const [trigger, setTrigger] = useState(false);
+    const {triggerAlert} = useAlert();
 
     useEffect(() => {
         if (data) {
@@ -35,10 +36,28 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
         }
         if (error) {
             setTrigger(false);
-            console.log(error);
-            // triggerAlert("error", "Error", error.message || "An error occurred");
         }
-    }, [data, error, createData]);
+    }, [data, error, createData, trigger]);
+
+    useEffect(() => {
+        if (error) {
+          // Check if the error contains a `data` object with missing fields
+          if (error?.data) {
+            const missingFields = Object.keys(error.data); // Extract keys from the error data
+      
+            // Convert keys to a user-friendly message
+            const errorMessage = missingFields.length > 0
+              ? `The following fields are missing or invalid: ${missingFields.join(", ")}`
+              : "An error occurred";
+      
+            // Trigger alert with the generated error message
+            triggerAlert("error", "Error", errorMessage);
+          } else {
+            // Default fallback for unknown errors
+            triggerAlert("error", "Error", "An unexpected error occurred.");
+          }
+        }
+      }, [error]);      
 
     const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -139,7 +158,8 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
     const handleFinish = () => {
         if (onClose) {
             onClose(); // Close the modal
-            window.location.reload();
+            // window.location.reload();
+            setTrigger(true);
         }
     };
 
@@ -194,26 +214,26 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                     name="id"
                                     value={studentData.id}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.id ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.id ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Year Level * <span className="text-red-500">{error?.year_level}</span></label>
+                                <label className="block text-sm font-medium mb-1">Year Level * <span className="text-red-500">{error?.data?.year_level}</span></label>
                                 <input
                                     type="text"
                                     name="year_level"
                                     value={studentData.year_level}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.year_level ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.year_level ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Semester * <span className="text-red-500">{error?.semester}</span></label>
+                                <label className="block text-sm font-medium mb-1">Semester * <span className="text-red-500">{error?.data?.semester}</span></label>
                                 <select
                                     name="semester"
                                     value={studentData.semester}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.semester ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.semester ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 >
                                     <option value="">Select Semester</option>
                                     <option value="1">1</option>
@@ -231,13 +251,13 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Email * <span className="text-red-500">{error?.email}</span></label>
+                                <label className="block text-sm font-medium mb-1">Email * <span className="text-red-500">{error?.data?.email}</span></label>
                                 <input
                                     type="text"
                                     name="email"
                                     value={studentData.email}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.email ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.email ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                         </form>
@@ -251,43 +271,43 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                         </h3>
                         <form className="grid grid-cols-2 gap-x-8 gap-y-6">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Last Name * <span className="text-red-500">{error?.last_name}</span></label>
+                                <label className="block text-sm font-medium mb-1">Last Name * <span className="text-red-500">{error?.data?.last_name}</span></label>
                                 <input
                                     type="text"
                                     name="last_name"
                                     value={studentData.last_name}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.last_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.last_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Street * <span className="text-red-500">{error?.street}</span></label>
+                                <label className="block text-sm font-medium mb-1">Street * <span className="text-red-500">{error?.data?.street}</span></label>
                                 <input
                                     type="text"
                                     name="street"
                                     value={studentData.address.street}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.street ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.street ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">First Name * <span className="text-red-500">{error?.first_name}</span></label>
+                                <label className="block text-sm font-medium mb-1">First Name * <span className="text-red-500">{error?.data?.first_name}</span></label>
                                 <input
                                     type="text"
                                     name="first_name"
                                     value={studentData.first_name}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.first_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.first_name ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Barangay * <span className="text-red-500">{error?.barangay}</span></label>
+                                <label className="block text-sm font-medium mb-1">Barangay * <span className="text-red-500">{error?.data?.barangay}</span></label>
                                 <input
                                     type="text"
                                     name="barangay"
                                     value={studentData.address.barangay}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.barangay ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.barangay ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
@@ -311,22 +331,22 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">City * <span className="text-red-500">{error?.city}</span></label>
+                                <label className="block text-sm font-medium mb-1">City * <span className="text-red-500">{error?.data?.city}</span></label>
                                 <input
                                     type="text"
                                     name="city"
                                     value={studentData.address.city}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.city ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.city ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Gender * <span className="text-red-500">{error?.gender}</span></label>
+                                <label className="block text-sm font-medium mb-1">Gender * <span className="text-red-500">{error?.data?.gender}</span></label>
                                 <select
                                     name="gender"
                                     value={studentData.gender}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.gender ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.gender ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 >
                                     <option value="">Select Gender</option>
                                     <option value="MALE">Male</option>
@@ -334,33 +354,33 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Province * <span className="text-red-500">{error?.province}</span></label>
+                                <label className="block text-sm font-medium mb-1">Province * <span className="text-red-500">{error?.data?.province}</span></label>
                                 <input
                                     type="text"
                                     name="province"
                                     value={studentData.address.province}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.province ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.province ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Contact Number * <span className="text-red-500">{error?.contact_number}</span></label>
+                                <label className="block text-sm font-medium mb-1">Contact Number * <span className="text-red-500">{error?.data?.contact_number}</span></label>
                                 <input
                                     type="text"
                                     name="contact_number"
                                     value={studentData.contact_number}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.contact_number ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.contact_number ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Date of Birth * <span className="text-red-500">{error?.date_of_birth}</span></label>
+                                <label className="block text-sm font-medium mb-1">Date of Birth * <span className="text-red-500">{error?.data?.date_of_birth}</span></label>
                                 <input
                                     type="date"
                                     name="date_of_birth"
                                     value={studentData.date_of_birth}
                                     onChange={handleChange}
-                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.date_of_birth ? 'border-red-500' : 'focus:ring-blue-500'}`}
+                                    className={`border rounded-lg w-full p-2 focus:ring-2 ${error?.data?.date_of_birth ? 'border-red-500' : 'focus:ring-blue-500'}`}
                                 />
                             </div>
                         </form>
@@ -449,8 +469,6 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                     </div>
                 </div>
             </div>
-            {/* Include the Alert component */}
-            <Alert />
         </div>
     );
 };

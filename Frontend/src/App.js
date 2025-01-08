@@ -40,10 +40,12 @@ import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 40
 import axios from "axios";
 import ResetPassword from "./pages/Student/ResetPassword";
 import ForgetPassword from "./pages/Student/ForgetPassword";
+import { useAlert } from "./components/Alert";
 
 function App() {
   const [user, setUser] = useState(null); // Holds user information
   const [role, setRole] = useState(null); // Tracks user role
+  const {triggerAlert} = useAlert();
 
   const handleLogin = async (username, password, group) => {
     if (!username || !password) {
@@ -55,6 +57,7 @@ function App() {
         username,
         password,
       });
+      if(res?.data?.success) triggerAlert("success", "Success", "Login Successfully");
       return res.data; // Return the successful response data
     } catch (err) {
       return err.response.data;
@@ -68,11 +71,12 @@ function App() {
 
       const res = await axios.post(logoutUrl);
 
-      console.log(res.data.success); // For debugging
-
       // Redirect after successful logout
-      if (res.data.success) {
-        <Navigate to={`/${res.data.group}/`} />; // Navigate to the group's page
+      if (res?.data?.success) {
+        // // console.log(); // For debugging
+        // // window.location.reload();
+        // <Navigate to={`/${res?.data?.group}/`} />; // Navigate to the group's page
+        triggerAlert("success", "Success", "Logout Successfully");
       }
     } catch (error) {
       // Handle any errors that occur during the axios request
@@ -80,6 +84,7 @@ function App() {
         "Logout Failed:",
         error.response?.data?.detail || error.message
       );
+      triggerAlert("error", "Logout Failed", error.response?.data?.detail || error?.message || "An error occured");
     }
   };
 
@@ -180,7 +185,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/evaluate-student"
+          path="/registrar/evaluate-student/:studentId?"
           element={
             <ProtectedRoute group="registrar">
               <EvaluateStudent onLogout={handleLogout} />
@@ -188,7 +193,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/enroll-student"
+          path="/registrar/enroll-student/:studentId?"
           element={
             <ProtectedRoute group="registrar">
               <EnrollStudent onLogout={handleLogout} />
@@ -196,7 +201,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/billing"
+          path="/registrar/billing/:studentId?"
           element={
             <ProtectedRoute group="registrar">
               <Billing onLogout={handleLogout} />
@@ -212,7 +217,7 @@ function App() {
           }
         />
         <Route
-          path="/registrar/certificate-of-registration"
+          path="/registrar/certificate-of-registration/:studentId?"
           element={
             <ProtectedRoute group="registrar">
               <CertificateOfRegistration onLogout={handleLogout} />

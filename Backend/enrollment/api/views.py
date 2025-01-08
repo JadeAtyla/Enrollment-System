@@ -351,11 +351,13 @@ class CORView(APIView):
         try:
             # Check if query parameters are provided
             if request.query_params:
+                print("Has Param")
                 # Filter the Student queryset based on query parameters
                 student = QuerysetFilter.filter_queryset(Student, request.query_params).first()
                 if not student:
                     return Response({"error": "No student found matching the query parameters."}, status=404)   
             else:
+                print("No Param")
                 # Default: Retrieve the student using the logged-in user's username
                 student = Student.objects.get(id=request.user.username)
         
@@ -411,26 +413,6 @@ class CORView(APIView):
             "total_acad_term_billing_price": total_acad_term_billings,
             "receipts": receipts_data
         })
-        
-    def post(self, request, *args, **kwargs):
-        try:
-            # Get the data from the request
-            student_id = request.data.get('studentId')
-            logo_svg = request.data.get('logoSvg')
-
-            if not student_id or not logo_svg:
-                return Response({"error": "Student ID and logo SVG are required."}, status=400)
-
-            # Generate the COR file
-            file_path = self.generate_COR(student_id, logo_svg)
-
-            # Return the file as a downloadable response
-            with open(file_path, 'rb') as file:
-                response = Response(file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                response['Content-Disposition'] = f'attachment; filename=registration_form_{student_id}.xlsx'
-                return response
-        except Exception as e:
-            return Response({"error": f"An error occurred: {str(e)}"}, status=500)
     
 class ChecklistView(APIView):
     permission_classes = [isStudent]  # Ensure the user is a student

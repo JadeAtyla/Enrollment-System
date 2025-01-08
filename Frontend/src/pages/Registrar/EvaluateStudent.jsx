@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const EvaluateStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
-
   const location = useLocation();
   const { student } = location.state || {};
   const [courseParam, setCourseParam] = useState(""); // State for course parameters
   const [evalCourses, setEvalCourses] = useState([]);
+  const {triggerAlert} = useAlert();
+
+  const { studentId } = useParams();
+
+  useEffect(()=>{
+      if (!studentId) navigate("/registrar/enrollmentList");
+  }, [studentId]);
 
   // Validate endpoint
   const enrollmentEndpoint = student
@@ -57,8 +64,15 @@ const EvaluateStudent = ({ onLogout }) => {
   useEffect(() => {
     if (gradeData) setEvalCourses(gradeData);
 
-    if (enrollmentError) console.error("Enrollment Error:", enrollmentError);
-    if (gradeError) console.error("Grade Error:", gradeError);
+    if (enrollmentError) {
+      console.error("Enrollment Error:", enrollmentError);
+      triggerAlert("error", "Error", "An error occured");
+      navigate("/registrar/enrollmentList");
+    }
+    if (gradeError) {
+      console.error("Grade Error:", gradeError);
+      navigate("/registrar/enrollmentList");
+    }
   }, [enrollmentError, gradeError, gradeData]);
 
   const handleAddToPending = () => {
@@ -66,7 +80,7 @@ const EvaluateStudent = ({ onLogout }) => {
   };
 
   const handleEnrollment = () => {
-    navigate("/registrar/enroll-student", {
+    navigate(`/registrar/enroll-student/${student.id}`, {
       state: { student: student },
     });
   };

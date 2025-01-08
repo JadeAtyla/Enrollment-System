@@ -56,6 +56,7 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
    const confirmLogout = () => {
      closeModal();
      onLogout();
+     navigate('/registrar');
    };
  
    const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";

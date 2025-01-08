@@ -83,6 +83,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   const confirmLogout = () => {
     closeModal();
     onLogout();
+    navigate('/department');
   };
 
   const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";

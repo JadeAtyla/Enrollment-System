@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import useData from "../../components/DataUtil";
-import Alert, { triggerAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert";
 
 const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
   const [limit, setLimit] = useState(currentLimit);
   const [selectedProgram, setSelectedProgram] = useState(""); // State for program selection
   const [selectedYear, setSelectedYear] = useState(""); // State for year selection
-  const [selectedID, setSelectedID] = useState(null); // Store the ID of the section being updated
+  const [selectedSection, setSelectedSection] = useState(null); // Store the ID of the section being updated
 
   const apiURL = `/api/sectioning/`;
-  const { data, error, getData, updateData } = useData(apiURL);
+  const { data, error, getData } = useData(apiURL);
+  const { updateData } = useData(apiURL);
   const [sectioning, setSectioning] = useState([]);
   const [trigger, setTrigger] = useState(false);
+  const {triggerAlert} = useAlert();
 
   useEffect(() => {
     // Fetch section data on component mount
@@ -30,7 +32,7 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
   }, [data, error]);
 
   const handleSave = async () => {
-    if (!selectedID) {
+    if (!selectedSection) {
       console.error("No section selected to update");
       return;
     }
@@ -39,10 +41,19 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
   
     try {
       // Call the `updateData` method with the `id` and `updatedData`
-      await updateData(selectedID, updatedData);
-      onSave(limit); // Notify parent component of save success
-      setTrigger(true);
-      console.log(trigger)
+      const res = await updateData(selectedSection.id, updatedData);
+      console.log(res);
+      if(res?.success){
+        const yearLevelAssert = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+        const program = res?.updated_instances[0]?.program?.id || "No Program";
+        const yearLevel = res?.updated_instances[0]?.year_level || "No Program";
+        const limitSection = res?.updated_instances[0]?.limit_per_section || "No Limit Student Indicated";
+        triggerAlert("success", "Success", `Student Limit of ${program} in ${yearLevelAssert[yearLevel-1]} is set to ${limitSection} successfully.`);
+        onSave(limit); // Notify parent component of save success
+      } else {
+        triggerAlert("error", "Error", "Updating Limit has interrupted.");
+      }
+      // console.log(trigger)
     } catch (err) {
       setTrigger(false);
       console.error("Error updating section limit:", error.response || error);
@@ -57,7 +68,7 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
   const handleProgramChange = (programId) => {
     setSelectedProgram(programId);
     setSelectedYear(""); // Reset year selection when the program changes
-    setSelectedID(null); // Reset selected ID
+    setSelectedSection(null); // Reset selected ID
   };
 
   const handleYearChange = (year) => {
@@ -67,7 +78,7 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
     const section = sectioning.find(
       (item) => item.program.id === selectedProgram && item.year_level.toString() === year
     );
-    if (section) setSelectedID(section.id);
+    if (section) setSelectedSection(section);
   };
 
   return (

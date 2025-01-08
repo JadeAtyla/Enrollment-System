@@ -3,6 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const ListOfStudents = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1); // State for current page in pagination
@@ -27,19 +28,22 @@ const ListOfStudents = ({ onLogout }) => {
   const { data, error, getData } = useData(`/api/student/?enrollment_status=ENROLLED`);
   const { updateData } = useData(`/api/student/`);
   const [students, setStudents] = useState([]); // State for storing students data
+  const {triggerAlert} = useAlert();
+  const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       await getData();
     };
     fetchData(); // Fetch student data on component mount
-  }, [getData]);
+  }, [getData, trigger]);
 
   useEffect(() => {
     if (data) {
       setStudents(data); // Update students state if data is fetched
     } else if (error) {
       console.error(error?.error); // Log error if fetching fails
+      triggerAlert("error", "Error", error?.error || "An error occured");
     }
   }, [data, error, updateData]);
 
@@ -83,8 +87,9 @@ const ListOfStudents = ({ onLogout }) => {
         const payload = { enrollment_status: "NOT_ENROLLED" };
         await updateData(unenrollModal.studentId, payload); // Use updateData from useData to unenroll
         console.log(`Student with ID ${unenrollModal.studentId} has been unenrolled.`);
-
-        window.location.reload();
+        triggerAlert("success", "Success", `Student with ID ${unenrollModal.studentId} has been unenrolled.`);
+        setTrigger(true);
+        // window.location.reload();
         closeUnenrollModal();
       } catch (error) {
         console.error("Failed to unenroll the student:", error);

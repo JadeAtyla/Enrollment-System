@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const Billing = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -16,6 +17,13 @@ const Billing = ({ onLogout }) => {
 
   const totalAmount = 8290.0;
   const amountNeeded = applyFreeTuition ? 2000 : totalAmount;
+  const {triggerAlert} = useAlert();
+
+  const { studentId } = useParams();
+    
+    useEffect(()=>{
+        if (!studentId) navigate(`/registrar/enroll-student/${student.id}`, {state: {student: student}});
+    }, [studentId]);
 
   // Dynamically calculate `change` when `receivedMoney` or `applyFreeTuition` changes
   useEffect(() => {
@@ -50,17 +58,32 @@ const Billing = ({ onLogout }) => {
 
   useEffect(()=>{
     if (data?.success) {
-      console.log("Student enrolled successfully");
+      triggerAlert("success", "Success", "Student enrolled successfully.");
       // navigate("/registrar/evaluate-payment", { state: { totalAmount, receivedMoney, change } });
-      navigate("/registrar/certificate-of-registration");
+      navigate(`/registrar/certificate-of-registration/${student.id}`);
     } 
-    if (error){
-      console.log(error.error?.message);
-    }
+    if (error) {
+      console.log(error?.data);
+    
+      // Check if errors array exists and has content
+      if (error?.data?.error?.errors) {
+        // Loop through each error in the errors array
+        for (const errorDetail of error.data.error.errors) {
+          // Log each error's message
+          console.log(errorDetail?.error);
+    
+          // Optionally trigger an alert for each error message
+          triggerAlert("error", "Error", errorDetail?.error || "Unknown error occurred.");
+        }
+      }
+    
+      // Fallback for general error message
+      triggerAlert("error", "Error", error?.data?.error?.message || "Error enrolling this student.");
+    }    
   }, [data, error]);
 
   const handleBack = () => {
-    navigate("/registrar/enroll-student", { state: { student: student } });
+    navigate(`/registrar/enroll-student/${student.id}`, { state: { student: student } });
   };
 
   return (

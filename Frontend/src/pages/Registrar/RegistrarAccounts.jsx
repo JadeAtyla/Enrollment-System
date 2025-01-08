@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
-import Alert, { triggerAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert";
 
 const RegistrarAccounts = ({ onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +21,7 @@ const RegistrarAccounts = ({ onLogout }) => {
     newPassword: "",
     confirmPassword: "",
   });
+  const {triggerAlert} = useAlert();
 
   useEffect(() => {
     // Fetch student and user data on component mount

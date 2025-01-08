@@ -2,7 +2,7 @@ import React, { useState, useLayoutEffect, useEffect } from "react";
 import DepartmentSidebar from "./DepartmentSidebar";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
-import Alert, { triggerAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert";
 
 const DepartmentAccount = ({ onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -22,6 +22,7 @@ const DepartmentAccount = ({ onLogout }) => {
     newPassword: "",
     confirmPassword: "",
   });
+  const {triggerAlert} = useAlert();
 
   useLayoutEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);

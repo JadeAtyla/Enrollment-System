@@ -2,10 +2,20 @@ import React, { useState, useEffect } from "react";
 import universityLogo from "../../images/universityLogo.svg";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CertificateOfRegistration = ({ onLogout, studentId }) => {
+const CertificateOfRegistration = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [corData, setCorData] = useState(null);
+
+  const { studentId } = useParams();
+  
+  const navigate = useNavigate();
+
+  useEffect(()=>{
+    if (!studentId) navigate("/registrar/enrollmentList");
+  }, [studentId])
+
   const { data, error, getData } = useData(`/api/cor/?id=${studentId}`);
 
   useEffect(() => {
