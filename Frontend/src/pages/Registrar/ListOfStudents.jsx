@@ -24,7 +24,8 @@ const ListOfStudents = ({ onLogout }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber); // Function to change page
   // Custom hook to fetch data from the API
-  const { data, error, getData, updateData } = useData(`/api/student/?enrollment_status=ENROLLED`);
+  const { data, error, getData } = useData(`/api/student/?enrollment_status=ENROLLED`);
+  const { updateData } = useData(`/api/student/`);
   const [students, setStudents] = useState([]); // State for storing students data
 
   useEffect(() => {

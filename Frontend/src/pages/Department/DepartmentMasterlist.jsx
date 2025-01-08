@@ -174,7 +174,7 @@ const DepartmentMasterList = ({ onLogout }) => {
           <div className="shadow rounded-[1.875rem] bg-white p-8">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-[1.875rem] font-semibold text-gray-800">
-                MASTERLIST
+                Curriculum
               </h1>
               <div className="flex gap-4">
                 <button className="bg-green-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-green-700 transition-transform transform hover:scale-105">

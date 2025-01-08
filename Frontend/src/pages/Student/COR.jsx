@@ -194,16 +194,16 @@ const COR = ({ onLogout }) => {
                           {enrollment.course?.title || "N/A"}
                         </td>
                         <td className="border p-2">
-                          {enrollment.course?.units || "N/A"}
+                          {enrollment.course?.lab_units + enrollment.course?.lec_units || "N/A"}
                         </td>
                         <td className="border p-2">
-                          {enrollment.schedule?.time || "N/A"}
+                          {enrollment.schedule?.time || "TBA"}
                         </td>
                         <td className="border p-2">
-                          {enrollment.schedule?.day || "N/A"}
+                          {enrollment.schedule?.day || "TBA"}
                         </td>
                         <td className="border p-2">
-                          {enrollment.schedule?.room || "N/A"}
+                          {enrollment.schedule?.room || "TBA"}
                         </td>
                       </tr>
                     ))

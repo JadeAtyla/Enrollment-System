@@ -38,6 +38,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
 import axios from "axios";
+import ResetPassword from "./pages/Student/ResetPassword";
+import ForgetPassword from "./pages/Student/ForgetPassword";
 
 function App() {
   const [user, setUser] = useState(null); // Holds user information
@@ -97,6 +99,14 @@ function App() {
         <Route
           path="/student"
           element={<StudentLoginCard onLogin={handleLogin} />}
+        />
+        <Route
+          path="/reset-password/:userId/:token/"
+          element={<ResetPassword />}
+        />
+        <Route
+          path="/forget-password"
+          element={<ForgetPassword />}
         />
         <Route
           path="/student/dashboard"

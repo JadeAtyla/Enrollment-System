@@ -35,6 +35,8 @@ from openpyxl.drawing.image import Image
 from io import BytesIO
 import os
 from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
 
 class AcadTermBillingView(BaseView):
     model = AcadTermBilling
@@ -251,6 +253,8 @@ class RegisterView(APIView):
                 'success': False,
                 'message': f"Duplicate entry of account: {request.data['username']}"
             }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({e})
 
 
 # Logout View
@@ -807,3 +811,69 @@ class DashboardView(APIView):
         }
 
         return Response(response_data, status=200)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = []  # Publicly accessible
+    
+    def post(self, request, *args, **kwargs):
+        id = request.data.get('id')
+        if not id:
+            return Response({"error": "Student Number is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            student = Student.objects.get(id=id)
+            print("Student Email: ", student.email)
+            # if request.user.groups.filter(name__iexact='admin').exists():
+            user = User.objects.get(email=student.email)
+
+            if not user.groups.filter(name__iexact='student').exists():
+                return Response({"error": "Student email not found."}, status=status.HTTP_400_BAD_REQUEST)
+            # else:
+            # raise Response({"error": "Admins are the only allowed to reset passwords."})
+
+            token = PasswordResetTokenGenerator().make_token(user)
+            reset_link = f"http://localhost:3000/reset-password/{user.pk}/{token}/"
+
+            # Send email
+            send_mail(
+                subject="Password Reset",
+                message="Click the link to reset your password.",  # Plain text fallback
+                from_email="noreply@yourdomain.com",
+                recipient_list=[student.email],
+                html_message=f"""
+                    <html>
+                        <body>
+                            <p>Click the link below to reset your password:</p>
+                            <a href="{reset_link}">Reset your password here</a>
+                        </body>
+                    </html>
+                """
+            )
+
+            return Response({"message": "Password reset email sent successfully."}, status=status.HTTP_200_OK)
+        
+        except User.DoesNotExist:
+            return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        except Student.DoesNotExist:
+            return Response({"error": "Student does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        
+class PasswordResetConfirmView(APIView):
+    permission_classes = []  # Publicly accessible
+    
+    def post(self, request, user_id, token, *args, **kwargs):
+        try:
+            user = User.objects.get(pk=user_id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            new_password = request.data.get('new_password')
+            if not new_password:
+                return Response({"error": "New password is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.set_password(new_password)
+            user.save()
+
+            return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+        
+        except User.DoesNotExist:
+            return Response({"error": "Invalid user."}, status=status.HTTP_404_NOT_FOUND)

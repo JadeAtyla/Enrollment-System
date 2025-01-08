@@ -151,7 +151,7 @@ const RegistrarDashboard = ({ onLogout }) => {
               </div>
             </div>
             <div className="text-[1.125rem] font-semibold text-gray-700">
-              Role: Department
+              Role: Registrar
             </div>
           </div>
 

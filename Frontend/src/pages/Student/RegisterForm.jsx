@@ -4,12 +4,14 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
 import { registerUser } from "../../StaticFunctions/staticFunctions";
+import useData from "../../components/DataUtil";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    studentNumber: "",
+    username: "",
     password: "",
-    confirmPassword: "",
+    re_password: "",
+    group: "student"
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -17,6 +19,7 @@ const RegisterForm = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const navigate = useNavigate();
+  const { data, error, createData } = useData("/api/register/");
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,14 +40,35 @@ const RegisterForm = () => {
     setErrorMessage("");
   };
 
-  const handleRegisterClick = () => {
-    const registrationResult = registerUser(formData);
-    if (registrationResult === true) {
-      setIsModalOpen(true); // Open modal on successful registration
+  const handleRegisterClick = async () => {
+    console.log(formData.password);
+    console.log(formData.re_password);
+    console.log(formData.password == formData.re_password);
+
+    if(formData.password === formData.re_password){
+      await createData(formData);
     } else {
-      setErrorMessage(registrationResult);
+      setErrorMessage('Password do not match.');
     }
+    // if (registrationResult === true) {
+    //   setIsModalOpen(true); // Open modal on successful registration
+    // } else {
+    //   setErrorMessage(registrationResult);
+    // }
   };
+
+  useEffect(() => {
+    // Update user state when data is fetched
+    if (data?.success) setIsModalOpen(true);
+    
+    if (error) {
+      setErrorMessage(
+        error?.data?.non_field_errors ||
+        error?.data?.message ||
+        "An error occurred."
+      );
+    }
+  }, [data, error]);  
 
   const handleBackToLogin = () => {
     navigate("/student");
@@ -82,8 +106,8 @@ const RegisterForm = () => {
           <div className="w-full max-w-[350px]">
             <input
               type="text"
-              name="studentNumber"
-              value={formData.studentNumber}
+              name="username"
+              value={formData.username}
               onChange={handleInputChange}
               placeholder="STUDENT NUMBER"
               className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"
@@ -112,8 +136,8 @@ const RegisterForm = () => {
             <div className="relative mb-6">
               <input
                 type={confirmPasswordVisible ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                name="re_password"
+                value={formData.re_password}
                 onChange={handleInputChange}
                 placeholder="RETYPE PASSWORD"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"

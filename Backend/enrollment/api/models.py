@@ -1,6 +1,7 @@
 from django.db import models
 from .enums import *
 from django.core.validators import RegexValidator
+from datetime import datetime
 
 
 class Address(models.Model):
@@ -8,6 +9,9 @@ class Address(models.Model):
     barangay = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100)
     province = models.CharField(max_length=100)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'address'
@@ -16,6 +20,9 @@ class Address(models.Model):
 class Program(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     description = models.CharField(max_length=255)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'program'
@@ -25,6 +32,9 @@ class Sectioning(models.Model):
     limit_per_section = models.PositiveIntegerField()
     year_level = models.PositiveIntegerField()
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="sections")
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'sectioning'
@@ -64,6 +74,9 @@ class Student(models.Model):
     category = models.CharField(max_length=3, choices=STUDENT_CATEGORY.choices, blank=True, null=True)
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="students", blank=True, null=True)
     enrollment_status = models.CharField(max_length=25, choices=ENROLLMENT_STATUS.choices, default=ENROLLMENT_STATUS.NOT_ENROLLED)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
     # # Trigger
     # def save(self, *args, **kwargs):
     #     self.category = STUDENT_CATEGORY.NEW if self.year_level <= 1 else STUDENT_CATEGORY.OLD
@@ -98,6 +111,9 @@ class Instructor(models.Model):
     email = models.CharField(max_length=55, blank=True, null=True)
     contact_number = models.CharField(max_length=13, blank=True, null=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='instructors')
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'instructor'
@@ -114,7 +130,10 @@ class Course(models.Model):
     semester = models.PositiveIntegerField()
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="courses")
     pre_requisites = models.ManyToManyField('self', blank=True, symmetrical=False, related_name="required_by")
-    
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = 'course'
         constraints = [
@@ -129,6 +148,9 @@ class Enrollment(models.Model):
     year_level_taken = models.PositiveIntegerField(default=1)
     semester_taken = models.PositiveIntegerField(default=1)
     school_year = models.CharField(max_length=20)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'enrollment'
@@ -142,6 +164,9 @@ class Grade(models.Model):
     grade = models.CharField(max_length=4, db_comment='1.00 to 5.00 or S scale')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name="grades_given")
     remarks = models.CharField(max_length=20, blank=True, null=True, choices=GRADE_REMARKS.choices)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     # def save(self, *args, **kwargs):
     #     # Determine the remarks based on the grade
@@ -183,6 +208,9 @@ class Grade(models.Model):
 class BillingList(models.Model):
     name = models.CharField(max_length=55)
     category = models.CharField(max_length=20, choices=BILLING_CATEGORY.choices)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'billing_list'
@@ -192,6 +220,9 @@ class AcadTermBilling(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     year_level = models.IntegerField()
     semester = models.IntegerField()
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'acad_term_billing'
@@ -208,6 +239,7 @@ class Receipt(models.Model):
     status = models.CharField(max_length=55, choices=PAYMENT_STATUS.choices, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     school_year = models.CharField(max_length=20)
+    deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.terms = 1
@@ -229,3 +261,30 @@ class Receipt(models.Model):
 
     class Meta:
         db_table = 'receipt'
+
+class Enrollment_Date(models.Model):
+    date = models.DateField()
+    is_enrollment = models.BooleanField(default=False)
+    program = models.ForeignKey('Program', on_delete=models.CASCADE)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Reset `is_enrollment` to False for all other records in the same program
+        Enrollment_Date.objects.filter(program=self.program).update(is_enrollment=False)
+
+        # Check if the current date matches the `date` field
+        if self.date == datetime.now().date():
+            self.is_enrollment = True
+        else:
+            self.is_enrollment = False
+        
+        # Debugging print to confirm the current date
+        print("Current Date:", datetime.now().date())
+
+        # Save the current record
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'enrollment_date'

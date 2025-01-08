@@ -181,7 +181,7 @@ class RegistrationValidator:
             # If the group is "student", verify the student ID exists in the model
             if "student" in user:
                 if not model.objects.filter(id=username).exists():
-                    raise serializers.ValidationError(f"{user} Username '{username}' does not exist in the Student table.")
+                    raise serializers.ValidationError(f"Username '{username}' does not exist in the Student table.")
         else:
             # For non-student users, ensure only admins can register
             if not context.get("request").user.groups.filter(name="admin").exists():
