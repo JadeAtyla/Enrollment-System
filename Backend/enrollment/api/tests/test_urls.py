@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 from django.urls import reverse, resolve
-from api.views import RegisterView, CustomTokenObtainPairView, RegistrarUserView, StudentUserView, DepartmentUserView, CustomTokenRefreshView, LogoutView, ProtectStudentView, ProtectRegistrarView, ProtectDepartmentView, AddressView, CourseView, EnrollmentView, GradeView, InstructorView, StudentView, UserView, SectioningView, AcadTermBillingView, BatchEnrollStudentAPIView, CORView, ChecklistView, DashboardView, 
+from api.views import RegisterView, CustomTokenObtainPairView, RegistrarUserView, StudentUserView, DepartmentUserView, CustomTokenRefreshView, LogoutView, ProtectStudentView, ProtectRegistrarView, ProtectDepartmentView, AddressView, CourseView, EnrollmentView, GradeView, InstructorView, StudentView, UserView, SectioningView, AcadTermBillingView, BatchEnrollStudentAPIView, CORView, ChecklistView, DashboardView
 #StudentExcelAPI, BillingExcelAPI, GenerateCORAPI
    
 class TestUrls(SimpleTestCase):
