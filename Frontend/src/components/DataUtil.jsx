@@ -49,10 +49,12 @@ const updateData = async (id, updatedData) => {
 
   let endpoint_param = `${endpoint}?id=${id}`;
 
-  // // Check if the endpoint ends with a "/"
-  // if (!endpoint.endsWith("/")) {
-  //   endpoint_param = `${endpoint}&id=${id}`;
-  // }
+  // Check if the endpoint ends with a "/"
+  if (!endpoint.endsWith("/")) {
+    endpoint_param = `${endpoint}&id=${id}`;
+  }
+
+  console.log(endpoint_param);
 
   try {
     const response = await axios.put(`${endpoint_param}`, updatedData);
