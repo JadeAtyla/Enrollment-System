@@ -10,10 +10,10 @@ class GroupPermission(BasePermission):
     # Define granular permissions
     MODEL_PERMISSIONS = {
         "admin": {
-            "*": ["GET", "POST", "PUT", "DELETE"],  # Admin has full access to all models
+            "*": ["GET", "POST", "PUT", "DELETE"],
         },
         "registrar": {
-            "*": ["GET", "POST", "PUT", "DELETE"],  # Registrar has full access
+            "*": ["GET", "POST", "PUT", "DELETE"],
         },
         "department": {
             "*": ["GET", "POST", "PUT", "DELETE"], 
@@ -21,6 +21,7 @@ class GroupPermission(BasePermission):
         "student": {
             "*": ["GET"],
             "user": ["GET", "PUT"],
+            "student": ["GET", "PUT"],
         },
     }
 

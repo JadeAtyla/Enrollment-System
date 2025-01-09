@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework import status
-# from ..services.services import StudentService
 # from ..validators.validators import RegistrationValidator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -22,7 +21,7 @@ from .custom_views.base_view import BaseView
 from .models import *
 from .serializers import *
 from django.db import transaction
-from .utils.services import StudentService
+from .utils.services import *
 from api.utils.validators import EnrollmentValidator
 from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
@@ -477,107 +476,107 @@ class BatchEnrollStudentAPIView(APIView):
 
         # Ensure only one student is provided (or handle multiple students as needed)
         if students_queryset.count() > 1:
-            return Response({"detail": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
         if not students_queryset.exists():
-            return Response({"detail": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
 
         # Get the single student object
         student = students_queryset.first()
+
+        # Validate student residency
+        valid_residency = EnrollmentValidator.valid_residency(student.id)
+
+        if not valid_residency:
+            raise serializers.ValidationError({"error": f"Student {student.id} has exceeded the 6 years maximum residency period."})
 
         # Get all courses for the student's program
         program_courses = Course.objects.filter(program=student.program)
         eligible_courses = []
         default_courses = []
 
-        # Helper function to get unmet prerequisites recursively
-        def get_unmet_prerequisites(course, student):
-            unmet_prerequisites = []
-            for prerequisite in course.pre_requisites.all():
-                if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
-                    unmet_prerequisites.append(prerequisite)
-                    unmet_prerequisites += get_unmet_prerequisites(prerequisite, student)
-            return unmet_prerequisites
+        # # Helper function to get unmet prerequisites recursively
+        # def get_unmet_prerequisites(course, student):
+        #     unmet_prerequisites = []
+        #     for prerequisite in course.pre_requisites.all():
+        #         if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
+        #             unmet_prerequisites.append(prerequisite)
+        #             unmet_prerequisites += get_unmet_prerequisites(prerequisite, student)
+        #     return unmet_prerequisites
 
-        # Determine the next semester and year level for REGULAR students
-        if student.year_level > 4 or (student.year_level >= 4 and student.semester >= 2):
-            next_year_level, next_semester = 4, 2  # Reset to year 4, semester 2
-        else:
-            next_year_level, next_semester = (student.year_level, 2) if student.semester == 1 else (student.year_level + 1, 1)
+        # Determine the next semester and year level
+        next_year_level, next_semester = EnrollmentService.target_year_level_semester(student.year_level, student.semester)
+        
+        # # Ensure `billings` is set properly
+        # billings = AcadTermBillingSerializer(
+        #     AcadTermBilling.objects.filter(
+        #         year_level=next_year_level,
+        #         semester=next_semester
+        #         ), many=True
+        # ).data
 
+        # if not billings:
+        #     # Billing information not found, raise an error and rollback
+        #     raise serializers.ValidationError(
+        #         {"error": "Billing information not found for the student's year level and semester."}
+        #     )
+                
+        # # Calculate total price from academic term billings
+        # total_amount = sum(float(item['price']) for item in billings)
+
+        # # Ensure both values are Decimal
+        # total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
+        
         # Ensure `billings` is set properly
+
         billings = AcadTermBillingSerializer(
-            AcadTermBilling.objects.filter(
-                year_level=next_year_level,
-                semester=next_semester
-                ), many=True
+        AcadTermBilling.objects.filter(
+            year_level=next_year_level,
+            semester=next_semester
+            ), many=True
         ).data
 
-        if not billings:
-            # Billing information not found, raise an error and rollback
-            raise serializers.ValidationError(
-                {"error": "Billing information not found for the student's year level and semester."}
-            )
-                
-        # Calculate total price from academic term billings
-        total_amount = sum(float(item['price']) for item in billings)
+        total_amount = EnrollmentService.set_billing_total(billings)
 
-        # Ensure both values are Decimal
-        total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
-
-        # Helper function to add course data
-        def add_course(course, target_list):
-            target_list.append({
-                "id": course.id,
-                "code": course.code,
-                "title": course.title,
-                "lab_units": course.lab_units,
-                "lec_units": course.lec_units,
-                "contact_hr_lab": course.contact_hr_lab,
-                "contact_hr_lec": course.contact_hr_lec,
-                "year_level": course.year_level,
-                "semester": course.semester,
-                "program": course.program.id,
-                "pre_requisites": [prerequisite.id for prerequisite in course.pre_requisites.all()],
-            })
-
-        for course in program_courses:
-            if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
-                continue  # Skip course if already passed
+        # Setup defaults and eligiable courses
+        EnrollmentService.set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester)
+        # for course in program_courses:
+        #     if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
+        #         continue  # Skip course if already passed
             
-            if Enrollment.objects.filter(student=student, course=course).exists():
-                continue
+        #     if Enrollment.objects.filter(student=student, course=course).exists():
+        #         continue
 
-            # Special condition for mid-year courses
-            if course.year_level == 0 and course.semester == 0:
-                if (student.program.id == "BSIT" and student.year_level > 2) or \
-                (student.program.id == "BSCS" and student.year_level > 3):
-                    add_course(course, default_courses)
-                else:
-                    add_course(course, eligible_courses)
-                continue  # Skip other logic for mid-year courses
+        #     # Special condition for mid-year courses
+        #     if course.year_level == 0 and course.semester == 0:
+        #         if (student.program.id == "BSIT" and student.year_level > 2) or \
+        #         (student.program.id == "BSCS" and student.year_level > 3):
+        #             EnrollmentService.add_course(course, default_courses)
+        #         else:
+        #             EnrollmentService.add_course(course, eligible_courses)
+        #         continue  # Skip other logic for mid-year courses
                     
-            # Handle REGULAR students
-            if student.status == "REGULAR":
-                if course.year_level == next_year_level and course.semester == next_semester:
-                    add_course(course, default_courses)
-                else:
-                    add_course(course, eligible_courses)
-                continue
+        #     # Handle REGULAR students
+        #     if student.status == "REGULAR":
+        #         if course.year_level == next_year_level and course.semester == next_semester:
+        #             EnrollmentService.add_course(course, default_courses)
+        #         else:
+        #             EnrollmentService.add_course(course, eligible_courses)
+        #         continue
 
-            # Handle NON-REGULAR students: Check for unmet prerequisites
-            unmet_prerequisites = get_unmet_prerequisites(course, student)
-            if unmet_prerequisites:
-                for prerequisite in unmet_prerequisites:
-                    if not any(c["id"] == prerequisite.id for c in default_courses):
-                        add_course(prerequisite, default_courses)
-            else:
-                if course.year_level == next_year_level and course.semester == next_semester:
-                    add_course(course, default_courses)
+        #     # Handle NON-REGULAR students: Check for unmet prerequisites
+        #     unmet_prerequisites = get_unmet_prerequisites(course, student)
+        #     if unmet_prerequisites:
+        #         for prerequisite in unmet_prerequisites:
+        #             if not any(c["id"] == prerequisite.id for c in default_courses):
+        #                 EnrollmentService.add_course(prerequisite, default_courses)
+        #     else:
+        #         if course.year_level == next_year_level and course.semester == next_semester:
+        #             EnrollmentService.add_course(course, default_courses)
 
-            # Add eligible courses (same for both REGULAR and NON-REGULAR students)
-            if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
-                add_course(course, eligible_courses)
-                print(next_year_level, next_semester)
+        #     # Add eligible courses (same for both REGULAR and NON-REGULAR students)
+        #     if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
+        #         EnrollmentService.add_course(course, eligible_courses)
+        #         print(next_year_level, next_semester)
 
         return Response({
             "default_courses": default_courses,
@@ -610,23 +609,15 @@ class BatchEnrollStudentAPIView(APIView):
                 student = Student.objects.get(id=student_id)
 
                 # Validate student residency
-                EnrollmentValidator.valid_residency(student.id)
+                valid_residency = EnrollmentValidator.valid_residency(student.id)
 
-                # Step 2: Update Student status
-                # Determine the next semester and year level for REGULAR students
-                if student.year_level > 4 or (student.year_level >= 4 and student.semester >= 2):
-                    next_year_level, next_semester = 4, 2  # Reset to year 4, semester 2
-                else:
-                    next_year_level, next_semester = (student.year_level, 2) if student.semester == 1 else (student.year_level + 1, 1)
-                
-                student.year_level = next_year_level
-                student.semester = next_semester
-                student.academic_year = acad_year
-                student.status = "REGULAR"
-                student.enrollment_status = "ENROLLED"
-                student.save()
+                if not valid_residency:
+                    raise serializers.ValidationError({"error": f"Student {student.id} has exceeded the 6 years maximum residency period."})
 
-                # Step 3: Process enrollments for all courses
+                # Determine the next semester and year level
+                next_year_level, next_semester = EnrollmentService.target_year_level_semester(student.year_level, student.semester)
+
+                # Step 2: Process enrollments for all courses
                 successful_enrollments = []
                 failed_enrollments = []  # Collect failed enrollments with reasons
                 enrollment_date = None  # Store the enrollment date
@@ -686,7 +677,7 @@ class BatchEnrollStudentAPIView(APIView):
                         }
                     )
 
-                # Step 4: Compute `total_amount` based on `AcadTermBilling`
+                # Step 3: Compute `total_amount` based on `AcadTermBilling`
                 acad_term_billing = AcadTermBillingSerializer(
                     AcadTermBilling.objects.filter(
                         year_level=next_year_level, 
@@ -709,7 +700,7 @@ class BatchEnrollStudentAPIView(APIView):
                 # Checks if the paid amount is voucher ready or not
                 paid_amount = total_amount if voucher else Decimal(paid_amount)
 
-                # Step 5: Create a Receipt
+                # Step 4: Create a Receipt
                 remaining_balance = total_amount - paid_amount
                 receipt = Receipt.objects.create(
                     student=student,
@@ -718,6 +709,14 @@ class BatchEnrollStudentAPIView(APIView):
                     remaining=remaining_balance,
                     status="PENDING" if remaining_balance > 0 else "PAID",
                 )
+
+                # Step 5: Update Student status
+                student.year_level = next_year_level
+                student.semester = next_semester
+                student.academic_year = acad_year
+                student.status = StudentService.set_status(student.id)
+                student.enrollment_status = "ENROLLED"
+                student.save()
 
             # Success response
             return Response(

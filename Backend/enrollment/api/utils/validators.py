@@ -101,13 +101,20 @@ class StudentNumberValidator:
         return True
     
 class EnrollmentValidator:
+    def __init__(self, student_number: int):
+        self.student_number = student_number
+
+        # Validate the student number
+        self.valid_residency(student_number)
+        self.valid_to_enroll_course(student_number)
+
     @staticmethod
     def valid_residency(student_id: int) -> bool:
         student_enrollment_year = int(str(student_id)[:4])
         current_year = datetime.now().year
         residency = current_year - student_enrollment_year
         if residency > 5:
-            raise serializers.ValidationError({"error": "Student has exceeded the maximum residency period."})
+            return False
         return True
     
     @staticmethod

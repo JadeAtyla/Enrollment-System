@@ -82,6 +82,7 @@ const useData = (endpoint) => {
   const handleError = (err) => {
     if (err?.response) {
       setError(err?.response);
+      console.log(err);
     } else {
       setError({ status: null, message: "Network error, please try again later." });
     }

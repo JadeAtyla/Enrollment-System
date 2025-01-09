@@ -15,6 +15,7 @@ from .validators import StudentNumberValidator, LengthValidator
 from rest_framework import serializers
 from api.models import Student, Program, Course, Enrollment, Grade
 from collections import Counter
+from decimal import Decimal
 
 class CalculateService:
     @staticmethod
@@ -128,81 +129,175 @@ class StudentService:
             raise ValidationError("The specified student or course does not exist.")
 
 class EnrollmentService:
+    @staticmethod
+    def target_year_level_semester(year_level, semester):
+        next_year_level, next_semester = 0, 0
+
+        if year_level > 4 or (year_level >= 4 and semester >= 2):
+            next_year_level, next_semester = 4, 2  # Reset to year 4, semester 2
+        else:
+            next_year_level, next_semester = (year_level, 2) if semester == 1 else (year_level + 1, 1)
+
+        return next_year_level, next_semester
 
     @staticmethod
-    def is_eligible_to_enroll(student_id, course_id) -> bool:
-        """
-        Check if a student is eligible to enroll in a given course.
-        Eligibility is based on grade remarks (must be 'PASSED').
-        """
-        try:
-            # Fetch grade for the specific student and course
-            grade = Grade.objects.get(student=student_id, course=course_id)
-            return grade.remarks == 'PASSED'
-        except Grade.DoesNotExist:
-            return False
+    # Helper function to add course data
+    def add_course(course, target_list):
+        target_list.append({
+            "id": course.id,
+            "code": course.code,
+            "title": course.title,
+            "lab_units": course.lab_units,
+            "lec_units": course.lec_units,
+            "contact_hr_lab": course.contact_hr_lab,
+            "contact_hr_lec": course.contact_hr_lec,
+            "year_level": course.year_level,
+            "semester": course.semester,
+            "program": course.program.id,
+            "pre_requisites": [prerequisite.id for prerequisite in course.pre_requisites.all()],
+        })
+    
+    @staticmethod
+    # Helper function to get unmet prerequisites recursively
+    def get_unmet_prerequisites(course, student):
+        unmet_prerequisites = []
+        for prerequisite in course.pre_requisites.all():
+            if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
+                unmet_prerequisites.append(prerequisite)
+                unmet_prerequisites += EnrollmentService.get_unmet_prerequisites(prerequisite, student)
+        return unmet_prerequisites
+    
+    @staticmethod
+    def set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester):
+        # Setup defaults and eligiable courses
+        for course in program_courses:
+            if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
+                continue  # Skip course if already passed
+            
+            if Enrollment.objects.filter(student=student, course=course).exists():
+                continue
+
+            # Special condition for mid-year courses
+            if course.year_level == 0 and course.semester == 0:
+                if (student.program.id == "BSIT" and student.year_level > 2) or \
+                (student.program.id == "BSCS" and student.year_level > 3):
+                    EnrollmentService.add_course(course, default_courses)
+                else:
+                    EnrollmentService.add_course(course, eligible_courses)
+                continue  # Skip other logic for mid-year courses
+                    
+            # Handle REGULAR students
+            if student.status == "REGULAR":
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    EnrollmentService.add_course(course, default_courses)
+                else:
+                    EnrollmentService.add_course(course, eligible_courses)
+                continue
+
+            # Handle NON-REGULAR students: Check for unmet prerequisites
+            unmet_prerequisites = EnrollmentService.get_unmet_prerequisites(course, student)
+            if unmet_prerequisites:
+                for prerequisite in unmet_prerequisites:
+                    if not any(c["id"] == prerequisite.id for c in default_courses):
+                        EnrollmentService.add_course(prerequisite, default_courses)
+            else:
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    EnrollmentService.add_course(course, default_courses)
+
+            # Add eligible courses (same for both REGULAR and NON-REGULAR students)
+            if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
+                EnrollmentService.add_course(course, eligible_courses)
+                print(next_year_level, next_semester)
 
     @staticmethod
-    def get_courses_to_enroll(student_id) -> Course:
-        """
-        Retrieve courses available for enrollment for a student.
-        Filters out already passed courses and courses above the year level.
-        """
-        try:
-            student = Student.objects.get(id=student_id)
-            year_level = student.year_level
-
-            # Courses the student has already passed
-            passed_courses = Grade.objects.filter(
-                student=student, remarks="PASSED"
-            ).values_list('course_id', flat=True)
-
-            # Return courses below or equal to student's year_level and not already passed
-            return Course.objects.filter(year_level__lte=year_level).exclude(id__in=passed_courses)
-
-        except Student.DoesNotExist:
-            raise ValidationError({"error": "Student does not exist."})
-
-    @staticmethod
-    def enroll_student(student_id, course_id):
-        """
-        Enroll a student into a course if they meet the eligibility requirements.
-        """
-        try:
-            # Step 1: Check if student exists
-            student = Student.objects.get(id=student_id)
-
-            # Step 2: Check if the course is available for enrollment
-            valid_courses = EnrollmentService.get_courses_to_enroll(student_id)
-            if not valid_courses.filter(id=course_id).exists():
-                raise ValidationError({"error": "Course is not available for enrollment."})
-
-            # Step 3: Check eligibility (pre-requisites)
-            if not EnrollmentService.is_eligible_to_enroll(student_id, course_id):
-                raise ValidationError({"error": "Student has not passed the pre-requisite course."})
-
-            # Step 4: Create enrollment record
-            current_year = datetime.now().year
-            academic_year = f"{current_year}-{current_year + 1}"
-            course = Course.objects.get(id=course_id)
-
-            Enrollment.objects.create(
-                student=student,
-                course=course,
-                school_year=academic_year,
-                status="ENROLLED",
+    def set_billing_total(billings):
+        if not billings:
+            # Billing information not found, raise an error and rollback
+            raise serializers.ValidationError(
+                {"error": "Billing information not found for the student's year level and semester."}
             )
+                
+        # Calculate total price from academic term billings
+        total_amount = sum(float(item['price']) for item in billings)
 
-            return {"success": f"Student {student_id} successfully enrolled in course {course_id}."}
+        # Ensure both values are Decimal
+        total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
+        return total_amount
 
-        except Student.DoesNotExist:
-            raise ValidationError({"error": "Student does not exist."})
-        except Course.DoesNotExist:
-            raise ValidationError({"error": "Course does not exist."})
-        except ValidationError as e:
-            raise e
-        except Exception as e:
-            return {"error": f"An unexpected error occurred: {str(e)}"}
+    # @staticmethod
+    # def is_eligible_to_enroll(student_id, course_id) -> bool:
+    #     """
+    #     Check if a student is eligible to enroll in a given course.
+    #     Eligibility is based on grade remarks (must be 'PASSED').
+    #     """
+    #     try:
+    #         # Fetch grade for the specific student and course
+    #         grade = Grade.objects.get(student=student_id, course=course_id)
+    #         return grade.remarks == 'PASSED'
+    #     except Grade.DoesNotExist:
+    #         return False
+
+    # @staticmethod
+    # def get_courses_to_enroll(student_id) -> Course:
+    #     """
+    #     Retrieve courses available for enrollment for a student.
+    #     Filters out already passed courses and courses above the year level.
+    #     """
+    #     try:
+    #         student = Student.objects.get(id=student_id)
+    #         year_level = student.year_level
+
+    #         # Courses the student has already passed
+    #         passed_courses = Grade.objects.filter(
+    #             student=student, remarks="PASSED"
+    #         ).values_list('course_id', flat=True)
+
+    #         # Return courses below or equal to student's year_level and not already passed
+    #         return Course.objects.filter(year_level__lte=year_level).exclude(id__in=passed_courses)
+
+    #     except Student.DoesNotExist:
+    #         raise ValidationError({"error": "Student does not exist."})
+
+    # @staticmethod
+    # def enroll_student(student_id, course_id):
+    #     """
+    #     Enroll a student into a course if they meet the eligibility requirements.
+    #     """
+    #     try:
+    #         # Step 1: Check if student exists
+    #         student = Student.objects.get(id=student_id)
+
+    #         # Step 2: Check if the course is available for enrollment
+    #         valid_courses = EnrollmentService.get_courses_to_enroll(student_id)
+    #         if not valid_courses.filter(id=course_id).exists():
+    #             raise ValidationError({"error": "Course is not available for enrollment."})
+
+    #         # Step 3: Check eligibility (pre-requisites)
+    #         if not EnrollmentService.is_eligible_to_enroll(student_id, course_id):
+    #             raise ValidationError({"error": "Student has not passed the pre-requisite course."})
+
+    #         # Step 4: Create enrollment record
+    #         current_year = datetime.now().year
+    #         academic_year = f"{current_year}-{current_year + 1}"
+    #         course = Course.objects.get(id=course_id)
+
+    #         Enrollment.objects.create(
+    #             student=student,
+    #             course=course,
+    #             school_year=academic_year,
+    #             status="ENROLLED",
+    #         )
+
+    #         return {"success": f"Student {student_id} successfully enrolled in course {course_id}."}
+
+    #     except Student.DoesNotExist:
+    #         raise ValidationError({"error": "Student does not exist."})
+    #     except Course.DoesNotExist:
+    #         raise ValidationError({"error": "Course does not exist."})
+    #     except ValidationError as e:
+    #         raise e
+    #     except Exception as e:
+    #         return {"error": f"An unexpected error occurred: {str(e)}"}
 
 class GradeService:
     @staticmethod
@@ -341,8 +436,6 @@ class GradeService:
 #         next_year = current_year + 1
 #         return f"{current_year}-{next_year}"
 
-class EnrollmentService:
-    pass
 # Class for Excel Operations
 class ExcelServiceBase:
     # Base class for Excel processing services  

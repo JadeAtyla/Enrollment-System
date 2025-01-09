@@ -208,7 +208,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
                         </h3>
                         <form className="grid grid-cols-2 gap-x-8 gap-y-6">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Student Number * <span className="text-red-500">{error?.id}</span></label>
+                                <label className="block text-sm font-medium mb-1">Student Number * <span className="text-red-500">{error?.data?.id}</span></label>
                                 <input
                                     type="text"
                                     name="id"

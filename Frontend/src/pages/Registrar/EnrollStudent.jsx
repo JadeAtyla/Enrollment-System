@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const EnrollStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -13,6 +14,7 @@ const EnrollStudent = ({ onLogout }) => {
   const [defaultCourses, setDefaultCourses] = useState([])
   const [eligiableCourses, setEligiableCourses] = useState([])
   const [billings, setBillings] = useState([]);
+  const {triggerAlert} = useAlert();
 
   const { studentId } = useParams();
       
@@ -38,10 +40,15 @@ const EnrollStudent = ({ onLogout }) => {
 
         console.log(defaultCourses);
         console.log(eligiableCourses);
-      } else if (error){
-        console.log(error.response);
+      } 
+     if (error){
+        triggerAlert("error", "Error", error?.data?.error || "Student not eligiable to enroll.")
+        navigate(`/registrar/evaluate-student/${student.id}`, {
+          state: { student: student },
+        });
+        console.log(error?.data);
       }
-    }, [data]);
+    }, [data, error]);
 
   const handleProceedToBilling = () => {
 
