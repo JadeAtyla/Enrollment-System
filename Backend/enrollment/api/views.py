@@ -483,6 +483,11 @@ class BatchEnrollStudentAPIView(APIView):
         # Get the single student object
         student = students_queryset.first()
 
+        #Checks first if it is enrollment day
+        enrollment = EnrollmentValidator.is_enrollment_day(student.program)
+        if not enrollment["is_enrollment"]:
+            raise serializers.ValidationError({"error": enrollment['message']})
+
         # Validate student residency
         valid_residency = EnrollmentValidator.valid_residency(student.id)
 
@@ -752,16 +757,22 @@ class DashboardView(APIView):
         # Serialize user data
         user = UserSerializer(request.user).data
 
-        # Base counts
+        # Base counts for total students
         total_students = Student.objects.count()
 
         # Dynamic filters for statuses
         statuses = ["REGULAR", "IRREGULAR", "RETURNEE", "TRANSFEREE"]
-        status_counts = {f"{status.lower()}_students": Student.objects.filter(status=status).count() for status in statuses}
+        status_counts = {
+            f"{status.lower()}_students": Student.objects.filter(status=status).count() 
+            for status in statuses
+        }
 
         # Dynamic filters for programs
         programs = ["BSCS", "BSIT"]
-        program_counts = {f"{program.lower()}_students": Student.objects.filter(program=program).count() for program in programs}
+        program_counts = {
+            f"{program.lower()}_students": Student.objects.filter(program=program).count() 
+            for program in programs
+        }
 
         # Dynamic filters for year levels per program
         year_name = ["first", "second", "third", "fourth"]
@@ -779,7 +790,11 @@ class DashboardView(APIView):
                 key = f"{program.lower()}_section_{section if section else 'none'}_students"
                 section_counts[key] = Student.objects.filter(program=program, section=section).count()
 
-        # Combine results
+        # Fetch enrollment details for each program using EnrollmentService
+        enrollment_service = EnrollmentService()
+        enrollment_details = {f"enrollment_date": enrollment_service.enrollment_date()}
+
+        # Combine all data into the response
         response_data = {
             "user": user,
             "dashboard": {
@@ -788,6 +803,7 @@ class DashboardView(APIView):
                 **program_counts,
                 **year_level_counts,
                 **section_counts,
+                **enrollment_details,
             }
         }
 

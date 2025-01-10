@@ -3,7 +3,8 @@ from django.contrib.auth.models import Group
 from datetime import datetime
 from rest_framework.response import Response
 import re
-from api.models import Student, Grade, Course, Enrollment
+from api.models import Student, Grade, Course, Enrollment, Enrollment_Date
+from datetime import datetime
 
 class LengthValidator:
     @staticmethod
@@ -107,6 +108,40 @@ class EnrollmentValidator:
         # Validate the student number
         self.valid_residency(student_number)
         self.valid_to_enroll_course(student_number)
+
+    @staticmethod
+    def is_enrollment_day(program) -> dict:
+        # Fetch the latest enrollment date for the given program
+        enrollment_date = Enrollment_Date.objects.filter(program=program).order_by("-date").first()
+
+        # Check if the enrollment_date exists
+        if enrollment_date is None:
+            response = {
+                "is_enrollment": False,
+                "message": "Enrollment has not been set for this program yet."
+            }
+            return response
+
+        # Determine if today is the enrollment day
+        today = datetime.now().date()
+        formatted_date = enrollment_date.date.strftime("%B %d, %Y")
+        if enrollment_date.date == today:
+            message = "Enrollment is ongoing today."
+            is_enrollment = True
+        elif enrollment_date.date > today:
+            message = f"Enrollment has not yet begun. It is scheduled for {formatted_date}."
+            is_enrollment = False
+        else:
+            message = f"Enrollment has already been done on {formatted_date}."
+            is_enrollment = False
+
+        # Construct the response
+        response = {
+            "is_enrollment": is_enrollment,
+            "message": message
+        }
+
+        return response
 
     @staticmethod
     def valid_residency(student_id: int) -> bool:

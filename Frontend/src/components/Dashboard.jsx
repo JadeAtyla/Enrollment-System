@@ -5,6 +5,7 @@ import ProfileIcon from "../images/Department/DashboardIcons/ProfileIcon.svg";
 import StudentIcon from "../images/Registrar/DashboardIcons/StudentIcon.svg";
 import IrregularIcon from "../images/Registrar/DashboardIcons/IrregularIcon.svg";
 import useData from "./DataUtil";
+import EnrollmentDate from "./EnrollmentDate";
 
 // Register chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -84,8 +85,10 @@ return (
       <header className="flex justify-between items-center mb-[1.5rem]">
         <h1 className="text-[1.875rem] font-semibold text-gray-800">
           Welcome!{" "}
-          <span className="font-normal">
+          <span className="bg-blue-100 p-3 rounded-md mb-4 text-center">
+          <span className="text-normal font-semibold text-blue-700">
             {userData?.first_name || "No first name."}
+          </span>
           </span>
         </h1>
       </header>
@@ -117,11 +120,28 @@ return (
             </p>
           </div>
         </div>
-        <div className="">
-            <span className="text-[1.125rem] font-semibold text-gray-700">Role: </span> 
+        <div className="flex flex-col items-start">
+          <div>
+            <span className="text-[1.125rem] font-semibold text-gray-700">Role: </span>
             <em>{userData?.groups?.join(", ")}</em>
+          </div>
         </div>
       </div>
+
+      <div className="bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex flex-wrap items-center justify-evenly gap-4">
+          {dashboardData?.enrollment_date?.map((data, index) => (
+              <div key={index} className="w-full max-w-[350px]">
+                  <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
+                      <h3 className="text-lg font-semibold text-blue-700">{data.program_name}</h3>
+                  </div>
+                  <EnrollmentDate
+                      enrollment_date={data.enrollment_date}
+                      message={data.message}
+                  />
+              </div>
+          )) || "No data available"}
+      </div>
+
 
       {/* Stats and Pie Chart Section */}
       <div className="flex flex-col md:flex-row gap-[1rem] mb-[1.5rem] flex-wrap justify-center items-center">

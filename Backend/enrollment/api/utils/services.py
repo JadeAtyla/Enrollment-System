@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from ..enums import STUDENT_CATEGORY, STUDENT_REG_STATUS, PAYMENT_STATUS, PROGRAM, GRADE_REMARKS
 from django.db.models import Sum
 from rest_framework.exceptions import NotFound
-from ..models import Enrollment, Student, Course, Receipt, AcadTermBilling, BillingList, Grade
+from ..models import Enrollment, Student, Course, Receipt, AcadTermBilling, BillingList, Grade, Enrollment_Date
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
@@ -129,6 +129,36 @@ class StudentService:
             raise ValidationError("The specified student or course does not exist.")
 
 class EnrollmentService:
+
+    @staticmethod
+    def enrollment_date():
+        # Fetch all enrollment dates for all programs
+        enrollment_dates = Enrollment_Date.objects.all().order_by("-date")
+        response = []
+
+        for enrollment_date in enrollment_dates:
+            # Determine if today is the enrollment day
+            today = datetime.now().date()
+            formatted_date = enrollment_date.date.strftime("%B %d, %Y")
+            if enrollment_date.date == today:
+                message = "Enrollment is ongoing today."
+                is_enrollment = True
+            elif enrollment_date.date > today:
+                message = f"Enrollment has not yet begun. It is scheduled for {formatted_date}."
+                is_enrollment = False
+            else:
+                message = f"Enrollment has already been done on {formatted_date}."
+                is_enrollment = False
+
+            response.append({
+                "program_name": enrollment_date.program.id,
+                "is_enrollment": is_enrollment,
+                "enrollment_date": formatted_date,
+                "message": message
+            })
+
+        return response
+
     @staticmethod
     def target_year_level_semester(year_level, semester):
         next_year_level, next_semester = 0, 0

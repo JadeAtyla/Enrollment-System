@@ -188,6 +188,9 @@ const DepartmentMasterList = ({ onLogout }) => {
                 </button>
               </div>
             </div>
+            <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
+                <h3 className="text-lg font-semibold text-blue-700"> Number of Courses: {filteredCourses.length}</h3>
+            </div>
             <table className="w-full border-collapse text-gray-800">
               <thead className="bg-gray-100">
                 <tr>

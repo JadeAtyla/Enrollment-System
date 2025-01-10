@@ -77,26 +77,26 @@ class Student(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
-    # # Trigger
-    # def save(self, *args, **kwargs):
-    #     self.category = STUDENT_CATEGORY.NEW if self.year_level <= 1 else STUDENT_CATEGORY.OLD
+    # Trigger
+    def save(self, *args, **kwargs):
+        self.category = STUDENT_CATEGORY.NEW if self.year_level <= 1 else STUDENT_CATEGORY.OLD
         
-    #     # Initialize decrypted id
-    #     decrypt_id = str(self.id)[4:6]
-    #     program = None
+        # Initialize decrypted id
+        decrypt_id = str(self.id)[4:6]
+        program = None
 
-    #     # Sets the program of the student according to the middle number
-    #     if decrypt_id == '11':
-    #         program = Program.objects.get(id='BSCS')  # Fetch the Program instance
-    #     elif decrypt_id == '10':
-    #         program = Program.objects.get(id='BSIT')  # Fetch the Program instance
-    #     else:
-    #         raise ValueError("Student number doesn't recognized")
+        # Sets the program of the student according to the middle number
+        if decrypt_id == '11':
+            program = Program.objects.get(id='BSCS')  # Fetch the Program instance
+        elif decrypt_id == '10':
+            program = Program.objects.get(id='BSIT')  # Fetch the Program instance
+        else:
+            raise ValueError("Student number doesn't recognized")
         
-    #     self.program = program
+        self.program = program
         
 
-    #     super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'student'
@@ -168,35 +168,35 @@ class Grade(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
 
-    # def save(self, *args, **kwargs):
-    #     # Determine the remarks based on the grade
-    #     if self.grade:  # Ensure grade is not null or empty
-    #         try:
-    #             grade_value = float(self.grade)  # Attempt to convert the grade to a float
-    #         except ValueError:
-    #             grade_value = None  # If conversion fails (e.g., "INC" or "DRP")
+    def save(self, *args, **kwargs):
+        # Determine the remarks based on the grade
+        if self.grade:  # Ensure grade is not null or empty
+            try:
+                grade_value = float(self.grade)  # Attempt to convert the grade to a float
+            except ValueError:
+                grade_value = None  # If conversion fails (e.g., "INC" or "DRP")
 
-    #         # Assign remarks based on the grade or specific cases
-    #         if grade_value is not None:  # Grade is numeric
-    #             if grade_value <= 3.0:  # Passed (1.0 to 3.0)
-    #                 self.remarks = GRADE_REMARKS.PASSED
-    #             elif grade_value == 4.0:  # Conditional failure (4.0)
-    #                 self.remarks = GRADE_REMARKS.CONDITIONAL_FAILURE
-    #             elif grade_value >= 5.0:  # Failed (5.0 and above)
-    #                 self.remarks = GRADE_REMARKS.FAILED
-    #         else:  # Grade is non-numeric
-    #             if self.grade == 'S':  # Passed (Special grade "S")
-    #                 self.remarks = GRADE_REMARKS.PASSED
-    #             elif self.grade == 'INC':  # Incomplete
-    #                 self.remarks = GRADE_REMARKS.INCOMPLETE
-    #             elif self.grade == 'DRP':  # Dropped subject
-    #                 self.remarks = GRADE_REMARKS.DROPPED_SUBJECT
-    #             elif self.grade in ['0', None]:  # Not graded yet (0 or null)
-    #                 self.remarks = GRADE_REMARKS.NOT_GRADED_YET
-    #             else:
-    #                 self.remarks = None  # Default case
+            # Assign remarks based on the grade or specific cases
+            if grade_value is not None:  # Grade is numeric
+                if grade_value <= 3.0:  # Passed (1.0 to 3.0)
+                    self.remarks = GRADE_REMARKS.PASSED
+                elif grade_value == 4.0:  # Conditional failure (4.0)
+                    self.remarks = GRADE_REMARKS.CONDITIONAL_FAILURE
+                elif grade_value >= 5.0:  # Failed (5.0 and above)
+                    self.remarks = GRADE_REMARKS.FAILED
+            else:  # Grade is non-numeric
+                if self.grade == 'S':  # Passed (Special grade "S")
+                    self.remarks = GRADE_REMARKS.PASSED
+                elif self.grade == 'INC':  # Incomplete
+                    self.remarks = GRADE_REMARKS.INCOMPLETE
+                elif self.grade == 'DRP':  # Dropped subject
+                    self.remarks = GRADE_REMARKS.DROPPED_SUBJECT
+                elif self.grade in ['0', None]:  # Not graded yet (0 or null)
+                    self.remarks = GRADE_REMARKS.NOT_GRADED_YET
+                else:
+                    self.remarks = None  # Default case
 
-    #     super().save(*args, **kwargs)  # Call the parent save method
+        super().save(*args, **kwargs)  # Call the parent save method
 
     class Meta:
         db_table = 'grade'
@@ -264,27 +264,10 @@ class Receipt(models.Model):
 
 class Enrollment_Date(models.Model):
     date = models.DateField()
-    is_enrollment = models.BooleanField(default=False)
     program = models.ForeignKey('Program', on_delete=models.CASCADE)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        # Reset `is_enrollment` to False for all other records in the same program
-        Enrollment_Date.objects.filter(program=self.program).update(is_enrollment=False)
-
-        # Check if the current date matches the `date` field
-        if self.date == datetime.now().date():
-            self.is_enrollment = True
-        else:
-            self.is_enrollment = False
-        
-        # Debugging print to confirm the current date
-        print("Current Date:", datetime.now().date())
-
-        # Save the current record
-        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'enrollment_date'

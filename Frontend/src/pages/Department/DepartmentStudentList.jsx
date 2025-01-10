@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import InformationModal from "./InformationModal"; // Import for editing student info
+import InformationModal from "./InformationModal";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
 
@@ -21,6 +21,7 @@ const DepartmentStudentList = ({ onLogout }) => {
     search: "",
     yearLevel: "",
     program: "",
+    section: "",
   });
 
   useLayoutEffect(() => {
@@ -47,6 +48,7 @@ const DepartmentStudentList = ({ onLogout }) => {
 
   const handleRowDoubleClick = (student) => {
     setSelectedStudent(student);
+    console.log(student);
     setIsEditModalOpen(true);
   };
 
@@ -63,21 +65,50 @@ const DepartmentStudentList = ({ onLogout }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const filteredStudents = students?.filter((student) => {
-    const matchesSearch =
-      !filters.search ||
-      student?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      student?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      student?.id?.toString().includes(filters.search);
+  // Helper: Get unique year levels
+  const getUniqueYearLevels = () => {
+    const yearLevels = students
+      .filter(
+        (student) =>
+          !filters.program || student?.program === filters.program // Include all if program is not selected
+      )
+      .map((student) => student?.year_level)
+      .filter(Boolean);
+    return [...new Set(yearLevels)];
+  };
 
-    const matchesYearLevel =
-      !filters.yearLevel || student?.year_level === parseInt(filters.yearLevel);
+  // Helper: Get unique sections
+  const getUniqueSections = () => {
+    const sections = students
+      .filter(
+        (student) =>
+          (!filters.program || student?.program === filters.program) && // Include all if program is not selected
+          (!filters.yearLevel || student?.year_level === parseInt(filters.yearLevel))
+      )
+      .map((student) => student?.section)
+      .filter(Boolean);
+    return [...new Set(sections)];
+  };
 
-    const matchesProgram =
-      !filters.program || student?.program === filters.program;
+  const filteredStudents =
+    students?.filter((student) => {
+      const matchesSearch =
+        !filters.search ||
+        student?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        student?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        student?.id?.toString().includes(filters.search);
 
-    return matchesSearch && matchesYearLevel && matchesProgram;
-  }) || [];
+      const matchesYearLevel =
+        !filters.yearLevel || student?.year_level === parseInt(filters.yearLevel);
+
+      const matchesProgram =
+        !filters.program || student?.program === filters.program;
+
+      const matchesSection =
+        !filters.section || student?.section === filters.section;
+
+      return matchesSearch && matchesYearLevel && matchesProgram && matchesSection;
+    }) || [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -137,23 +168,43 @@ const DepartmentStudentList = ({ onLogout }) => {
               <div className="flex flex-wrap sm:flex-nowrap md:flex-nowrap flex-col md:flex-row items-center gap-4 sm:gap-4 md:ml-auto">
                 <select
                   className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
-                  onChange={(e) => setFilters({ ...filters, yearLevel: e.target.value })}
-                  value={filters.yearLevel}
-                >
-                  <option value="">Select Year Level</option>
-                  <option>1st</option>
-                  <option>2nd</option>
-                  <option>3rd</option>
-                  <option>4th</option>
-                </select>
-                <select
-                  className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
-                  onChange={(e) => setFilters({ ...filters, program: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      program: e.target.value,
+                      yearLevel: "",
+                      section: "",
+                    })
+                  }
                   value={filters.program}
                 >
                   <option value="">Select Course</option>
                   <option>BSIT</option>
                   <option>BSCS</option>
+                </select>
+                <select
+                  className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
+                  onChange={(e) => setFilters({ ...filters, yearLevel: e.target.value })}
+                  value={filters.yearLevel}
+                >
+                  <option value="">Select Year Level</option>
+                  {getUniqueYearLevels().map((yearLevel) => (
+                    <option key={yearLevel} value={yearLevel}>
+                      {yearLevel}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
+                  onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                  value={filters.section}
+                >
+                  <option value="">Select Section</option>
+                  {getUniqueSections().map((section) => (
+                    <option key={section} value={section}>
+                      {section}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -170,6 +221,11 @@ const DepartmentStudentList = ({ onLogout }) => {
                 </button>
               </div>
             </div>
+            <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
+              <h3 className="text-lg font-semibold text-blue-700">
+                Number of Students: {filteredStudents.length}
+              </h3>
+            </div>
 
             <table className="w-full text-center border-collapse">
               <thead className="bg-gray-100">
@@ -178,58 +234,52 @@ const DepartmentStudentList = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Student Name</th>
                   <th className="px-6 py-4 border-b">Program</th>
                   <th className="px-6 py-4 border-b">Year Level</th>
+                  <th className="px-6 py-4 border-b">Semester</th>
                   <th className="px-6 py-4 border-b">Section</th>
-                  <th className="px-6 py-4 border-b">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {currentStudents.map((student) => (
                   <tr
-                    key={student?.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    key={student.id}
+                    className="hover:bg-gray-100 cursor-pointer"
                     onDoubleClick={() => handleRowDoubleClick(student)}
                   >
+                    <td className="px-6 py-4 border-b">{student.id}</td>
                     <td className="px-6 py-4 border-b">
-                      {student?.id}
+                      {`${student.last_name}, ${student.first_name}`}
                     </td>
-                    <td className="px-6 py-4 border-b">{student?.last_name}, {student?.middle_name} {student?.first_name}</td>
-                    <td className="px-6 py-4 border-b">{student?.program}</td>
-                    <td className="px-6 py-4 border-b">{student?.year_level}</td>
-                    <td className="px-6 py-4 border-b">{student?.section}</td>
-                    <td className="px-6 py-4 border-b">{student?.status}</td>
+                    <td className="px-6 py-4 border-b">{student.program}</td>
+                    <td className="px-6 py-4 border-b">{student.year_level}</td>
+                    <td className="px-6 py-4 border-b">{student.semester}</td>
+                    <td className="px-6 py-4 border-b">{student.section}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
 
-          <div className="flex flex-wrap justify-center md:justify-between items-center mt-6 gap-4">
-            <button
-              className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 disabled:opacity-50"
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            <p className="text-center">
-              Page {currentPage} of{" "}
-              {Math.ceil(filteredStudents.length / studentsPerPage)}
-            </p>
-            <button
-              className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 disabled:opacity-50"
-              onClick={() => paginate(currentPage + 1)}
-              disabled={
-                currentPage ===
-                Math.ceil(filteredStudents.length / studentsPerPage)
-              }
-            >
-              Next
-            </button>
+            {filteredStudents.length > studentsPerPage && (
+              <div className="flex justify-center items-center mt-6">
+                {[...Array(Math.ceil(filteredStudents.length / studentsPerPage)).keys()].map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => paginate(pageNumber + 1)}
+                    className={`px-4 py-2 mx-1 rounded ${
+                      currentPage === pageNumber + 1
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                  >
+                    {pageNumber + 1}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {isEditModalOpen && selectedStudent && (
+      {isEditModalOpen && (
         <InformationModal
           url={apiURL}
           data={selectedStudent}

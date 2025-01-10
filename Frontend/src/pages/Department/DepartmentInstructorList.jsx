@@ -193,6 +193,10 @@ const DepartmentInstructorList = ({ onLogout }) => {
               </div>
             </div>
 
+            <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
+                <h3 className="text-lg font-semibold text-blue-700"> Number of Instructors: {filteredInstructors.length}</h3>
+            </div>
+
             <div className="overflow-x-auto md:overflow-x-hidden">
               <table className="w-full text-center border-collapse">
                 <thead className="bg-gray-100">
@@ -216,7 +220,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
                           {instructor?.id}
                         </td>
                         <td className="px-6 py-4 border-b">
-                          {`${instructor?.last_name}, ${instructor?.first_name} ${instructor?.middle_name}`}
+                          {instructor?.last_name}, {instructor?.first_name} {instructor?.middle_name}
                         </td>
                         <td className="px-6 py-4 border-b">
                           {instructor?.email}
