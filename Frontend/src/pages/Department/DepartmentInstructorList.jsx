@@ -11,7 +11,8 @@ const DepartmentInstructorList = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
-  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] = useState(false);
+  const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] =
+    useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const instructorsPerPage = 10;
   const navigate = useNavigate();
@@ -70,25 +71,36 @@ const DepartmentInstructorList = ({ onLogout }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const filteredInstructors = instructors?.filter((instructor) => {
-    const matchesSearch =
-      !filters.search ||
-      instructor?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      instructor?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      instructor?.id?.toString().includes(filters.search);
+  const filteredInstructors =
+    instructors?.filter((instructor) => {
+      const matchesSearch =
+        !filters.search ||
+        instructor?.first_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
+        instructor?.last_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
+        instructor?.id?.toString().includes(filters.search);
 
-    const matchesCity =
-      !filters.city || instructor?.address?.city?.toLowerCase() === filters.city.toLowerCase();
+      const matchesCity =
+        !filters.city ||
+        instructor?.address?.city?.toLowerCase() === filters.city.toLowerCase();
 
-    const matchesProvince =
-      !filters.province || instructor?.address?.province?.toLowerCase() === filters.province.toLowerCase();
+      const matchesProvince =
+        !filters.province ||
+        instructor?.address?.province?.toLowerCase() ===
+          filters.province.toLowerCase();
 
-    return matchesSearch && matchesCity && matchesProvince;
-  }) || [];
+      return matchesSearch && matchesCity && matchesProvince;
+    }) || [];
 
   const indexOfLastInstructor = currentPage * instructorsPerPage;
   const indexOfFirstInstructor = indexOfLastInstructor - instructorsPerPage;
-  const currentInstructors = filteredInstructors.slice(indexOfFirstInstructor, indexOfLastInstructor);
+  const currentInstructors = filteredInstructors.slice(
+    indexOfFirstInstructor,
+    indexOfLastInstructor
+  );
 
   return (
     <div className="flex min-h-screen">
@@ -141,18 +153,26 @@ const DepartmentInstructorList = ({ onLogout }) => {
                   placeholder="Search here..."
                   className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
                   value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, search: e.target.value })
+                  }
                 />
               </div>
               <div className="flex gap-4">
                 <select
                   name="city"
                   className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                  onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, city: e.target.value })
+                  }
                   value={filters.city}
                 >
                   <option value="">City</option>
-                  {Array.from(new Set(instructors.map((instructor) => instructor?.address?.city))).map((city) => (
+                  {Array.from(
+                    new Set(
+                      instructors.map((instructor) => instructor?.address?.city)
+                    )
+                  ).map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>
@@ -161,11 +181,19 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 <select
                   name="province"
                   className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                  onChange={(e) => setFilters({ ...filters, province: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, province: e.target.value })
+                  }
                   value={filters.province}
                 >
                   <option value="">Province</option>
-                  {Array.from(new Set(instructors.map((instructor) => instructor?.address?.province))).map((province) => (
+                  {Array.from(
+                    new Set(
+                      instructors.map(
+                        (instructor) => instructor?.address?.province
+                      )
+                    )
+                  ).map((province) => (
                     <option key={province} value={province}>
                       {province}
                     </option>
@@ -194,7 +222,14 @@ const DepartmentInstructorList = ({ onLogout }) => {
             </div>
 
             <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
-                <h3 className="text-lg font-semibold text-blue-700"> Number of Instructors: {filteredInstructors.length}</h3>
+              <h3 className="text-lg font-semibold text-blue-700">
+                {" "}
+                Number of Instructors: {filteredInstructors.length}
+              </h3>
+            </div>
+
+            <div className="text-gray-400 italic mb-4 ">
+              Double-click a row to edit its details.
             </div>
 
             <div className="overflow-x-auto md:overflow-x-hidden">
@@ -216,11 +251,10 @@ const DepartmentInstructorList = ({ onLogout }) => {
                         className="hover:bg-gray-50 cursor-pointer"
                         onDoubleClick={() => handleRowDoubleClick(instructor)}
                       >
+                        <td className="px-6 py-4 border-b">{instructor?.id}</td>
                         <td className="px-6 py-4 border-b">
-                          {instructor?.id}
-                        </td>
-                        <td className="px-6 py-4 border-b">
-                          {instructor?.last_name}, {instructor?.first_name} {instructor?.middle_name}
+                          {instructor?.last_name}, {instructor?.first_name}{" "}
+                          {instructor?.middle_name}
                         </td>
                         <td className="px-6 py-4 border-b">
                           {instructor?.email}

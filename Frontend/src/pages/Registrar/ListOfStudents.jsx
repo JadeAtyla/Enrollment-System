@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect} from "react";
 import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { useAlert } from "../../components/Alert";
 const ListOfStudents = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1); // State for current page in pagination
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar visibility
+  const [isMobile, setIsMobile] = useState(false);
   const studentsPerPage = 10; // Number of students per page in pagination
   const [filters, setFilters] = useState({
     year_level: "",
@@ -30,6 +31,14 @@ const ListOfStudents = ({ onLogout }) => {
   const [students, setStudents] = useState([]); // State for storing students data
   const {triggerAlert} = useAlert();
   const [trigger, setTrigger] = useState(false);
+
+    useLayoutEffect(() => {
+         const handleResize = () => setIsMobile(window.innerWidth <= 768);
+         window.addEventListener("resize", handleResize);
+         handleResize();
+         return () => window.removeEventListener("resize", handleResize);
+       }, []);
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,15 +125,15 @@ const ListOfStudents = ({ onLogout }) => {
             navigate("/registrar/enroll");
           }
         }}
-      />
-
-      {/* Main Content */}
-      <div
-        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } py-6`}
-      >
-        <div className="w-full max-w-[87.5rem] px-6">
+        className={isMobile ? "sidebar-collapsed" : ""}
+        />
+  
+        <div
+          className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+            isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+          } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+        >
+          <div className="w-full max-w-[87.5rem] px-6">
           {/* Search and Filter Section */}
           <div className="flex justify-between items-center bg-white shadow rounded-[1.875rem] px-8 py-4 mb-6">
             <div className="relative w-[20rem]">

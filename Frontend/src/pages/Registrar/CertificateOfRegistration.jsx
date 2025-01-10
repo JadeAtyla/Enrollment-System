@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import universityLogo from "../../images/universityLogo.svg";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
@@ -6,15 +6,24 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const CertificateOfRegistration = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(false);
   const [corData, setCorData] = useState(null);
 
   const { studentId } = useParams();
-  
+
   const navigate = useNavigate();
 
-  useEffect(()=>{
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     if (!studentId) navigate("/registrar/enrollmentList");
-  }, [studentId])
+  }, [studentId]);
 
   const { data, error, getData } = useData(`/api/cor/?id=${studentId}`);
 
@@ -46,14 +55,14 @@ const CertificateOfRegistration = ({ onLogout }) => {
           currentPage="certificate"
           isCollapsed={isSidebarCollapsed}
           onToggleSidebar={setIsSidebarCollapsed}
-        />
-
-        {/* Main Content */}
-        <div
-          className={`transition-all duration-300 ${
-            isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-          } flex justify-center w-full py-10`}
-        >
+          className={isMobile ? "sidebar-collapsed" : ""}
+          />
+    
+          <div
+            className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+              isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+            } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+          >
           <div className="w-full max-w-[57rem]">
             {/* Certificate of Registration Title */}
             <div className="text-center mb-8">
@@ -108,7 +117,11 @@ const CertificateOfRegistration = ({ onLogout }) => {
 
                     <div className="flex">
                       <p className="font-bold w-1/3">Address:</p>
-                      <p className="ml-4">{`${corData.student.address.street || ""} ${corData.student.address.barangay || ""} ${corData.student.address.city}, ${corData.student.address.province}`}</p>
+                      <p className="ml-4">{`${
+                        corData.student.address.street || ""
+                      } ${corData.student.address.barangay || ""} ${
+                        corData.student.address.city
+                      }, ${corData.student.address.province}`}</p>
                     </div>
                   </div>
 
@@ -124,7 +137,9 @@ const CertificateOfRegistration = ({ onLogout }) => {
                     <div className="flex">
                       <p className="font-bold w-1/3">Section:</p>
                       <p className="ml-4">
-                        {`${corData.student.program} ${corData.student.year_level}-${corData.student.section || "TBA"}`}
+                        {`${corData.student.program} ${
+                          corData.student.year_level
+                        }-${corData.student.section || "TBA"}`}
                       </p>
                     </div>
                     <div className="flex">
@@ -147,29 +162,39 @@ const CertificateOfRegistration = ({ onLogout }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {corData.enrollments.length > 0 ? (
-                      corData.enrollments.map((enrollment, index) => (
-                        <tr key={index}>
-                          <td className="border p-2">{enrollment.course.code}</td>
-                          <td className="border p-2">{enrollment.course.title}</td>
-                          <td className="border p-2">{enrollment.course.units}</td>
-                          <td className="border p-2">{enrollment.schedule?.time || 'N/A'}</td>
-                          <td className="border p-2">{enrollment.schedule?.day || 'N/A'}</td>
-                          <td className="border p-2">{enrollment.schedule?.room || 'N/A'}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      [...Array(5)].map((_, index) => (
-                        <tr key={index}>
-                          <td className="border p-2">&nbsp;</td>
-                          <td className="border p-2">&nbsp;</td>
-                          <td className="border p-2">&nbsp;</td>
-                          <td className="border p-2">&nbsp;</td>
-                          <td className="border p-2">&nbsp;</td>
-                          <td className="border p-2">&nbsp;</td>
-                        </tr>
-                      ))
-                    )}
+                    {corData.enrollments.length > 0
+                      ? corData.enrollments.map((enrollment, index) => (
+                          <tr key={index}>
+                            <td className="border p-2">
+                              {enrollment.course.code}
+                            </td>
+                            <td className="border p-2">
+                              {enrollment.course.title}
+                            </td>
+                            <td className="border p-2">
+                              {enrollment.course.units}
+                            </td>
+                            <td className="border p-2">
+                              {enrollment.schedule?.time || "N/A"}
+                            </td>
+                            <td className="border p-2">
+                              {enrollment.schedule?.day || "N/A"}
+                            </td>
+                            <td className="border p-2">
+                              {enrollment.schedule?.room || "N/A"}
+                            </td>
+                          </tr>
+                        ))
+                      : [...Array(5)].map((_, index) => (
+                          <tr key={index}>
+                            <td className="border p-2">&nbsp;</td>
+                            <td className="border p-2">&nbsp;</td>
+                            <td className="border p-2">&nbsp;</td>
+                            <td className="border p-2">&nbsp;</td>
+                            <td className="border p-2">&nbsp;</td>
+                            <td className="border p-2">&nbsp;</td>
+                          </tr>
+                        ))}
                   </tbody>
                 </table>
 
@@ -182,12 +207,20 @@ const CertificateOfRegistration = ({ onLogout }) => {
                       <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
                         <h3 className="font-bold">Lab Fees</h3>
                       </div>
-                      {corData.acad_term_billings.filter(billing => billing.billing_list.category === "LAB FEES").map((billing, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <p className="mr-2">{billing.billing_list.name}:</p>
-                          <p>{billing.billing_list.price}</p>
-                        </div>
-                      ))}
+                      {corData.acad_term_billings
+                        .filter(
+                          (billing) =>
+                            billing.billing_list.category === "LAB FEES"
+                        )
+                        .map((billing, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center"
+                          >
+                            <p className="mr-2">{billing.billing_list.name}:</p>
+                            <p>{billing.billing_list.price}</p>
+                          </div>
+                        ))}
                     </div>
 
                     {/* Other Fees */}
@@ -195,12 +228,20 @@ const CertificateOfRegistration = ({ onLogout }) => {
                       <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
                         <h3 className="font-bold">Other Fees</h3>
                       </div>
-                      {corData.acad_term_billings.filter(billing => billing.billing_list.category === "OTHER FEES").map((billing, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <p className="mr-2">{billing.billing_list.name}:</p>
-                          <p>{billing.billing_list.price}</p>
-                        </div>
-                      ))}
+                      {corData.acad_term_billings
+                        .filter(
+                          (billing) =>
+                            billing.billing_list.category === "OTHER FEES"
+                        )
+                        .map((billing, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center"
+                          >
+                            <p className="mr-2">{billing.billing_list.name}:</p>
+                            <p>{billing.billing_list.price}</p>
+                          </div>
+                        ))}
                     </div>
 
                     {/* Assessment */}
@@ -208,12 +249,20 @@ const CertificateOfRegistration = ({ onLogout }) => {
                       <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
                         <h3 className="font-bold">Assessment</h3>
                       </div>
-                      {corData.acad_term_billings.filter(billing => billing.billing_list.category === "ASSESSMENT").map((billing, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <p className="mr-2">{billing.billing_list.name}:</p>
-                          <p>{billing.billing_list.price}</p>
-                        </div>
-                      ))}
+                      {corData.acad_term_billings
+                        .filter(
+                          (billing) =>
+                            billing.billing_list.category === "ASSESSMENT"
+                        )
+                        .map((billing, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center"
+                          >
+                            <p className="mr-2">{billing.billing_list.name}:</p>
+                            <p>{billing.billing_list.price}</p>
+                          </div>
+                        ))}
                     </div>
                   </div>
 

@@ -66,27 +66,34 @@ const DepartmentMasterList = ({ onLogout }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const filteredCourses = courses?.filter((course) => {
-    const matchesSearch =
-      !filters.search ||
-      course?.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      course?.code?.includes(filters.search);
+  const filteredCourses =
+    courses?.filter((course) => {
+      const matchesSearch =
+        !filters.search ||
+        course?.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        course?.code?.includes(filters.search);
 
-    const matchesYearLevel =
-      !filters.yearLevel || course?.year_level === parseInt(filters.yearLevel);
+      const matchesYearLevel =
+        !filters.yearLevel ||
+        course?.year_level === parseInt(filters.yearLevel);
 
-    const matchesProgram =
-      !filters.program || course?.program === filters.program;
+      const matchesProgram =
+        !filters.program || course?.program === filters.program;
 
-    const matchesSemester =
-      !filters.semester || course?.semester === parseInt(filters.semester);
+      const matchesSemester =
+        !filters.semester || course?.semester === parseInt(filters.semester);
 
-    return matchesSearch && matchesYearLevel && matchesProgram && matchesSemester;
-  }) || [];
+      return (
+        matchesSearch && matchesYearLevel && matchesProgram && matchesSemester
+      );
+    }) || [];
 
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
-  const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
+  const currentCourses = filteredCourses.slice(
+    indexOfFirstCourse,
+    indexOfLastCourse
+  );
 
   return (
     <div className="flex min-h-screen">
@@ -118,9 +125,7 @@ const DepartmentMasterList = ({ onLogout }) => {
 
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isMobile
-            ? "ml-[12rem]"
-            : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+          isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
@@ -134,14 +139,18 @@ const DepartmentMasterList = ({ onLogout }) => {
                 placeholder="Search here..."
                 className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, search: e.target.value })
+                }
               />
             </div>
 
             <div className="flex items-center gap-4">
               <select
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, program: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, program: e.target.value })
+                }
                 value={filters.program}
               >
                 <option value="">Course</option>
@@ -150,7 +159,9 @@ const DepartmentMasterList = ({ onLogout }) => {
               </select>
               <select
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, yearLevel: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, yearLevel: e.target.value })
+                }
                 value={filters.yearLevel}
               >
                 <option value="">Year Level</option>
@@ -161,7 +172,9 @@ const DepartmentMasterList = ({ onLogout }) => {
               </select>
               <select
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, semester: e.target.value })
+                }
                 value={filters.semester}
               >
                 <option value="">Semester</option>
@@ -189,8 +202,12 @@ const DepartmentMasterList = ({ onLogout }) => {
               </div>
             </div>
             <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
-                <h3 className="text-lg font-semibold text-blue-700"> Number of Courses: {filteredCourses.length}</h3>
+              <h3 className="text-lg font-semibold text-blue-700">
+                {" "}
+                Number of Courses: {filteredCourses.length}
+              </h3>
             </div>
+            <div className="text-gray-400 italic mb-4 ">Double-click a row to edit its details.</div>
             <table className="w-full border-collapse text-gray-800">
               <thead className="bg-gray-100">
                 <tr>

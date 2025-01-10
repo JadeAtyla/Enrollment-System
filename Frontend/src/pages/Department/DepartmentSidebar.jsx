@@ -52,7 +52,6 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   useEffect(() => {
     const handleResize = () => {
       const isNowMobile = window.innerWidth <= 768;
-
       if (isNowMobile !== isMobile) {
         setIsMobile(isNowMobile);
         if (isNowMobile) {
@@ -60,9 +59,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
         }
       }
     };
-
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, [isMobile]);
 
@@ -87,8 +84,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   };
 
   const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
-  const contentMargin =
-    isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
+  const contentMargin = isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
 
   return (
     <div className="flex">
@@ -96,14 +92,13 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
       <div
         className={`fixed flex flex-col bg-gradient-to-b from-[#043674] to-[#0057b7] shadow-lg h-full top-0 left-0 ${sidebarWidth} transition-all duration-300 rounded-r-lg`}
       >
+        {/* Logo Section */}
         <div className="flex items-center justify-center h-[7.5rem] border-b border-white px-4">
           <img
             src={UniversityLogo}
             alt="University Logo"
             className={`transition-all duration-300 ${
-              isCollapsed || isMobile
-                ? "w-[2.5rem] h-[2.5rem]"
-                : "w-[4rem] h-[4rem]"
+              isCollapsed || isMobile ? "w-[2.5rem] h-[2.5rem]" : "w-[4rem] h-[4rem]"
             }`}
           />
           {!isCollapsed && !isMobile && (
@@ -115,15 +110,16 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
           )}
         </div>
 
+        {/* Menu Items with Floating Effect */}
         <div className="flex flex-col justify-between flex-1">
           <div className="flex flex-col space-y-2 px-4 mt-4">
             {menuItems.map((item) => (
               <button
                 key={item.name}
-                className={`flex items-center p-3 rounded-lg transition-all duration-300 ${
+                className={`flex items-center p-3 rounded-lg transition-all duration-300 transform ${
                   currentPage === item.name
-                    ? "bg-[#02458c] text-white shadow-md"
-                    : "hover:bg-[#6E85B7] hover:text-white text-gray-200"
+                    ? "bg-[#02458c] text-white shadow-lg translate-y-[-2px] scale-105"
+                    : "hover:bg-[#6E85B7] hover:text-white text-gray-200 hover:scale-105 hover:shadow-lg"
                 }`}
                 onClick={() => handleMenuClick(item.path)}
               >
@@ -139,9 +135,10 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
             ))}
           </div>
 
+          {/* Logout Button with Floating Effect */}
           <div className="w-full px-4 mt-8">
             <button
-              className="flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-[#] text-white w-full shadow-md"
+              className="flex items-center p-3 rounded-lg transition-all duration-300 transform hover:bg-red-500 hover:text-white text-white w-full shadow-md hover:shadow-lg hover:scale-105"
               onClick={handleLogoutClick}
             >
               <img
@@ -156,8 +153,9 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
           </div>
         </div>
 
+        {/* Toggle Button */}
         <div
-          className="absolute top-4 right-4 cursor-pointer text-white text-lg font-bold hidden md:block"
+          className="absolute top-4 right-4 cursor-pointer text-white text-lg font-bold hidden md:block hover:scale-110"
           onClick={handleToggle}
         >
           {isCollapsed || isMobile ? "➡️" : "⬅️"}
@@ -169,6 +167,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
         {children}
       </div>
 
+      {/* Logout Confirmation Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[20rem]">

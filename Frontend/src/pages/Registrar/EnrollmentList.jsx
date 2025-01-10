@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { useAlert } from "../../components/Alert";
 
 const EnrollmentList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +37,13 @@ const EnrollmentList = ({ onLogout }) => {
   };
 
   const { data, error, getData } = useData("/api/student/?enrollment_status=WAITLISTED");
+
+    useLayoutEffect(() => {
+       const handleResize = () => setIsMobile(window.innerWidth <= 768);
+       window.addEventListener("resize", handleResize);
+       handleResize();
+       return () => window.removeEventListener("resize", handleResize);
+     }, []);
 
   useEffect(() => {
     // Fetch student data on component mount
@@ -97,20 +105,20 @@ const EnrollmentList = ({ onLogout }) => {
   const closeAddStudentModal = () => setIsAddStudentModalOpen(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
       {/* Sidebar */}
       <RegistrarSidebar
         onLogout={onLogout}
         currentPage="enrollmentList"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+            className={isMobile ? "sidebar-collapsed" : ""}
       />
 
-      {/* Main Content */}
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } py-6`}
+          isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
           {/* Search and Filter Section */}

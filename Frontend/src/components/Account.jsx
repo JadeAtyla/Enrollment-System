@@ -96,62 +96,59 @@ const Account = ({ onLogout }) => {
   };
   
 
-return (
+  return (
     <div
-        className={`flex justify-center items-center transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } w-full`}
-      >
-        <div className="bg-white shadow-lg rounded-[1.875rem] p-8 max-w-[50rem]">
-          <h1 className="text-[1.875rem] font-semibold text-gray-800 mb-4 text-center">
-            User Account
-          </h1>
-          <hr className="border-t-[0.125rem] border-blue-500 mb-6 mx-auto w-[90%]" />
+        className="flex justify-center items-center min-h-screen w-full px-4 md:px-8 lg:px-16 transition-all duration-300"
+    >
+        <div className="bg-white shadow-lg rounded-[1.875rem] p-6 md:p-8 max-w-[50rem] w-full">
+            <h1 className="text-[1.5rem] md:text-[1.875rem] font-semibold text-gray-800 mb-4 text-center">
+                User Account
+            </h1>
+            <hr className="border-t-[0.125rem] border-blue-500 mb-6 mx-auto w-[90%]" />
 
-          {/* Account Details */}
-          <div className="grid grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-[1rem] font-bold text-gray-700">Name:</p>
-              <p className="text-[1rem] text-gray-700">
-                {user?.last_name && user?.first_name
-                  ? `${user?.last_name}, ${user?.first_name}`
-                  : "No Name"}
-              </p>
+            {/* Account Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div>
+                    <p className="text-[1rem] font-bold text-gray-700">Name:</p>
+                    <p className="text-[1rem] text-gray-700">
+                        {user?.last_name && user?.first_name
+                            ? `${user?.last_name}, ${user?.first_name}`
+                            : "No Name"}
+                    </p>
+                </div>
+                <div>
+                    <p className="text-[1rem] font-bold text-gray-700">Username:</p>
+                    <p className="text-[1rem] text-gray-700">{user?.username || "No Username"}</p>
+                </div>
+                <div>
+                    <p className="text-[1rem] font-bold text-gray-700">Password:</p>
+                    <p className="text-[1rem] text-gray-700">Password is secured</p>
+                </div>
+                <div>
+                    <p className="text-[1rem] font-bold text-gray-700">Date Joined:</p>
+                    <p className="text-[1rem] text-gray-700">
+                        {new Date(user?.date_joined).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })}
+                    </p>
+                </div>
             </div>
-            <div>
-              <p className="text-[1rem] font-bold text-gray-700">Username:</p>
-              <p className="text-[1rem] text-gray-700">
-                {user?.username || "No Username"}
-              </p>
-            </div>
-            <div>
-              <p className="text-[1rem] font-bold text-gray-700">Password:</p>
-              <p className="text-[1rem] text-gray-700">{"Password is secured"}</p>
-            </div>
-            <div>
-              <p className="text-[1rem] font-bold text-gray-700">Date Joined:</p>
-              <p className="text-[1rem] text-gray-700">
-                {new Date(user?.date_joined).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-            </div>
-          </div>
 
-          <p className="text-[0.875rem] text-gray-500 mt-6 text-center">
-            Note: You can edit your account's password and personal data only.
-          </p>
-          <div className="flex justify-center mt-6">
-            <button
-              className="bg-blue-600 text-white px-[1.5rem] py-[0.75rem] rounded-lg hover:bg-blue-700"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit
-            </button>
-          </div>
+            <p className="text-[0.875rem] text-gray-500 mt-6 text-center">
+                Note: You can edit your account's password and personal data only.
+            </p>
+            <div className="flex justify-center mt-6">
+                <button
+                    className="bg-blue-600 text-white px-[1rem] py-[0.75rem] rounded-lg hover:bg-blue-700 text-sm sm:text-base"
+                    onClick={() => setIsEditing(true)}
+                >
+                    Edit
+                </button>
+            </div>
         </div>
+
       
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">

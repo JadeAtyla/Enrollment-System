@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 
 const EvaluatePayment = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [receivedMoney, setReceivedMoney] = useState("");
   const [applyFreeTuition, setApplyFreeTuition] = useState(false);
   const navigate = useNavigate();
@@ -12,8 +13,14 @@ const EvaluatePayment = ({ onLogout }) => {
   const amountNeeded = applyFreeTuition ? 0 : totalAmount;
   const change = Math.max(0, receivedMoney - amountNeeded).toFixed(2);
 
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleConfirmEnrollment = () => {
-    // Redirect to CertificateOfRegistration page
     navigate("/registrar/certificate-of-registration");
   };
 
@@ -25,90 +32,76 @@ const EvaluatePayment = ({ onLogout }) => {
         currentPage="evaluate-payment"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={setIsSidebarCollapsed}
+        className={isMobile ? "sidebar-collapsed" : ""}
       />
 
-      {/* Main Content */}
+      {/* Centered Content */}
       <div
-        className={`flex justify-center items-start transition-all duration-300 ${
+        className={`flex flex-1 flex-col items-center justify-center transition-all duration-300 ${
           isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"
-        } w-full p-6`}
+        } p-8`}
       >
-        <div className="w-full max-w-[80rem]">
+        <div className="w-full max-w-[80rem] flex flex-col items-center justify-center text-center">
           {/* Header */}
-          <div className="text-left">
-            <h1 className="text-[1.875rem] font-semibold text-gray-800">
-              EVALUATE PAYMENT
-            </h1>
-          </div>
+          <h1 className="text-[2rem] font-bold text-gray-800 mb-8">BILLING</h1>
 
-          {/* Cards Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
-            {/* Left Column: Laboratory Fees & Other Fees */}
-            <div className="lg:col-span-5 space-y-8">
-              {/* Laboratory Fees */}
-              <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Laboratory Fees
-                </h2>
-                <p className="text-sm text-gray-600">ComLab: P800.00</p>
-              </div>
-
-              {/* Other Fees */}
-              <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Other Fees
-                </h2>
-                <p className="text-sm text-gray-600">NSTP: P0.00</p>
-                <p className="text-sm text-gray-600">Reg. Fee: P55.00</p>
-                <p className="text-sm text-gray-600">ID: P0.00</p>
-                <p className="text-sm text-gray-600">Late Reg: P0.00</p>
-                <p className="text-sm text-gray-600">Insurance: P25.00</p>
-              </div>
+          {/* Cards Section Centered */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[50rem]">
+            {/* Lab Fees */}
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Lab Fees
+              </h2>
+              <p className="text-sm text-gray-600">Com. Lab: P800.00</p>
             </div>
 
-            {/* Right Column: Assessment & Summary */}
-            <div className="lg:col-span-7 space-y-8">
-              {/* Assessment */}
-              <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Assessment
-                </h2>
-                <p className="text-sm text-gray-600">Tuition Fee: P3200.00</p>
-                <p className="text-sm text-gray-600">SFDF: P1500.00</p>
-                <p className="text-sm text-gray-600">SRF: P2025.00</p>
-                <p className="text-sm text-gray-600">Misc.: P435.00</p>
-                <p className="text-sm text-gray-600">Athletics: P100.00</p>
-                <p className="text-sm text-gray-600">SCUAA: P100.00</p>
-                <p className="text-sm text-gray-600">Library Fee: P50.00</p>
-                <p className="text-sm text-gray-600">Lab Fees: P800.00</p>
-                <p className="text-sm text-gray-600">Other Fees: P80.00</p>
-              </div>
+            {/* Assessment */}
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Assessment
+              </h2>
+              <p className="text-sm text-gray-600">Tuition Fee: P3200.00</p>
+              <p className="text-sm text-gray-600">SFDF: P1500.00</p>
+              <p className="text-sm text-gray-600">SRF: P2025.00</p>
+              <p className="text-sm text-gray-600">Misc.: P435.00</p>
+              <p className="text-sm text-gray-600">Athletics Fee: P100.00</p>
+            </div>
 
-              {/* Summary */}
-              <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Total Summary
-                </h2>
-                <p className="text-sm text-gray-600">Total Units: 21</p>
-                <p className="text-sm text-gray-600">Total Hours: 31</p>
-                <p className="text-sm text-gray-600">Total Amount: P8290.00</p>
-              </div>
+            {/* Other Fees */}
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Other Fees
+              </h2>
+              <p className="text-sm text-gray-600">NSTP: P0.00</p>
+              <p className="text-sm text-gray-600">Reg. Fee: P55.00</p>
+              <p className="text-sm text-gray-600">ID: P0.00</p>
+              <p className="text-sm text-gray-600">Late Reg: P0.00</p>
+            </div>
+
+            {/* Total Summary */}
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Total Summary
+              </h2>
+              <p className="text-sm text-gray-600">Total Units: 21</p>
+              <p className="text-sm text-gray-600">Total Hours: 31</p>
+              <p className="text-sm text-gray-600">Total Amount: P8290.00</p>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-between mt-6">
+          {/* Buttons Section */}
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
             <button
               className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400"
               onClick={() => navigate("/registrar/billing")}
             >
-              Back to Billing
+              Back to Course
             </button>
             <button
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               onClick={handleConfirmEnrollment}
             >
-              Confirm Enrollment
+              Confirm Payment
             </button>
           </div>
         </div>

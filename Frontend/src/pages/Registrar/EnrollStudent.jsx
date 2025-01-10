@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect} from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
@@ -6,6 +6,7 @@ import { useAlert } from "../../components/Alert";
 
 const EnrollStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,6 +24,13 @@ const EnrollStudent = ({ onLogout }) => {
   }, [studentId]);
 
   const { data, error, getData } = useData(`/api/batch/?id=${student?.id}`);
+
+   useLayoutEffect(() => {
+         const handleResize = () => setIsMobile(window.innerWidth <= 768);
+         window.addEventListener("resize", handleResize);
+         handleResize();
+         return () => window.removeEventListener("resize", handleResize);
+       }, []);
   
   useEffect(() => {
         // Fetch student data on component mount
@@ -98,10 +106,14 @@ const EnrollStudent = ({ onLogout }) => {
         isCollapsed={isSidebarCollapsed}
         currentPage={"enroll-student"}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
-      />
-      <div
-        className={`flex flex-col items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? "ml-[5rem]" : "ml-[15.625rem]"} py-6`}
-      >
+        className={isMobile ? "sidebar-collapsed" : ""}
+        />
+  
+        <div
+          className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+            isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+          } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+        >
         <div className="w-full max-w-[87.5rem] px-6">
         <h1 className="text-3xl font-semibold text-gray-800 mb-6">ENROLL STUDENT</h1>
 

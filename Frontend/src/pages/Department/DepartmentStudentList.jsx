@@ -227,6 +227,8 @@ const DepartmentStudentList = ({ onLogout }) => {
               </h3>
             </div>
 
+            <div className="text-gray-400 italic mb-4 ">Double-click a row to edit its details.</div>
+
             <table className="w-full text-center border-collapse">
               <thead className="bg-gray-100">
                 <tr>
