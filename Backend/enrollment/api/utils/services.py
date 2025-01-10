@@ -491,15 +491,29 @@ class ExcelServiceBase:
         df.to_excel(response, index=False, engine="openpyxl")
         return response
 
-class StudentExcelService(ExcelServiceBase):
+class ImportExcelService:
+    # Base class for importing Excel files
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def read_excel(self):
+        try:
+            data = pd.read_excel(self.file_path)
+            return data
+        except Exception as e:
+            raise ValueError(f"Error reading the Excel file: {e}")
+
+class StudentExcelService(ImportExcelService):
     # Service for handling Student Excel data
-    def process(self, data):
+    def process(self):
+        data = self.read_excel()
         required_columns = [
             "id", "first_name", "last_name", "email",
             "contact_number", "program", "gender", "year_level", "status"
         ]
         if not all(col in data.columns for col in required_columns):
-            raise ValueError(f"Missing required columns: {set(required_columns) - set(data.columns)}")
+            missing_columns = set(required_columns) - set(data.columns)
+            raise ValueError(f"Missing required columns: {missing_columns}")
 
         students = [
             Student(
@@ -515,24 +529,29 @@ class StudentExcelService(ExcelServiceBase):
             )
             for _, row in data.iterrows()
         ]
-        Student.objects.bulk_create(students, ignore_conflicts=True)
+        with transaction.atomic():
+            Student.objects.bulk_create(students, ignore_conflicts=True)
         return f"Successfully processed {len(students)} students."
 
-class BillingExcelService(ExcelServiceBase):
-    #Service for handling Billing Excel data
-    def process(self, data):
-        required_columns = ["billing_id", "price", "year_level", "semester"]
+class GradeExcelService(ImportExcelService):
+    # Service for handling Grade Excel data
+    def process(self):
+        data = self.read_excel()
+        required_columns = ["student_id", "course_code", "grade", "semester", "academic_year"]
         if not all(col in data.columns for col in required_columns):
-            raise ValueError(f"Missing required columns: {set(required_columns) - set(data.columns)}")
+            missing_columns = set(required_columns) - set(data.columns)
+            raise ValueError(f"Missing required columns: {missing_columns}")
 
-        billings = [
-            AcadTermBilling(
-                billing_id=row["billing_id"],
-                price=row["price"],
-                year_level=row["year_level"],
+        grades = [
+            Grade(
+                student_id=row["student_id"],
+                course_code=row["course_code"],
+                grade=row["grade"],
                 semester=row["semester"],
+                academic_year=row["academic_year"],
             )
             for _, row in data.iterrows()
         ]
-        AcadTermBilling.objects.bulk_create(billings, ignore_conflicts=True)
-        return f"Successfully processed {len(billings)} billing records."
+        with transaction.atomic():
+            Grade.objects.bulk_create(grades, ignore_conflicts=True)
+        return f"Successfully processed {len(grades)} grades."
