@@ -118,7 +118,7 @@ class GenerateCORAPI(APIView):
         sheet.title = "Registration Form"
 
         # Add an image to the workbook
-        logo_path = os.path.join(settings.BASE_DIR, 'static/images/Ulogo.png')  # UNIVERSITY LOGO
+        logo_path = os.path.join(settings.BASE_DIR, 'static/images/Uni_Logo.png')  # UNIVERSITY LOGO
         if os.path.exists(logo_path):
             img = Image(logo_path)
             img.width, img.height = 150, 75
@@ -126,10 +126,14 @@ class GenerateCORAPI(APIView):
 
         # Add header information
         header_font = Font(size=12, bold=True)
-        sheet["A6"] = "CAVITE STATE UNIVERSITY - Bacoor Campus"
-        sheet["A6"].font = header_font
-        sheet["A7"] = "REGISTRATION FORM"
-        sheet["A7"].font = header_font
+        sheet["A1"] = "Republic of the Philippines"
+        sheet["A1"].font = header_font
+        sheet["A2"] = "CAVITE STATE UNIVERSITY"
+        sheet["A2"].font = Font(size=14, bold=True)
+        sheet["A3"] = "Bacoor Campus"
+        sheet["A3"].font = header_font
+        sheet["A4"] = "Bacoor City, Cavite"
+        sheet["A4"].font = header_font
 
         # Add student information
         info_font = Font(size=10)
@@ -235,3 +239,4 @@ class GenerateCORAPI(APIView):
         file_path = os.path.join(settings.MEDIA_ROOT, f"registration_form_{student_data['id']}.xlsx")
         wb.save(file_path)
         return file_path
+    
