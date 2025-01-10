@@ -38,6 +38,7 @@ const Dashboard = ({ onLogout, role }) => {
         console.log(data.user);
        if (data.user) setUserData(data.user);
        if (data.dashboard) setDashboardData(data.dashboard);
+       console.log(dashboardData?.enrollment_date)
      } else if (error) {
        console.error(error?.error);
      }
@@ -83,12 +84,10 @@ return (
     <div className="w-full max-w-[87.5rem]">
       {/* Department Welcome Header */}
       <header className="flex justify-between items-center mb-[1.5rem]">
-        <h1 className="text-[1.875rem] font-semibold text-gray-800">
+        <h1 className="text-[2rem] font-extrabold text-center uppercase text-[#1d3557] mb-1 tracking-wide">
           Welcome!{" "}
-          <span className="bg-blue-100 p-3 rounded-md mb-4 text-center">
-          <span className="text-normal font-semibold text-blue-700">
+          <span className="bg-blue-100 p-3 rounded-md mb-4 text-center text-blue-700">
             {userData?.first_name || "No first name."}
-          </span>
           </span>
         </h1>
       </header>
@@ -129,17 +128,7 @@ return (
       </div>
 
       <div className="bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex flex-wrap items-center justify-evenly gap-4">
-          {dashboardData?.enrollment_date?.map((data, index) => (
-              <div key={index} className="w-full max-w-[350px]">
-                  <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
-                      <h3 className="text-lg font-semibold text-blue-700">{data.program_name}</h3>
-                  </div>
-                  <EnrollmentDate
-                      enrollment_date={data.enrollment_date}
-                      message={data.message}
-                  />
-              </div>
-          )) || "No data available"}
+        <EnrollmentDate/>
       </div>
 
 

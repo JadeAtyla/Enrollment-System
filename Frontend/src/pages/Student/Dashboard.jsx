@@ -6,6 +6,7 @@ import VisionIcon from "../../images/Student/DashboardIcons/Vision.svg";
 import ProfileIcon from "../../images/Student/DashboardIcons/ProfileIcon.svg";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
+import EnrollmentDate from "../../components/EnrollmentDate";
 
 const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -44,7 +45,9 @@ const Dashboard = ({ onLogout }) => {
         program: `${studentInstance.program} ${studentInstance.year_level}-${studentInstance.section || "TBA"}`,
         enrollment_status: studentInstance.enrollment_status || "Not enrolled yet.",
         student_status: studentInstance.status || "Not enrolled yet.",
+        program_id: studentInstance?.program,
       }); // Assuming the first item in the data array is the student
+      console.log(student)
     } else if(error){
       setFetchError(error.response);
       console.log(fetchError);
@@ -80,9 +83,9 @@ const Dashboard = ({ onLogout }) => {
       {/* Main Content */}
       <div className="flex flex-col justify-center items-center px-4 sm:px-6 md:px-8 lg:px-12 lg:h-[calc(100%-4rem)]">
         {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-[1000px] mt-6 lg:mt-8">
-          <h2 className="text-[#333] font-bold text-[1.375rem] sm:text-[1.5rem] lg:text-[1.75rem] text-center md:text-left">
-            Welcome! <span className="font-regular">{student.first_name}</span>
+        <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-[1000px] mt-2 lg:mt-3">
+          <h2 className="text-[2rem] font-extrabold text-center uppercase text-[#1d3557] mb-1 tracking-wide">
+            Welcome! <span className="bg-blue-100 p-3 rounded-md mb-4 text-center text-blue-700">{student.first_name}</span>
           </h2>
           <p className="text-[#555] text-[1rem] sm:text-[1.125rem] mt-2 md:mt-0 text-center md:text-left">
             Enrollment Status: <span className="font-bold">{student?.enrollment_status}</span>
@@ -128,12 +131,12 @@ const Dashboard = ({ onLogout }) => {
             <img
               src={MissionIcon}
               alt="Mission Icon"
-              className="h-[2.5rem] w-[2.5rem] sm:h-[3rem] sm:w-[3rem] lg:h-[4.375rem] lg:w-[4.375rem] mb-4 lg:mb-6 mx-auto"
+              className="h-[1rem] w-[1rem] sm:h-[1.5rem] sm:w-[1.5rem] lg:h-[3rem] lg:w-[3rem] mb-2 lg:mb-3 mx-auto"
             />
-            <h3 className="text-[#222] font-bold text-[1.125rem] sm:text-[1.25rem] lg:text-[1.5rem] mb-2 lg:mb-4">
+            <h3 className="text-[#222] font-bold text-[1rem] sm:text-[1rem] lg:text-[1rem] mb-2 lg:mb-4">
               CVSU MISSION
             </h3>
-            <p className="text-[#555] text-[0.875rem] sm:text-[1rem] lg:text-[1.125rem] leading-relaxed">
+            <p className="text-[#555] text-[1rem] sm:text-[1rem] lg:text-[1rem] leading-relaxed">
               Cavite State University shall provide excellent, equitable, and
               relevant educational opportunities in the arts, sciences, and
               technology through quality instruction and responsive research and
@@ -146,18 +149,21 @@ const Dashboard = ({ onLogout }) => {
             <img
               src={VisionIcon}
               alt="Vision Icon"
-              className="h-[2.5rem] w-[2.5rem] sm:h-[3rem] sm:w-[3rem] lg:h-[4.375rem] lg:w-[4.375rem] mb-4 lg:mb-6 mx-auto"
+              className="h-[1rem] w-[1rem] sm:h-[1.5rem] sm:w-[1.5rem] lg:h-[3rem] lg:w-[3rem] mb-2 lg:mb-3 mx-auto"
             />
-            <h3 className="text-[#222] font-bold text-[1.125rem] sm:text-[1.25rem] lg:text-[1.5rem] mb-2 lg:mb-4">
+            <h3 className="text-[#222] font-bold text-[1rem] sm:text-[1rem] lg:text-[1rem] mb-2 lg:mb-4">
               CVSU VISION
             </h3>
-            <p className="text-[#555] text-[0.875rem] sm:text-[1rem] lg:text-[1.125rem] leading-relaxed">
+            <p className="text-[#555] text-[1rem] sm:text-[1rem] lg:text-[1rem] leading-relaxed">
               Cavite State University aspires to be a globally recognized
               research university that provides excellent and relevant education
               for the sustainable development of individuals and communities.
             </p>
           </div>
         </div>
+      </div>
+      <div className="w-full max-w-screen-lg mx-auto bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex flex-wrap items-center justify-evenly gap-4">
+        <EnrollmentDate program_names={[student?.program_id]} show_button={true} student_id={student.id}/>
       </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from django.http import FileResponse
-from ..utils.services import StudentExcelService, BillingExcelService
+from ..utils.services import StudentExcelService #, BillingExcelService
 from api.models import Student, AcadTermBilling, Grade, Enrollment, BillingList, Receipt
 from ..utils.validators import FileValidator
 from openpyxl import Workbook
@@ -36,24 +36,24 @@ class StudentExcelAPI(APIView):
             return Response({"error": str(e)}, status=500)
 
 
-class BillingExcelAPI(APIView):
-    parser_classes = [MultiPartParser]
+# class BillingExcelAPI(APIView):
+#     parser_classes = [MultiPartParser]
 
-    def post(self, request):
-        file = request.FILES.get("file")
-        if not file:
-            return Response({"error": "No file uploaded."}, status=400)
+#     def post(self, request):
+#         file = request.FILES.get("file")
+#         if not file:
+#             return Response({"error": "No file uploaded."}, status=400)
 
-        if not FileValidator.is_valid_excel(file):
-            return Response({"error": "Invalid file format. Please upload an Excel file."}, status=400)
+#         if not FileValidator.is_valid_excel(file):
+#             return Response({"error": "Invalid file format. Please upload an Excel file."}, status=400)
 
-        try:
-            service = BillingExcelService()
-            data = service.read(file)
-            result = service.process(data)
-            return Response({"message": result}, status=200)
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+#         try:
+#             service = BillingExcelService()
+#             data = service.read(file)
+#             result = service.process(data)
+#             return Response({"message": result}, status=200)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=500)
 
 class GenerateCORAPI(APIView):
     # API endpoint for generating a Certificate of Registration (COR).

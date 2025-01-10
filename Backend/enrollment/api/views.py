@@ -808,6 +808,15 @@ class DashboardView(APIView):
         }
 
         return Response(response_data, status=200)
+    
+class EnrollmentDateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(seld, request):
+        enrollment_service = EnrollmentService()
+        enrollment_details = {f"enrollment_date": enrollment_service.enrollment_date()}
+
+        return Response(enrollment_details, status=200)
 
 class PasswordResetRequestView(APIView):
     permission_classes = []  # Publicly accessible

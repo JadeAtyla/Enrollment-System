@@ -490,6 +490,7 @@ class ExcelServiceBase:
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         df.to_excel(response, index=False, engine="openpyxl")
         return response
+    
 
 class ImportExcelService:
     # Base class for importing Excel files

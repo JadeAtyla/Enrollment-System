@@ -30,6 +30,7 @@ urlpatterns = [
 
     # Enrollment endpoints
     path('batch/', BatchEnrollStudentAPIView.as_view(), name='batch'),
+    path('enrollment_date/', EnrollmentDateView.as_view(), name='enrollment_date'),
 
     # Student Forms
     path('cor/', CORView.as_view(), name='cor'),
@@ -40,7 +41,7 @@ urlpatterns = [
 
     # Excel
     path('excel/student/', StudentExcelAPI.as_view(), name='student_excel'),
-    path('excel/billing/', BillingExcelAPI.as_view(), name='billing_excel'),
+    # path('excel/billing/', BillingExcelAPI.as_view(), name='billing_excel'),
     path('excel/cor/<int:student_id>/', GenerateCORAPI.as_view(), name='generate_cor'),
 
     # Forgot Password
