@@ -414,12 +414,25 @@ class CORView(APIView):
         })
     
 class ChecklistView(APIView):
-    permission_classes = [isStudent]  # Ensure the user is a student
+    permission_classes = [isStudent | isRegistrar]  # Ensure the user is a student
 
     def get(self, request, *args, **kwargs):
         # Retrieve the authenticated user's student record
         try:
-            student = Student.objects.get(id=request.user.username)
+            if request.query_params:
+                # Filter students using QuerysetFilter
+                students_queryset = QuerysetFilter.filter_queryset(Student, request.query_params)
+
+                # Ensure only one student is provided (or handle multiple students as needed)
+                if students_queryset.count() > 1:
+                    return Response({"error": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
+                if not students_queryset.exists():
+                    return Response({"error": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
+
+                # Get the single student object
+                student = students_queryset.first()
+            else:
+                student = Student.objects.get(id=request.user.username)
         except Student.DoesNotExist:
             return Response({"error": "Student information not found for the logged-in user."}, status=404)
         except Exception:

@@ -16,6 +16,7 @@ const useData = (endpoint) => {
       const response = await axios.get(endpoint);
       setData(response.data); // Update state with the response data
       setError(null); // Clear any previous error
+      return response.data;
     } catch (err) {
       handleError(err);
     }

@@ -7,20 +7,34 @@ from django.db.models import Sum
 from django.db import IntegrityError
 from api.utils.validators import EmailValidator, ContactNumberValidator, StudentNumberValidator
 
+class BaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        abstract = True  # Ensures this base serializer isn't instantiated directly
+
+    def to_representation(self, instance):
+        # Call the parent's to_representation
+        representation = super().to_representation(instance)
+        
+        # Remove unwanted fields
+        excluded_fields = ['deleted', 'created_at', 'updated_at']
+        for field in excluded_fields:
+            representation.pop(field, None)  # Safely remove the field if it exists
+        return representation
+
 # Receipt Serializer
-class ReceiptSerializer(serializers.ModelSerializer):
+class ReceiptSerializer(BaseSerializer):
     class Meta:
         model = Receipt
         fields = '__all__'
 
 # Billing List Serializer
-class BillingListSerializer(serializers.ModelSerializer):
+class BillingListSerializer(BaseSerializer):
     class Meta:
         model = BillingList
         fields = '__all__'
 
 # Acad Term Billing Serializer
-class AcadTermBillingSerializer(serializers.ModelSerializer):
+class AcadTermBillingSerializer(BaseSerializer):
     billing = BillingListSerializer()
 
     class Meta:
@@ -28,14 +42,14 @@ class AcadTermBillingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # Address Serializer
-class AddressSerializer(serializers.ModelSerializer):
+class AddressSerializer(BaseSerializer):
     class Meta:
         model = Address
         fields = ['city', 'province']
 
 
 # Program Serializer
-class ProgramSerializer(serializers.ModelSerializer):
+class ProgramSerializer(BaseSerializer):
     class Meta:
         model = Program
         fields = '__all__'
@@ -46,7 +60,7 @@ class ProgramSerializer(serializers.ModelSerializer):
         return Program.objects.create(**validated_data)
 
 
-class CourseSerializer(serializers.ModelSerializer):
+class CourseSerializer(BaseSerializer):
     program = serializers.PrimaryKeyRelatedField(queryset=Program.objects.all())  # Only the program ID is required
     pre_requisites = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True)  # Only IDs for pre_requisites
 
@@ -75,7 +89,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
 # Enrollment Serializer
-class EnrollmentSerializer(serializers.ModelSerializer):
+class EnrollmentSerializer(BaseSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
 
@@ -97,7 +111,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
 
 # Grade Serializer
-class GradeSerializer(serializers.ModelSerializer):
+class GradeSerializer(BaseSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     instructor = serializers.PrimaryKeyRelatedField(queryset=Instructor.objects.all())
@@ -121,7 +135,7 @@ class GradeSerializer(serializers.ModelSerializer):
 
 
 # Instructor Serializer
-class InstructorSerializer(serializers.ModelSerializer):
+class InstructorSerializer(BaseSerializer):
     address = AddressSerializer()
 
     class Meta:
@@ -157,9 +171,8 @@ class InstructorSerializer(serializers.ModelSerializer):
 
 
 # Student Serializer
-class StudentSerializer(serializers.ModelSerializer):
+class StudentSerializer(BaseSerializer):
     address = AddressSerializer()
-
     class Meta:
         model = Student
         fields = '__all__'
@@ -200,7 +213,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 # Sectioning Serializer
-class SectioningSerializer(serializers.ModelSerializer):
+class SectioningSerializer(BaseSerializer):
     program = serializers.PrimaryKeyRelatedField(queryset=Program.objects.all())
 
     class Meta:
@@ -219,7 +232,7 @@ class SectioningSerializer(serializers.ModelSerializer):
         return representation
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(BaseSerializer):
     groups = serializers.SlugRelatedField(
         many=True,
         read_only=True,  # Make the groups field read-only
@@ -237,7 +250,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 
-class UserRegisterSerializer(serializers.ModelSerializer):
+class UserRegisterSerializer(BaseSerializer):
     username = serializers.CharField(max_length=255)
     group = serializers.CharField(max_length=255)
     password = serializers.CharField(write_only=True, min_length=8)

@@ -1,62 +1,92 @@
-import React, { useState, useEffect, useLayoutEffect} from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import RegistrarSidebar from "./RegistrarSidebar";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
 import { useAlert } from "../../components/Alert";
+import ChecklistModal from "../../components/ChecklistModal";
 
 const ListOfStudents = ({ onLogout }) => {
-  const [currentPage, setCurrentPage] = useState(1); // State for current page in pagination
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar visibility
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const studentsPerPage = 10; // Number of students per page in pagination
+  const studentsPerPage = 10;
   const [filters, setFilters] = useState({
     year_level: "",
     program: "",
     section: "",
     search: "",
-  }); // Filters for student search
-  const [unenrollModal, setUnenrollModal] = useState({
-    isOpen: false,
-    studentId: "",
-    inputId: "",
-  }); // Modal for unenrolling student
+  });
+  const apiURL = `/api/student/`;
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const closeEditModal = () => setIsEditModalOpen(false);
+  const handleSaveStudent = (updatedStudent) => {
+    setStudents((prev) =>
+      prev.map((student) =>
+        student?.id === updatedStudent.id ? updatedStudent : student
+      )
+    );
+    setIsEditModalOpen(false);
+  };
 
-  const navigate = useNavigate(); // Navigate hook for page redirection
+  const navigate = useNavigate();
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber); // Function to change page
   // Custom hook to fetch data from the API
-  const { data, error, getData } = useData(`/api/student/?enrollment_status=ENROLLED`);
-  const { updateData } = useData(`/api/student/`);
-  const [students, setStudents] = useState([]); // State for storing students data
-  const {triggerAlert} = useAlert();
-  const [trigger, setTrigger] = useState(false);
+  const { data, error, getData } = useData(apiURL);
+  const { triggerAlert } = useAlert();
+  const [students, setStudents] = useState([]);
 
-    useLayoutEffect(() => {
-         const handleResize = () => setIsMobile(window.innerWidth <= 768);
-         window.addEventListener("resize", handleResize);
-         handleResize();
-         return () => window.removeEventListener("resize", handleResize);
-       }, []);
-  
+  // Fetching enrollment data for the selected student
+  const apiEnrolledUrl = selectedStudent ? `/api/enrollment/?student=${selectedStudent?.id}&school_year=${selectedStudent?.academic_year}` : null;
+  const { data: enrollmentData, getData: getEnrollmentData } = useData(apiEnrolledUrl);
+
+  useLayoutEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       await getData();
     };
-    fetchData(); // Fetch student data on component mount
-  }, [getData, trigger]);
+    fetchData();
+  }, [getData]);
 
   useEffect(() => {
     if (data) {
-      setStudents(data); // Update students state if data is fetched
+      setStudents(data);
     } else if (error) {
-      console.error(error?.error); // Log error if fetching fails
-      triggerAlert("error", "Error", error?.error || "An error occured");
+      console.error(error?.error);
+      triggerAlert("error", "Error", error?.error || "An error occurred");
     }
-  }, [data, error, updateData]);
+  }, [data, error]);
 
-  // Filter students based on selected filters
+  useEffect(() => {
+    const fetchEnrollmentData = async () => {
+      if (selectedStudent) {
+        try {
+          await getEnrollmentData();
+          setIsEditModalOpen(true);
+        } catch (error) {
+          console.log("Error: Enrollment data is not available");
+        }
+      }
+    };
+    fetchEnrollmentData();
+  }, [selectedStudent, getEnrollmentData]);
+
+  const handleRowDoubleClick = (student) => {
+    // Reset selectedStudent to null before setting it again
+    setSelectedStudent(null); // Reset to allow re-clicking
+    setTimeout(() => {
+      setSelectedStudent(student); // Set the selected student after a short delay
+    }, 0); // Use a timeout to ensure the state updates correctly
+  };
+
   const filteredStudents = students?.filter((student) => {
     const matchesYearLevel =
       !filters.year_level || student?.year_level?.toString() === filters.year_level;
@@ -77,45 +107,13 @@ const ListOfStudents = ({ onLogout }) => {
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
   const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
 
-  useEffect(() => {
-    console.log(unenrollModal.studentId, unenrollModal.inputId);
-  }, [unenrollModal]);
-
-  const openUnenrollModal = (studentId) => {
-    setUnenrollModal({ isOpen: true, studentId, inputId: "" });
-  };
-
-  const closeUnenrollModal = () => {
-    setUnenrollModal({ isOpen: false, studentId: "", inputId: "" });
-  };
-
-  // Confirm unenrollment
-  const confirmUnenroll = async () => {
-    if (unenrollModal.inputId === unenrollModal.studentId.toString()) {
-      try {
-        const payload = { enrollment_status: "NOT_ENROLLED" };
-        await updateData(unenrollModal.studentId, payload); // Use updateData from useData to unenroll
-        console.log(`Student with ID ${unenrollModal.studentId} has been unenrolled.`);
-        triggerAlert("success", "Success", `Student with ID ${unenrollModal.studentId} has been unenrolled.`);
-        setTrigger(true);
-        // window.location.reload();
-        closeUnenrollModal();
-      } catch (error) {
-        console.error("Failed to unenroll the student:", error);
-      }
-    } else {
-      console.log("Student ID does not match. Please try again.");
-    }
-  };
-
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <RegistrarSidebar
         onLogout={onLogout}
         currentPage="list"
         isCollapsed={isSidebarCollapsed}
-        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onToggleSidebar ={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
           if (section === "logout") {
             navigate("/registrar");
@@ -126,15 +124,14 @@ const ListOfStudents = ({ onLogout }) => {
           }
         }}
         className={isMobile ? "sidebar-collapsed" : ""}
-        />
-  
-        <div
-          className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-            isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
-          } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
-        >
-          <div className="w-full max-w-[87.5rem] px-6">
-          {/* Search and Filter Section */}
+      />
+
+      <div
+        className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+          isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+        } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+      >
+        <div className="w-full max-w-[87.5rem] px-6">
           <div className="flex justify-between items-center bg-white shadow rounded-[1.875rem] px-8 py-4 mb-6">
             <div className="relative w-[20rem]">
               <input
@@ -186,16 +183,14 @@ const ListOfStudents = ({ onLogout }) => {
             </div>
           </div>
 
-          {/* Enrolled Students Table */}
           <div className="bg-white shadow rounded-[1.875rem] p-8">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-[1.875rem] font-semibold text-gray-800">Enrolled Students</h1>
+              <h1 className="text-[1.875rem] font-semibold text-gray-800">List Of Students</h1>
               <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
                 Export as Excel
               </button>
             </div>
 
-            {/* Table */}
             <table className="w-full border-collapse">
               <thead className="bg-gray-100 text-gray-600">
                 <tr>
@@ -207,12 +202,11 @@ const ListOfStudents = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Academic Year</th>
                   <th className="px-6 py-4 border-b">Status</th>
                   <th className="px-6 py-4 border-b">Enrollment Status</th>
-                  <th className="px-6 py-4 border-b">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {currentStudents.map((student) => (
-                  <tr key={student?.id} className="hover:bg-gray-50 text-center">
+                  <tr key={student?.id} className="hover:bg-gray-50 text-center" onDoubleClick={() => handleRowDoubleClick(student)}>
                     <td className="px-6 py-4 border-b">{student?.id}</td>
                     <td className="px-6 py-4 border-b">{student?.last_name}, {student?.first_name} {student?.middle_name}</td>
                     <td className="px-6 py-4 border-b">{student?.program}</td>
@@ -221,24 +215,15 @@ const ListOfStudents = ({ onLogout }) => {
                     <td className="px-6 py-4 border-b">{student?.academic_year}</td>
                     <td className="px-6 py-4 border-b">{student?.status}</td>
                     <td className="px-6 py-4 border-b">
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                      <span className={`${student?.enrollment_status?.toLowerCase() === "enrolled" ? `bg-green-100 text-green-700` : `bg-red-100 text-red-700`} px-3 py-1 rounded-full text-xs font-medium`}>
                         {student?.enrollment_status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      <button
-                        className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700"
-                        onClick={() => openUnenrollModal(student?.id)}
-                      >
-                        Unenroll Student
-                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="flex justify-between items-center mt-6">
               <button
                 className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
@@ -259,47 +244,14 @@ const ListOfStudents = ({ onLogout }) => {
               </button>
             </div>
           </div>
-
-          {/* Unenroll Modal */}
-        {unenrollModal.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white rounded-[1.875rem] p-8 w-[30rem] shadow-lg">
-              <h2 className="text-[1.5rem] font-bold mb-4 text-gray-800">Confirm Unenroll</h2>
-              <p className="text-gray-600 mb-4">
-                Enter{" "}
-                <strong className="text-red-600">{unenrollModal.studentId}</strong> to confirm
-                unenrollment.
-              </p>
-              <input
-                type="text"
-                className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-4"
-                placeholder="Enter Student ID"
-                value={unenrollModal.inputId}
-                onChange={(e) => setUnenrollModal({ ...unenrollModal, inputId: e.target.value })}
-              />
-              <div className="flex justify-end gap-4 mb-4">
-                <button
-                  className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
-                  onClick={closeUnenrollModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                  onClick={confirmUnenroll}
-                >
-                  Confirm
-                </button>
-              </div>
-              <p className="text-sm text-gray-500">
-                Note: This action is irreversible and will remove the student from the list.
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
+      {isEditModalOpen && (
+        <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center mb-[6rem] sm:mb-0">
+          <ChecklistModal student_id={selectedStudent.id} onClose={closeEditModal} />
+      </div>
+      )}
     </div>
-  </div>
   );
 };
 

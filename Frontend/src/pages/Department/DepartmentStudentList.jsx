@@ -280,13 +280,13 @@ const DepartmentStudentList = ({ onLogout }) => {
           </div>
         </div>
       </div>
-
       {isEditModalOpen && (
         <InformationModal
           url={apiURL}
           data={selectedStudent}
           onClose={closeEditModal}
           onSave={handleSaveStudent}
+          enrollment={true}
         />
       )}
     </div>
