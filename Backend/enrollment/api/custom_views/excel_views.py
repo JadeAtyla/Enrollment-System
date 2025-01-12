@@ -119,7 +119,7 @@ class GenerateCORAPI(APIView):
         sheet = wb.active
         sheet.title = "Registration Form"
 
-        # Add an image to the workbook
+        # Add logo image
         logo_path = os.path.join(settings.BASE_DIR, 'static/images/Uni_Logo.png')  # UNIVERSITY LOGO
         if os.path.exists(logo_path):
             img = Image(logo_path)
@@ -128,75 +128,50 @@ class GenerateCORAPI(APIView):
 
         # Add header information
         header_font = Font(size=12, bold=True)
-        sheet["A1"] = "Republic of the Philippines"
-        sheet["A1"].font = header_font
-        sheet["A2"] = "CAVITE STATE UNIVERSITY"
-        sheet["A2"].font = Font(size=14, bold=True)
-        sheet["A3"] = "Bacoor Campus"
-        sheet["A3"].font = header_font
-        sheet["A4"] = "Bacoor City, Cavite"
+        sheet.merge_cells("A2:H2")
+        sheet["A2"] = "Republic of the Philippines"
+        sheet["A2"].font = header_font
+        
+        sheet.merge_cells("A3:H3")
+        sheet["A3"] = "CAVITE STATE UNIVERSITY"
+        sheet["A3"].font = Font(size=14, bold=True)
+
+        sheet.merge_cells("A4:H4")
+        sheet["A4"] = "Bacoor Campus"
         sheet["A4"].font = header_font
 
+        sheet.merge_cells("A6:H6")
+        sheet["A6"] = "REGISTRATION FORM"
+        sheet["A6"].font = Font(size=16, bold=True)
+
         # Add student information
-        info_font = Font(size=10)
         sheet["A9"] = "Student Number:"
         sheet["B9"] = student_data['id']
-        sheet["A9"].font = info_font
-        sheet["B9"].font = info_font
 
         sheet["A10"] = "Student Name:"
-        sheet["B10"] = f"{student_data['last_name']}, {student_data['first_name']} {student_data['middle_name'] or ''}"
-        sheet["A10"].font = info_font
-        sheet["B10"].font = info_font
+        sheet["B10"] = f"{student_data['last_name']}, {student_data['first_name']} {student_data.get('middle_name', '')}"
 
         sheet["A11"] = "Course:"
         sheet["B11"] = student_data['program']
-        sheet["A11"].font = info_font
-        sheet["B11"].font = info_font
+        sheet["C11"] = "Year:"
+        sheet["D11"] = student_data['year_level']
 
-        sheet["A12"] = "Year:"
-        sheet["B12"] = student_data['year_level']
-        sheet["A12"].font = info_font
-        sheet["B12"].font = info_font
-
-        sheet["A13"] = "Address:"
+        sheet["A12"] = "Address:"
         address = student_data.get('address', {})
-        sheet["B13"] = f"{address.get('street', '')}, {address.get('barangay', '')}, {address.get('city', '')}, {address.get('province', '')}"
-        sheet["A13"].font = info_font
-        sheet["B13"].font = info_font
+        sheet["B12"] = f"{address.get('street', '')}, {address.get('barangay', '')}, {address.get('city', '')}, {address.get('province', '')}"
 
-        sheet["A14"] = "Semester:"
-        sheet["B14"] = student_data['semester']
-        sheet["A14"].font = info_font
-        sheet["B14"].font = info_font
-
-        sheet["A15"] = "Date:"
-        sheet["B15"] = "[dd-mm-yyyy]"
-        sheet["A15"].font = info_font
-        sheet["B15"].font = info_font
-
-        sheet["A16"] = "Section:"
-        sheet["B16"] = f"{student_data['program']} {student_data['year_level']}-{student_data['section'] or 'TBA'}"
-        sheet["A16"].font = info_font
-        sheet["B16"].font = info_font
-
-        sheet["A17"] = "School Year:"
-        sheet["B17"] = student_data['academic_year']
-        sheet["A17"].font = info_font
-        sheet["B17"].font = info_font
+        # Add course details header
+        sheet["A14"] = "Course Code"
+        sheet["B14"] = "Course Title"
+        sheet["C14"] = "Units"
+        sheet["D14"] = "Time"
+        sheet["E14"] = "Day"
+        sheet["F14"] = "Room"
+        for col in ["A14", "B14", "C14", "D14", "E14", "F14"]:
+            sheet[col].font = Font(bold=True)
 
         # Add course details
-        course_header_font = Font(size=10, bold=True)
-        sheet["A19"] = "Course Code"
-        sheet["B19"] = "Course Title"
-        sheet["C19"] = "Units"
-        sheet["D19"] = "Time"
-        sheet["E19"] = "Day"
-        sheet["F19"] = "Room"
-        for col in ["A19", "B19", "C19", "D19", "E19", "F19"]:
-            sheet[col].font = course_header_font
-
-        row = 20
+        row = 15
         for enrollment in enrollments_data:
             sheet[f"A{row}"] = enrollment['course']['code']
             sheet[f"B{row}"] = enrollment['course']['title']
@@ -206,41 +181,69 @@ class GenerateCORAPI(APIView):
             sheet[f"F{row}"] = "TBA"
             row += 1
 
-        # Add billing details
-        billing_header_font = Font(size=10, bold=True)
-        sheet[f"A{row + 1}"] = "Lab Fees"
-        sheet[f"B{row + 1}"] = "Other Fees"
-        sheet[f"C{row + 1}"] = "Assessment"
-        sheet[f"D{row + 1}"] = "Payments"
-        for col in [f"A{row + 1}", f"B{row + 1}", f"C{row + 1}", f"D{row + 1}"]:
-            sheet[col].font = billing_header_font
+        # Add billing details header
+        row += 2
+        sheet[f"A{row}"] = "Lab Fees"
+        sheet[f"B{row}"] = "Other Fees"
+        sheet[f"C{row}"] = "Assessment"
+        sheet[f"D{row}"] = "Payments"
+        for col in [f"A{row}", f"B{row}", f"C{row}", f"D{row}"]:
+            sheet[col].font = Font(bold=True)
 
         # Add billing data
-        row += 2
+        row += 1
         for billing in joined_data:
             sheet[f"A{row}"] = billing['billing_list']['name']
             sheet[f"B{row}"] = billing['billing_list']['price']
             row += 1
 
         # Add total billing price
-        sheet[f"A{row + 1}"] = "Total Billing Price"
-        sheet[f"B{row + 1}"] = total_acad_term_billings
+        sheet[f"A{row}"] = "Total Billing Price"
+        sheet[f"B{row}"] = total_acad_term_billings
 
-        # Add receipt details
-        receipt_header_font = Font(size=10, bold=True)
-        sheet[f"A{row + 3}"] = "Receipts"
-        sheet[f"A{row + 3}"].font = receipt_header_font
+        # Add note section
+        row += 2
+        sheet.merge_cells(f"A{row}:H{row}")
+        sheet[f"A{row}"] = "NOTE: Your slots on the above subjects will be confirmed only upon payment."
+        sheet[f"A{row}"].font = Font(bold=True, italic=True)
 
-        row += 4
-        for receipt in receipts_data:
-            sheet[f"A{row}"] = receipt['date']
-            sheet[f"B{row}"] = receipt['paid']
-            row += 1
+        # Add additional student information section
+        row += 2
+        sheet[f"A{row}"] = "Old/New Student:"
+        sheet[f"B{row}"] = student_data.get('student_status', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Registration Status:"
+        sheet[f"B{row}"] = student_data.get('registration_status', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Date of Birth:"
+        sheet[f"B{row}"] = student_data.get('birth_date', '{Month, Day, Year}')
+
+        row += 1
+        sheet[f"A{row}"] = "Gender:"
+        sheet[f"B{row}"] = student_data.get('gender', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Contact Number:"
+        sheet[f"B{row}"] = student_data.get('contact_number', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Email Address:"
+        sheet[f"B{row}"] = student_data.get('email', '')
+
+        # Add signature section
+        row += 2
+        sheet.merge_cells(f"A{row}:C{row}")
+        sheet[f"A{row}"] = "Student's Signature:"
+        sheet[f"A{row}"].font = Font(bold=True)
 
         # Save the file
         file_path = os.path.join(settings.MEDIA_ROOT, f"registration_form_{student_data['id']}.xlsx")
         wb.save(file_path)
         return file_path
+
+
     
 # Importing
 class ImportExcelView(APIView):
