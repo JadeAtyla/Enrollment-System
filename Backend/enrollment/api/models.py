@@ -162,13 +162,29 @@ class Grade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='grades')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='grades')
     grade = models.CharField(max_length=4, db_comment='1.00 to 5.00 or S scale')
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name="grades_given")
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name="grades_given", blank=True, null=True)
     remarks = models.CharField(max_length=20, blank=True, null=True, choices=GRADE_REMARKS.choices)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+        if not Enrollment.objects.filter(course=self.course, student=self.student).exists():
+            raise ValueError(f"Student {self.student.id} is not yet enrolled to {self.course.code}.")
+        
+        # If the grade is 0, delete the grade entry
+        if self.grade == '0' or self.grade is None:
+            self.deleted = True  # Mark as deleted, if needed for soft delete
+            super().save(*args, **kwargs)  # Call the parent save method
+            self.delete()  # Perform the deletion of the grade from the database
+            return  # Exit early to avoid saving further
+
+        # if self.student.year_level != self.course.year_level:
+        #     raise ValueError(f"Student year level ({self.student.year_level}) does not match the course year level ({self.course.year_level}).")
+
+        # if self.student.semester != self.course.semester:
+        #     raise ValueError(f"Student semester ({self.student.semester}) does not match the course semester ({self.course.semester}).")
+
         # Determine the remarks based on the grade
         if self.grade:  # Ensure grade is not null or empty
             try:

@@ -98,7 +98,7 @@ const Checklist = ({ onLogout, student_id }) => {
 
         {/* Main Content */}
         <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center mb-[6rem] sm:mb-0">
-          <ChecklistModal />
+          <ChecklistModal isEditable={false}/>
         </div>
       </div>
     </div>

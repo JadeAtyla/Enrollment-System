@@ -21,7 +21,7 @@ import RegistrarAccounts from "./pages/Registrar/RegistrarAccounts";
 import EnrollStudent from "./pages/Registrar/EnrollStudent";
 import Billing from "./pages/Registrar/Billing";
 import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
-import EvaluateStudent from "./pages/Registrar/EvaluateStudent";
+import EvaluateStudent from "./pages/Department/EvaluateStudent";
 import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
@@ -185,14 +185,6 @@ function App() {
           }
         />
         <Route
-          path="/registrar/evaluate-student/:studentId?"
-          element={
-            <ProtectedRoute group="registrar">
-              <EvaluateStudent onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/registrar/enroll-student/:studentId?"
           element={
             <ProtectedRoute group="registrar">
@@ -254,7 +246,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/department/evaluate-student/:studentId?"
+          element={
+            <ProtectedRoute group="department">
+              <EvaluateStudent onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/department/departmentMasterList"
           element={

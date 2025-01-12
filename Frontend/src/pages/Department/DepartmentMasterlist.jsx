@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import InformationModal from "./InformationModal";
+import InformationModal from "../../components/InformationModal";
 import DepartmentAddCourse from "./DepartmentAddCourse";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
@@ -11,7 +11,7 @@ const DepartmentMasterList = ({ onLogout }) => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+  // const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const coursesPerPage = 10;
@@ -193,12 +193,12 @@ const DepartmentMasterList = ({ onLogout }) => {
                 <button className="bg-green-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-green-700 transition-transform transform hover:scale-105">
                   Export as Excel
                 </button>
-                <button
+                {/* <button
                   className="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105"
                   onClick={() => setIsAddCourseModalOpen(true)}
                 >
                   + Add Course
-                </button>
+                </button> */}
               </div>
             </div>
             <div className="bg-blue-100 p-3 rounded-md mb-4 text-center">
@@ -293,14 +293,15 @@ const DepartmentMasterList = ({ onLogout }) => {
           data={selectedCourse}
           onClose={closeEditModal}
           onSave={handleSaveCourse}
+          isEditable={false}
         />
       )}
-      {isAddCourseModalOpen && (
+      {/* {isAddCourseModalOpen && (
         <DepartmentAddCourse
           onClose={() => setIsAddCourseModalOpen(false)}
           onSave={() => {}}
         />
-      )}
+      )} */}
     </div>
   );
 };

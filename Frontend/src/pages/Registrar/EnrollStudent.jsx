@@ -20,7 +20,7 @@ const EnrollStudent = ({ onLogout }) => {
   const { studentId } = useParams();
       
   useEffect(()=>{
-      if (!studentId) navigate(`/registrar/evaluate-student/${student.id}`, {state: {student: student}});
+      if (!studentId) navigate(`/registrar/enrollmentList/`);
   }, [studentId]);
 
   const { data, error, getData } = useData(`/api/batch/?id=${student?.id}`);
@@ -51,9 +51,7 @@ const EnrollStudent = ({ onLogout }) => {
       } 
      if (error){
         triggerAlert("error", "Error", error?.data?.error || "Student not eligiable to enroll.")
-        navigate(`/registrar/evaluate-student/${student.id}`, {
-          state: { student: student },
-        });
+        navigate(`/registrar/enrollmentList/`);
         console.log(error?.data);
       }
     }, [data, error]);

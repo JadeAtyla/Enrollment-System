@@ -199,6 +199,7 @@ const ListOfStudents = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Course</th>
                   <th className="px-6 py-4 border-b">Year Level</th>
                   <th className="px-6 py-4 border-b">Section</th>
+                  <th className="px-6 py-4 border-b">Semester</th>
                   <th className="px-6 py-4 border-b">Academic Year</th>
                   <th className="px-6 py-4 border-b">Status</th>
                   <th className="px-6 py-4 border-b">Enrollment Status</th>
@@ -212,6 +213,7 @@ const ListOfStudents = ({ onLogout }) => {
                     <td className="px-6 py-4 border-b">{student?.program}</td>
                     <td className="px-6 py-4 border-b">{student?.year_level}</td>
                     <td className="px-6 py-4 border-b">{student?.section}</td>
+                    <td className="px-6 py-4 border-b">{student?.semester}</td>
                     <td className="px-6 py-4 border-b">{student?.academic_year}</td>
                     <td className="px-6 py-4 border-b">{student?.status}</td>
                     <td className="px-6 py-4 border-b">
@@ -248,7 +250,11 @@ const ListOfStudents = ({ onLogout }) => {
       </div>
       {isEditModalOpen && (
         <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center mb-[6rem] sm:mb-0">
-          <ChecklistModal student_id={selectedStudent.id} onClose={closeEditModal} />
+          <ChecklistModal 
+            student_id={selectedStudent.id} 
+            onClose={closeEditModal} 
+            isEditable={true}
+            />
       </div>
       )}
     </div>

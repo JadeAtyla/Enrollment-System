@@ -60,6 +60,7 @@ const useData = (endpoint) => {
       return response.data; // Return updated data
     } catch (err) {
       handleError(err);
+      return err?.response;
     }
   };
 

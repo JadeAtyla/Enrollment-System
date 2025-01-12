@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
 import useData from "../components/DataUtil";
+import { useAlert } from "./Alert";
 
-const ChecklistModal = ({ student_id, onClose }) => {
+const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
   // State to track fetched data and error
   const { data, error, getData } = useData(`/api/checklist/${student_id ? `?id=${student_id}` : ``}`);
+  const { updateData } = useData(`/api/checklist/`);
   const [student, setStudent] = useState(null);
   const [courseGrade, setCourseGrade] = useState([]);
 
   // State for selected filters
   const [selectedYearLevel, setSelectedYearLevel] = useState(1);
   const [selectedSemester, setSelectedSemester] = useState(1);
+  const { triggerAlert } = useAlert();
 
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
-    //   if (student_id) {
-        await getData();
-    //   }
+      await getData();
     };
     fetchData();
   }, [getData, student_id]);
@@ -24,12 +25,16 @@ const ChecklistModal = ({ student_id, onClose }) => {
   // Update state when fetched data changes
   useEffect(() => {
     if (data) {
+      console.log("Fetched data:", data);
       if (data.student) {
         setStudent(data.student);
-        console.log(data.student);
+        setSelectedYearLevel(data.student.year_level);
+        setSelectedSemester(data.student.semester);
       }
-      if (data.courses_and_grades) {
+      if (Array.isArray(data.courses_and_grades)) {
         setCourseGrade(data.courses_and_grades);
+      } else {
+        console.error("courses_and_grades is not an array:", data.courses_and_grades);
       }
     } else if (error) {
       console.error("Error fetching data:", error?.error);
@@ -60,6 +65,77 @@ const ChecklistModal = ({ student_id, onClose }) => {
     return null;
   }
 
+  const handleSaveChecklist = async () => {
+    try {
+        // Create an array to hold the updated course data
+        const updatedCourses = [];
+
+        // Iterate through all courses and prepare updates
+        for (const course of courseGrade) {
+            // Determine the new grade; if empty, set to "No Grade"
+            const newGrade = course.grade === "" ? "No Grade" : course.grade;
+
+            // Only proceed if the new grade is not "No Grade"
+            if (newGrade !== "No Grade") {
+                // Construct the payload for the update request
+                const payload = { 
+                    course_code: course.course.code, // Course code from the course object
+                    program: student.program,         // Program from the student object
+                    new_grade: newGrade,              // The new grade to be updated
+                    // grade_id: course.grade_id,        // Ensure this matches the backend expectation
+                };
+
+                // Log the payload for debugging purposes
+                console.log("Updating course:", payload);
+
+                // Add the updated course data to the updatedCourses array
+                updatedCourses.push(payload);
+            }
+        }
+
+        // Send updates for each course in the updatedCourses array
+        for (const updatedPayload of updatedCourses) {
+            // Call the updateData function with the payload
+            const res = await updateData(student.id, updatedPayload);
+            if(!res?.success){
+              // console.log("Error fetch: ", );
+              triggerAlert("error", "Error", res?.data?.error || `Failed to update course ${updatedPayload.course_code}:` || "Unknown error", 2000);
+            }
+            // // Check the response to determine if the update was successful
+            // if (!res?.success) {
+                
+            // } else {
+            //     // Trigger an error alert if the update failed
+            //     triggerAlert("error", "Error", `Failed to update course ${updatedPayload.course_code}:`, res?.message || "Unknown error", 2000);
+            // }
+        }
+        // Trigger a success alert if the update was successful
+        triggerAlert("success", "Success", "Checklist saved successfully.");
+
+        // Log all updated courses after processing for debugging
+        console.log("Updated courses:", updatedCourses);
+
+        // Log a success message indicating that the checklist was saved
+        console.log("Checklist saved successfully.");
+
+        // Close the modal after saving the checklist
+        onClose(); 
+    } catch (error) {
+        // Log any errors that occur during the save process
+        triggerAlert("error", "Error", error.message || error || "An error occured while saving.");
+    }
+};
+
+  const handleGradeChange = (courseCode, newGrade) => {
+    // Update the grade in the state
+    setCourseGrade(prevGrades => 
+      prevGrades.map(course => 
+        course.course.code === courseCode ? { ...course, grade: newGrade } : course
+      )
+    );
+    console.log(courseGrade);
+  };
+
   return (
     <div
       className={`${
@@ -68,7 +144,7 @@ const ChecklistModal = ({ student_id, onClose }) => {
     >
       <div
         className={`bg-white w-full max-w-[50rem] rounded-[1.25rem] shadow-lg p-4 sm:p-6 md:p-8 ${
-          onClose ? "relative" : "flex flex-col items-center mb-[6rem] sm:mb-0"
+          onClose ? "relative" : "flex flex-col items-center mb-[6rem] sm:mb -0"
         }`}
       >
         {/* Close Button */}
@@ -88,7 +164,7 @@ const ChecklistModal = ({ student_id, onClose }) => {
         {/* Student Info Section */}
         {student && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="space-y-2">
+            <div className="space-y-2 mr-10">
               <p className="text-[1rem] font-medium">
                 <strong>Name:</strong>{" "}
                 {`${student.last_name}, ${student.first_name} ${student.middle_name || ""}`}
@@ -154,11 +230,23 @@ const ChecklistModal = ({ student_id, onClose }) => {
                 <tr key={index}>
                   <td className="border p-2">{courseData?.course?.code}</td>
                   <td className="border p-2">{courseData?.course?.title}</td>
-                  <td className="border p-2">{courseData?.grade}</td>
+                  <td className="border p-2 w-fit">
+                    {isEditable ? (
+                      <input
+                        type="text"
+                        value={courseData?.grade !== "No Grade" ? courseData?.grade : ""}
+                        placeholder="Enter grade"
+                        onChange={(e) => handleGradeChange(courseData?.course?.code, e.target.value)}
+                        className="border p-2 w-full"
+                      />
+                    ) : (
+                      courseData?.grade
+                    )}
+                  </td>
                   <td className="border p-2">{courseData?.remarks}</td>
                   <td className="border p-2">{courseData?.course?.year_level}</td>
                   <td className="border p-2">{courseData?.course?.semester}</td>
-                </tr>
+                </ tr>
               ))}
               {filteredCourses.length === 0 && (
                 <tr>
@@ -172,13 +260,20 @@ const ChecklistModal = ({ student_id, onClose }) => {
         </div>
 
         {/* Print PDF Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-4">         
           <button
             className="bg-[#1d3557] text-white px-6 py-3 rounded-lg shadow-md hover:bg-[#457b9d] transition-all"
             onClick={() => console.log("Export PDF")}
           >
             Export as PDF
           </button>
+          <button 
+            className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition-all"
+            hidden={!isEditable}
+            onClick={handleSaveChecklist}
+          >
+              Save
+          </button> 
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import InformationModal from "./InformationModal";
+import InformationModal from "../../components/InformationModal";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
 
@@ -113,6 +113,13 @@ const DepartmentStudentList = ({ onLogout }) => {
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
   const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+  
+  const handleEnrollment = (student) => {
+    console.log(student); // Log the student for debugging
+    navigate(`/department/evaluate-student/${student.id}`, {
+      state: { student },
+    });
+  };  
 
   return (
     <div className="flex min-h-screen">
@@ -238,6 +245,7 @@ const DepartmentStudentList = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Year Level</th>
                   <th className="px-6 py-4 border-b">Semester</th>
                   <th className="px-6 py-4 border-b">Section</th>
+                  <th className="px-6 py-4 border-b">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -255,6 +263,14 @@ const DepartmentStudentList = ({ onLogout }) => {
                     <td className="px-6 py-4 border-b">{student.year_level}</td>
                     <td className="px-6 py-4 border-b">{student.semester}</td>
                     <td className="px-6 py-4 border-b">{student.section}</td>
+                    <td className="px-6 py-4 border-b">
+                      <button
+                        className="bg-blue-600 text-white px-4 py-2 w-[150px] rounded-full hover:bg-blue-700"
+                        onClick={() => handleEnrollment(student)}
+                      >
+                        Enroll Student
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

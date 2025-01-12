@@ -472,12 +472,73 @@ class ChecklistView(APIView):
                         "program_code": course.program.id,  # Adjust according to your Program model
                     }
                 },
+                "grade_id": grade.id if grade else '',
                 "grade": grade.grade if grade else "No Grade",  # If no grade exists, show "No Grade"
                 "remarks": grade.remarks if grade else "No Remarks"  # If no grade, show "No Remarks"
             }
             data["courses_and_grades"].append(grade_data)
 
         return Response(data)
+    
+    def put(self, request, *args, **kwargs):
+        """
+        Update a grade for a student in a specific course.
+        The grade is updated or created if it doesn't exist.
+        """
+        try:
+            # Retrieve student either from query params or from the logged-in user
+            student = self.get_student_from_request(request)
+
+            # Retrieve course and grade data from request
+            course_code = request.data.get("course_code")
+            program = request.data.get("program")
+            # grade_id = request.data.get("grade_id") 
+            new_grade = request.data.get("new_grade")
+
+            # Validate required fields
+            if not course_code or new_grade is None:
+                return Response({"error": "Course code and grade are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the course by its code
+            course = Course.objects.filter(code=course_code, program=program).first()
+            if not course:
+                return Response({"error": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Check if grade already exists for the student in this course
+            grade, created = Grade.objects.get_or_create(student=student, course=course, course__program=program)
+
+            # Update the grade
+            grade.grade = new_grade
+            grade.save()
+
+            # Serialize the updated grade data and return the response
+            grade_data = GradeSerializer(grade).data
+            return Response({"success": True, "message": "Grade updated successfully.", "grade": grade_data}, status=status.HTTP_200_OK)
+
+        except Student.DoesNotExist:
+            return Response({"error": "Student information not found for the logged-in user."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def get_student_from_request(self, request):
+        """
+        Helper function to retrieve the student object based on the logged-in user or provided query params.
+        """
+        student = None
+        if request.query_params:
+            # Filter students using QuerysetFilter if query params are provided
+            students_queryset = QuerysetFilter.filter_queryset(Student, request.query_params)
+            if students_queryset.count() > 1:
+                raise Exception("Multiple students found. Please provide a specific filter to target a single student.")
+            student = students_queryset.first() if students_queryset.exists() else None
+        else:
+            # Retrieve the student based on the logged-in user (assuming user.username is the student ID)
+            student = Student.objects.get(id=request.user.username)
+        
+        if not student:
+            raise Student.DoesNotExist("Student not found.")
+        
+        return student
 
 class BatchEnrollStudentAPIView(APIView):
     def get(self, request):

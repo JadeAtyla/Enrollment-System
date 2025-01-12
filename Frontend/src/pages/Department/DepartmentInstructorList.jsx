@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import DepartmentSidebar from "./DepartmentSidebar";
-import InformationModal from "./InformationModal";
+import InformationModal from "../../components/InformationModal";
 import DepartmentAddInstructor from "./DepartmentAddInstructor";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
@@ -237,7 +237,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-6 py-4 border-b">Instructor ID</th>
-                    <th className="px-6 py-4 border-b">Instructor Name</th>
+                    <th className="px-6 py-4 border-b cell-4">Instructor Name</th>
                     <th className="px-6 py-4 border-b">Email</th>
                     <th className="px-6 py-4 border-b">Contact No.</th>
                     <th className="px-6 py-4 border-b">Address</th>

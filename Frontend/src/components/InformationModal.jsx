@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import useData from "../../components/DataUtil";
+import useData from "./DataUtil";
+import { useAlert } from "./Alert";
 
-const InformationModal = ({ url, data, onClose, onSave }) => {
+const InformationModal = ({ url, data, onClose, onSave, isEditable = true }) => {
   const [updatedData, setUpdatedData] = useState({ ...data });
+  const {triggerAlert} = useAlert();
 
   const { updateData } = useData(url);
 
@@ -14,7 +16,12 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
   const handleSave = async () => {
     if (onSave) {
       onSave(updatedData); // Pass updated data to the parent component
-      await updateData(data?.id, updatedData);
+      try{
+        await updateData(data?.id, updatedData);
+        triggerAlert("success", "Sucess", "Saved");
+      } catch(err){
+        triggerAlert("error", "Error", err || "Error saving data.");
+      }
     }
     onClose(); // Close modal
   };
@@ -30,6 +37,7 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
               name={`${key}.${subKey}`}
               value={updatedData[key][subKey] || ""}
               onChange={(e) => handleChange({ target: { name: key, value: { ...updatedData[key], [subKey]: e.target.value } } })}
+              disabled={!isEditable}  // Disable input if not editable
               className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -55,6 +63,7 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
                 name={key}
                 value={updatedData[key] || ""}
                 onChange={handleChange}
+                disabled={!isEditable}  // Disable select if not editable
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select {key.replace(/_/g, ' ')}</option>
@@ -70,6 +79,7 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
                 name={key}
                 value={updatedData[key] || ""}
                 onChange={handleChange}
+                disabled={!isEditable}  // Disable input if not editable
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
             ) : (
@@ -78,6 +88,7 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
                 name={key}
                 value={updatedData[key] || ""}
                 onChange={handleChange}
+                disabled={!isEditable}  // Disable input if not editable
                 className="border rounded-lg w-full p-2 focus:ring-2 focus:ring-blue-500"
               />
             )}
@@ -113,11 +124,13 @@ const InformationModal = ({ url, data, onClose, onSave }) => {
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
               onClick={onClose}
             >
-              Cancel
+              {isEditable ? `Cancel`:`Back`}
             </button>
             <button
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               onClick={handleSave}
+              disabled={!isEditable}  // Disable save button if not editable
+              hidden={!isEditable}
             >
               Save
             </button>

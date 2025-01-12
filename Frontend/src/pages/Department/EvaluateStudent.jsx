@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useLayoutEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import RegistrarSidebar from "./RegistrarSidebar";
 import useData from "../../components/DataUtil";
 import { useAlert } from "../../components/Alert";
+import DepartmentSidebar from "./DepartmentSidebar";
 
 const EvaluateStudent = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -17,7 +17,7 @@ const EvaluateStudent = ({ onLogout }) => {
   const { studentId } = useParams();
 
   useEffect(()=>{
-      if (!studentId) navigate("/registrar/enrollmentList");
+      if (!studentId) navigate("/department/departmentStudentList");
   }, [studentId]);
 
   // Validate endpoint
@@ -75,33 +75,52 @@ const EvaluateStudent = ({ onLogout }) => {
     if (enrollmentError) {
       console.error("Enrollment Error:", enrollmentError);
       triggerAlert("error", "Error", "An error occured");
-      navigate("/registrar/enrollmentList");
+      navigate("/department/departmentStudentList");
     }
     if (gradeError) {
       console.error("Grade Error:", gradeError);
-      navigate("/registrar/enrollmentList");
+      navigate("/department/departmentStudentList");
     }
   }, [enrollmentError, gradeError, gradeData]);
 
   const handleAddToPending = () => {
-    navigate("/registrar/enrollmentList");
+    navigate("/department/departmentStudentList");
   };
 
   const handleEnrollment = () => {
-    navigate(`/registrar/enroll-student/${student.id}`, {
-      state: { student: student },
-    });
+    // navigate(`/registrar/enroll-student/${student.id}`, {
+    //   state: { student: student },
+    // });
+    console.log("Add to enroll student");
   };
 
   return (
     <div className="flex min-h-screen">
-      <RegistrarSidebar
+      <DepartmentSidebar
         onLogout={onLogout}
+        currentPage="departmentAccount"
         isCollapsed={isSidebarCollapsed}
-        currentPage={"evaluate-student"}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(section) => {
+          switch (section) {
+            case "logout":
+              navigate("/department");
+              break;
+            case "enroll":
+              navigate("/departmentAccount/enroll");
+              break;
+            case "list":
+              navigate("/departmentAccount/list");
+              break;
+            case "account":
+              navigate("/departmentAccount/account");
+              break;
+            default:
+              break;
+          }
+        }}
         className={isMobile ? "sidebar-collapsed" : ""}
-        />
+      />
   
         <div
           className={`flex flex-col items-center flex-1 transition-all duration-300 ${
