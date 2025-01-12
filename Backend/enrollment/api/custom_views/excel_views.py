@@ -114,7 +114,7 @@ class GenerateCORAPI(APIView):
 
     @staticmethod
     def generate_registration_form(student_data, enrollments_data, joined_data, total_acad_term_billings, receipts_data):
-    # Create a workbook and sheet
+        # Create a workbook and sheet
         wb = Workbook()
         sheet = wb.active
         sheet.title = "Registration Form"
@@ -201,10 +201,48 @@ class GenerateCORAPI(APIView):
         sheet[f"A{row}"] = "Total Billing Price"
         sheet[f"B{row}"] = total_acad_term_billings
 
+        # Add note section
+        row += 2
+        sheet.merge_cells(f"A{row}:H{row}")
+        sheet[f"A{row}"] = "NOTE: Your slots on the above subjects will be confirmed only upon payment."
+        sheet[f"A{row}"].font = Font(bold=True, italic=True)
+
+        # Add additional student information section
+        row += 2
+        sheet[f"A{row}"] = "Old/New Student:"
+        sheet[f"B{row}"] = student_data.get('student_status', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Registration Status:"
+        sheet[f"B{row}"] = student_data.get('registration_status', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Date of Birth:"
+        sheet[f"B{row}"] = student_data.get('birth_date', '{Month, Day, Year}')
+
+        row += 1
+        sheet[f"A{row}"] = "Gender:"
+        sheet[f"B{row}"] = student_data.get('gender', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Contact Number:"
+        sheet[f"B{row}"] = student_data.get('contact_number', '')
+
+        row += 1
+        sheet[f"A{row}"] = "Email Address:"
+        sheet[f"B{row}"] = student_data.get('email', '')
+
+        # Add signature section
+        row += 2
+        sheet.merge_cells(f"A{row}:C{row}")
+        sheet[f"A{row}"] = "Student's Signature:"
+        sheet[f"A{row}"].font = Font(bold=True)
+
         # Save the file
         file_path = os.path.join(settings.MEDIA_ROOT, f"registration_form_{student_data['id']}.xlsx")
         wb.save(file_path)
         return file_path
+
 
     
 # Importing
