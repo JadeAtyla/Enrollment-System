@@ -896,20 +896,23 @@ class PasswordResetRequestView(APIView):
     permission_classes = []  # Publicly accessible
     
     def post(self, request, *args, **kwargs):
-        id = request.data.get('id')
-        if not id:
-            return Response({"error": "Student Number is required"}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        if not username:
+            return Response({"error": "Username is required"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            student = Student.objects.get(id=id)
-            print("Student Email: ", student.email)
-            # if request.user.groups.filter(name__iexact='admin').exists():
-            user = User.objects.get(email=student.email)
+            try:
+                user_instance = Student.objects.get(id=username)
+            except:
+                user_instance = User.objects.get(username=username)
 
-            if not user.groups.filter(name__iexact='student').exists():
-                return Response({"error": "Student email not found."}, status=status.HTTP_400_BAD_REQUEST)
-            # else:
-            # raise Response({"error": "Admins are the only allowed to reset passwords."})
+            # if request.user.groups.filter(name__iexact='admin').exists():
+            user = User.objects.get(email=user_instance.email)
+
+            # if not user.groups.filter(name__iexact='student').exists():
+            #     return Response({"error": "Student email not found."}, status=status.HTTP_400_BAD_REQUEST)
+            # # else:
+            # # raise Response({"error": "Admins are the only allowed to reset passwords."})
 
             token = PasswordResetTokenGenerator().make_token(user)
             reset_link = f"http://localhost:3000/reset-password/{user.pk}/{token}/"
@@ -919,7 +922,7 @@ class PasswordResetRequestView(APIView):
                 subject="Password Reset",
                 message="Click the link to reset your password.",  # Plain text fallback
                 from_email="noreply@yourdomain.com",
-                recipient_list=[student.email],
+                recipient_list=[user_instance.email],
                 html_message=f"""
                     <html>
                         <body>
@@ -935,14 +938,17 @@ class PasswordResetRequestView(APIView):
         except User.DoesNotExist:
             return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
         except Student.DoesNotExist:
-            return Response({"error": "Student does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
         
 class PasswordResetConfirmView(APIView):
-    permission_classes = []  # Publicly accessible
+    permission_classes = [AllowAny]
     
     def post(self, request, user_id, token, *args, **kwargs):
         try:
             user = User.objects.get(pk=user_id)
+            print("User: ", user)
+            print("Token: ", token)
+            print("Reset Generator: ", PasswordResetTokenGenerator().check_token(user, token))
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -953,7 +959,20 @@ class PasswordResetConfirmView(APIView):
             user.set_password(new_password)
             user.save()
 
-            return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+            user.set_password(new_password)
+            user.save()
+
+             # Fetch the groups the user belongs to
+            groups = user.groups.all()
+            group_names = [group.name for group in groups]  # List of group names
+
+            return Response(
+                {
+                    "message": "Password reset successful.",
+                    "groups": group_names,
+                },
+                status=status.HTTP_200_OK
+            )
         
         except User.DoesNotExist:
             return Response({"error": "Invalid user."}, status=status.HTTP_404_NOT_FOUND)

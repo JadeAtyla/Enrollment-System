@@ -37,8 +37,9 @@ const RegistrarLoginCard = ({ onLogin }) => {
     }
   };
 
-
-
+  const handleForgotPassword = () => {
+    navigate('/forget-password/');
+  }
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
@@ -97,7 +98,11 @@ const RegistrarLoginCard = ({ onLogin }) => {
 
           {/* Error Message */}
           {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
-
+          <div className="flex flex-col items-center text-sm mb-6">
+            <button className="text-blue-600 hover:underline mb-2" onClick={() => handleForgotPassword()}>
+              Forgot Password?
+            </button>
+          </div>
           <button
             onClick={handleLoginClick}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600"

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
-import { registerUser } from "../../StaticFunctions/staticFunctions";
 import useData from "../../components/DataUtil";
 
 const RegisterForm = () => {

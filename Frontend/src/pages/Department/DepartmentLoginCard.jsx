@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg"; // Corrected path
 import loginIcon from "../../images/Department/LoginIcons/OfficerIcon.svg"; // Corrected path
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
+import { useAlert } from "../../components/Alert";
 
 const DepartmentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -10,6 +11,7 @@ const DepartmentLoginCard = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const {triggerAlert} = useAlert()
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
@@ -25,12 +27,17 @@ const DepartmentLoginCard = ({ onLogin }) => {
         setErrorMessage(response.detail || response.error || "Login failed.");
         if (response.group) {
           navigate(`/${response.group}/`);
+          triggerAlert("error", "User Authorization Error", `User is not department user but a ${response.group} user`);
         }
       }
     } catch (error) {
       setErrorMessage(error.error); // Handle unexpected errors
     }
   };
+
+  const handleForgotPassword = () => {
+    navigate('/forget-password/');
+  }
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900 p-4">
@@ -114,7 +121,11 @@ const DepartmentLoginCard = ({ onLogin }) => {
           {errorMessage && (
             <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
           )}
-
+          <div className="flex flex-col items-center text-sm mb-6">
+            <button className="text-blue-600 hover:underline mb-2" onClick={() => handleForgotPassword()}>
+              Forgot Password?
+            </button>
+          </div>
           <button
             onClick={handleLoginClick}
             className="w-full max-w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 mb-8"

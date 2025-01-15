@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import universityLogo from "../../images/universityLogo.svg";
-import loginIcon from "../../images/loginIcon.svg";
+import universityLogo from "../images/universityLogo.svg";
+import loginIcon from "../images/loginIcon.svg";
 import { useNavigate, useParams } from "react-router-dom";
-import { validateCredentials } from "../../StaticFunctions/staticFunctions";
-import useData from "../../components/DataUtil";
+import useData from "./DataUtil";
 
 const ResetPassword = () => {
   const { userId, token } = useParams(); // Extract userId and token from URL params
@@ -39,10 +38,19 @@ const ResetPassword = () => {
     }
   };
 
-  useEffect(()=>{
-    if (data) navigate("/student"); // Redirect to login after successful reset
-    if (error) setErrorMessage(error?.data?.error || 'An error occured');
-  }, [data, error]);
+  useEffect(() => {
+    if (data) {
+      if (data.groups && data.groups.length > 0) {
+        const firstGroup = data.groups[0]; // Get the first group (e.g., "student")
+        navigate(`/${firstGroup}`); // Redirect based on group name
+      }
+    }
+    if (error) {
+      console.error(error);
+      setErrorMessage(error?.data?.error || "An error occurred.");
+    }
+  }, [data, error, navigate]);
+  
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">

@@ -143,7 +143,7 @@ class Course(models.Model):
 class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="enrollments")
-    enrollment_date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=25, choices=ENROLLMENT_STATUS.choices)
     year_level_taken = models.PositiveIntegerField(default=1)
     semester_taken = models.PositiveIntegerField(default=1)
@@ -279,7 +279,8 @@ class Receipt(models.Model):
         db_table = 'receipt'
 
 class Enrollment_Date(models.Model):
-    date = models.DateField()
+    from_date = models.DateField()
+    to_date = models.DateField()
     program = models.ForeignKey('Program', on_delete=models.CASCADE)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

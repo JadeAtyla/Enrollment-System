@@ -38,7 +38,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
     {
       name: "course",
       icon: CourseIcon,
-      label: "Course",
+      label: "Curriculum List",
       path: "/department/departmentMasterList",
     },
     {

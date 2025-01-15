@@ -38,8 +38,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
 import axios from "axios";
-import ResetPassword from "./pages/Student/ResetPassword";
-import ForgetPassword from "./pages/Student/ForgetPassword";
+import ResetPassword from "./components/ResetPassword";
+import ForgetPassword from "./components/ForgetPassword";
 import { useAlert } from "./components/Alert";
 
 function App() {

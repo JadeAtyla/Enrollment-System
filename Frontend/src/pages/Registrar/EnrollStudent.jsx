@@ -91,10 +91,8 @@ const EnrollStudent = ({ onLogout }) => {
     setDefaultCourses((prevCourses) => [...prevCourses, newCourse]); // Add the new course to the list
   };  
 
-  const backToEvaluateStudent = () => {
-    navigate(`/registrar/evaluate-student/${student.id}`, {
-      state: { student: student },
-    });
+  const backToList = () => {
+    navigate(`/registrar/enrollmentList/`)
   };
 
   return (
@@ -288,9 +286,9 @@ const EnrollStudent = ({ onLogout }) => {
           <div className="grid grid-cols-2 gap-4 mt-6">
             <button
               className="bg-[#595959] text-white px-6 py-3 rounded-[1.875rem] hover:bg-[#afaa6d]"
-              onClick={() => backToEvaluateStudent()}
+              onClick={() => backToList()}
               >
-              BACK TO EVALUATION
+              BACK TO LIST
             </button>
             <button
               className="bg-blue-500 text-white px-6 py-3 rounded-[1.875rem] hover:bg-blue-600"

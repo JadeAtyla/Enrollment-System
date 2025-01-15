@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import universityLogo from "../../images/universityLogo.svg";
-import loginIcon from "../../images/loginIcon.svg";
+import universityLogo from "../images/universityLogo.svg";
+import loginIcon from "../images/loginIcon.svg";
 // import loginIcon from "../../images/loginIcon.svg";
-import useData from "../../components/DataUtil";
+import useData from "./DataUtil";
 import { FaArrowLeft } from "react-icons/fa";
 
 const ForgotPassword = () => {
-  const [studentNumber, setStudentNumber] = useState("");
+  const [username, setUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  const { createData, data, error } = useData("/api/password_reset/"); // API endpoint to trigger password reset studentNumber
+  const { createData, data, error } = useData("/api/password_reset/"); // API endpoint to trigger password reset username
 
   useEffect(()=>{
     if(data) setSuccessMessage( data?.message || "If this Student Number is registered, a password reset link has been sent.");
@@ -20,16 +20,16 @@ const ForgotPassword = () => {
   }, [data, error]);
 
   const handleForgotPassword = async () => {
-    if (!studentNumber) {
+    if (!username) {
       setErrorMessage("Student Number is required.");
       return;
     }
 
-    const resetData = { id: studentNumber };
+    const resetData = { username: username };
     try {
       await createData(resetData); // Call the API to send the reset link
       setErrorMessage(""); // Clear error message if successful
-      setStudentNumber(""); // Clear studentNumber input
+      setUsername(""); // Clear username input
     } catch (error) {
       setErrorMessage(error?.response?.data?.error || "Error sending reset link.");
     }
@@ -80,9 +80,9 @@ const ForgotPassword = () => {
             <div className="relative mb-6">
               <input
                 type="text"
-                value={studentNumber}
-                onChange={(e) => setStudentNumber(e.target.value)}
-                placeholder="Enter your Student Number"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px]"
               />
             </div>

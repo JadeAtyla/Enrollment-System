@@ -36,6 +36,7 @@ class SCHEDULE_DAY(models.TextChoices):
 # for Enrollment.status
 class ENROLLMENT_STATUS(models.TextChoices):
     ENROLLED = 'ENROLLED'
+    PENDING_REQUEST = "PENDING_REQUEST"
     WAITLISTED = 'WAITLISTED'
     NOT_ENROLLED = "NOT_ENROLLED"
     

@@ -15,8 +15,9 @@ const Billing = ({ onLogout }) => {
   const { student, courses, billings } = location.state || {}; // Default billings to an empty array
   const { data, error, createData } = useData("/api/batch/");
 
-  const totalAmount = 8290.0;
-  const amountNeeded = applyFreeTuition ? 2000 : totalAmount;
+  const [totalFees, setTotalFees] = useState(0);
+  // const totalAmount = 8290.0;
+  const amountNeeded = applyFreeTuition ? totalFees : totalFees;
   const {triggerAlert} = useAlert();
 
   const { studentId } = useParams();
@@ -57,6 +58,20 @@ const Billing = ({ onLogout }) => {
   };
 
   useEffect(()=>{
+    const labFeesTotal = parseFloat(
+      (labFess?.reduce((sum, fee) => sum + (parseFloat(fee.price) || 0), 0) || 0).toFixed(2)
+    );
+    const otherFeesTotal = parseFloat(
+      (otherFess?.reduce((sum, fee) => sum + (parseFloat(fee.price) || 0), 0) || 0).toFixed(2)
+    );
+    const assessmentFeesTotal = parseFloat(
+      (assessmentFees?.reduce((sum, fee) => sum + (parseFloat(fee.price) || 0), 0) || 0).toFixed(2)
+    );
+    
+    const totalFee = parseFloat((labFeesTotal + otherFeesTotal + assessmentFeesTotal || 0).toFixed(2));
+    
+    setTotalFees(totalFee);    
+    
     if (data?.success) {
       triggerAlert("success", "Success", "Student enrolled successfully.");
       // navigate("/registrar/evaluate-payment", { state: { totalAmount, receivedMoney, change } });
@@ -176,7 +191,7 @@ const Billing = ({ onLogout }) => {
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Total Summary</h2>
                 <p className="text-sm text-gray-600">Total Units: 21</p>
                 <p className="text-sm text-gray-600">Total Hours: 31</p>
-                <p className="text-sm text-gray-600">Total Amount: P8290.00</p>
+                <p className="text-sm text-gray-600">Total Amount: {totalFees.toFixed(2)}</p>
               </div>
 
               <div className="flex justify-between mt-6">

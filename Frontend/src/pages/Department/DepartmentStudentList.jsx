@@ -245,7 +245,9 @@ const DepartmentStudentList = ({ onLogout }) => {
                   <th className="px-6 py-4 border-b">Year Level</th>
                   <th className="px-6 py-4 border-b">Semester</th>
                   <th className="px-6 py-4 border-b">Section</th>
-                  <th className="px-6 py-4 border-b">Action</th>
+                  {filteredStudents.some((student) => student.enrollment_status === "PENDING_REQUEST") && (
+                    <th className="px-6 py-4 border-b">Approve Enrollment</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -263,14 +265,23 @@ const DepartmentStudentList = ({ onLogout }) => {
                     <td className="px-6 py-4 border-b">{student.year_level}</td>
                     <td className="px-6 py-4 border-b">{student.semester}</td>
                     <td className="px-6 py-4 border-b">{student.section}</td>
-                    <td className="px-6 py-4 border-b">
-                      <button
-                        className="bg-blue-600 text-white px-4 py-2 w-[150px] rounded-full hover:bg-blue-700"
-                        onClick={() => handleEnrollment(student)}
-                      >
-                        Enroll Student
-                      </button>
-                    </td>
+                    {filteredStudents.some(
+                      (s) => s.enrollment_status === "PENDING_REQUEST"
+                    ) && (
+                      <td className="px-6 py-4 border-b">
+                        {student.enrollment_status === "PENDING_REQUEST" ? (
+                          <button
+                            className="bg-blue-600 text-white px-4 py-2 w-[150px] rounded-full hover:bg-blue-700"
+                            onClick={() => handleEnrollment(student)}
+                          >
+                            Verify Student
+                          </button>
+                        ) : (
+                          // Empty <td> to maintain borders
+                          null
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

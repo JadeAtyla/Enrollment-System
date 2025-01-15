@@ -22,7 +22,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
         contact_number: "",
         year_level: "",
         semester: "",
-        enrollment_status: "WAITLISTED",
+        enrollment_status: "NOT_ENROLLED",
     });
 
     const { data, error, createData } = useData(`/api/student/`);
@@ -127,6 +127,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
             if (studentData) {
                 const payload = studentData;
                 await createData(payload);
+                triggerAlert("success", "Success", "Student added successfully");
             }
     
             if (onSave) {
@@ -142,7 +143,6 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
     useEffect(() => {
         if(trigger) {
             handleNext();
-            triggerAlert("success", "Success", "Student added successfully");
         }
 
         if(error){
