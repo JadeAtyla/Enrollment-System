@@ -15,6 +15,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showText, setShowText] = useState(!isCollapsed);
 
   const menuItems = [
     {
@@ -68,6 +69,12 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
       const newCollapsedState = !isCollapsed;
       setIsCollapsed(newCollapsedState);
       localStorage.setItem("sidebarCollapsed", newCollapsedState);
+
+      if (newCollapsedState) {
+        setShowText(false); // Hide text immediately on collapse
+      } else {
+        setTimeout(() => setShowText(true), 180); // Show text after transition
+      }
     }
   };
 
@@ -80,11 +87,12 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   const confirmLogout = () => {
     closeModal();
     onLogout();
-    navigate('/department');
+    navigate("/department");
   };
 
   const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
-  const contentMargin = isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
+  const contentMargin =
+    isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
 
   return (
     <div className="flex">
@@ -98,10 +106,12 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
             src={UniversityLogo}
             alt="University Logo"
             className={`transition-all duration-300 ${
-              isCollapsed || isMobile ? "w-[2.5rem] h-[2.5rem]" : "w-[4rem] h-[4rem]"
+              isCollapsed || isMobile
+                ? "w-[2.5rem] h-[2.5rem]"
+                : "w-[4rem] h-[4rem]"
             }`}
           />
-          {!isCollapsed && !isMobile && (
+          {!isCollapsed && !isMobile && showText && (
             <div className="ml-2 text-white text-sm font-bold text-center">
               <div>Cavite State</div>
               <div>University</div>
@@ -118,7 +128,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
                 key={item.name}
                 className={`flex items-center p-3 rounded-lg transition-all duration-300 transform ${
                   currentPage === item.name
-                    ? "bg-[#02458c] text-white shadow-lg translate-y-[-2px] scale-105"
+                    ? "bg-[#6E85B7] text-white shadow-lg translate-y-[-2px] scale-105"
                     : "hover:bg-[#6E85B7] hover:text-white text-gray-200 hover:scale-105 hover:shadow-lg"
                 }`}
                 onClick={() => handleMenuClick(item.path)}
@@ -128,17 +138,20 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
                   alt={`${item.label} Icon`}
                   className="w-[1.5rem] h-[1.5rem] mr-3"
                 />
-                {!isCollapsed && !isMobile && (
+                {!isCollapsed && !isMobile && showText && (
                   <span className="text-sm font-medium">{item.label}</span>
                 )}
               </button>
             ))}
           </div>
 
+          {/* Divider Line below Account Section */}
+          <div className="border-b border-white mt-[0rem]"></div>
+
           {/* Logout Button with Floating Effect */}
-          <div className="w-full px-4 mt-8">
+          <div className="w-full px-4 mb-[7rem]">
             <button
-              className="flex items-center p-3 rounded-lg transition-all duration-300 transform hover:bg-red-500 hover:text-white text-white w-full shadow-md hover:shadow-lg hover:scale-105"
+              className="flex items-center p-3 rounded-lg transition-all duration-300 transform hover:bg-red-500 hover:text-white text-white hover:shadow-2xl w-full hover:scale-105"
               onClick={handleLogoutClick}
             >
               <img
@@ -146,11 +159,18 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
                 alt="Logout Icon"
                 className="w-[1.5rem] h-[1.5rem] mr-3"
               />
-              {!isCollapsed && !isMobile && (
+              {!isCollapsed && !isMobile && showText && (
                 <span className="text-sm font-medium">Log Out</span>
               )}
             </button>
           </div>
+        </div>
+
+        {/* Footer Section */}
+        <div className="text-center text-white text-xs font-light py-4">
+          {isCollapsed || isMobile || !showText
+            ? "ⓒ CVSU" // Collapsed, mobile, or text is hidden
+            : "ⓒ 2024 CvSU Bacoor. All Rights Reserved"}{" "}
         </div>
 
         {/* Toggle Button */}
