@@ -207,7 +207,7 @@ const DepartmentMasterList = ({ onLogout }) => {
                 Number of Courses: {filteredCourses.length}
               </h3>
             </div>
-            <div className="text-gray-400 italic mb-4 ">Double-click a row to edit its details.</div>
+            <div className="text-gray-400 italic mb-4 ">Double-click a row to view its details.</div>
             <table className="w-full border-collapse text-gray-800">
               <thead className="bg-gray-100">
                 <tr>

@@ -4,6 +4,7 @@ import universityLogo from "../images/universityLogo.svg";
 import loginIcon from "../images/loginIcon.svg";
 import { useNavigate, useParams } from "react-router-dom";
 import useData from "./DataUtil";
+import Loader from "./Loader";
 
 const ResetPassword = () => {
   const { userId, token } = useParams(); // Extract userId and token from URL params
@@ -12,6 +13,7 @@ const ResetPassword = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
   const { createData, data, error } = useData(`/api/reset-password/${userId}/${token}/`);
@@ -23,17 +25,25 @@ const ResetPassword = () => {
   }, []);
 
   const handlePasswordReset = async () => {
+    // if(!newPassword || !confirmPassword){
+    //   return setErrorMessage("All password fields must not be blank or empty");
+    // }
+
     if (newPassword !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
-      return;
+      return setErrorMessage("Passwords do not match.");
     }
 
     const resetData = { new_password: newPassword };
     try {
-      await createData(resetData); // This will call the updateData method and pass userId and token in URL
+      setIsLoading(true);
+      const res = await createData(resetData); // This will call the updateData method and pass userId and token in URL
+      if(res.success){
+        setIsLoading(false);
+      }
       // setSuccessMessage("Password reset successful.");
       setErrorMessage(""); // Clear error message if successful
     } catch (error) {
+      setIsLoading(false);
       setErrorMessage(error?.response?.data?.error || "Error resetting password.");
     }
   };
@@ -50,6 +60,23 @@ const ResetPassword = () => {
       setErrorMessage(error?.data?.error || "An error occurred.");
     }
   }, [data, error, navigate]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handlePasswordReset();
+    }
+  };
+
+useEffect(() => {
+  // Add event listener for keydown
+  window.addEventListener("keydown", handleKeyDown);
+
+  // Cleanup the event listener on unmount
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [newPassword, confirmPassword]);
   
 
   return (
@@ -80,9 +107,6 @@ const ResetPassword = () => {
             RESET PASSWORD
           </h2>
 
-          {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
-          {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
-
           <div className="w-full max-w-[350px]">
             <div className="relative mb-6">
               <input
@@ -110,9 +134,13 @@ const ResetPassword = () => {
               />
             </div>
           </div>
+          {isLoading && <Loader />}
+          {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
+          {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
 
           <button
             onClick={handlePasswordReset}
+            onKeyDown={handleKeyDown}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Reset Password

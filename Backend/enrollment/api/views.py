@@ -414,7 +414,7 @@ class CORView(APIView):
         })
     
 class ChecklistView(APIView):
-    permission_classes = [isStudent | isRegistrar]  # Ensure the user is a student
+    permission_classes = [isStudent | isRegistrar]
 
     def get(self, request, *args, **kwargs):
         # Retrieve the authenticated user's student record
@@ -455,7 +455,7 @@ class ChecklistView(APIView):
         # Go through each course and gather grade information
         for course in courses:
             # Try to get the grade for this course for the specific student
-            grade = course.grades.filter(student=student).first()  # Get the first grade for the student in this course
+            grade = course.grades.filter(student=student, verified=True).first() # Get the first grade for the student in this course
             
             grade_data = {
                 "course": {
@@ -494,6 +494,7 @@ class ChecklistView(APIView):
             program = request.data.get("program")
             # grade_id = request.data.get("grade_id") 
             new_grade = request.data.get("new_grade")
+            verified = request.data.get("verified")
 
             # Validate required fields
             if not course_code or new_grade is None:
@@ -508,6 +509,13 @@ class ChecklistView(APIView):
             grade, created = Grade.objects.get_or_create(student=student, course=course, course__program=program)
 
             # Update the grade
+            if grade.grade:
+                if grade.grade == new_grade:
+                    grade.verified = True
+                else:
+                    grade.verified = False
+                    raise ValueError(f"Grade in {course.code} input is not aligned to the student's grade")
+            
             grade.grade = new_grade
             grade.save()
 
@@ -732,7 +740,6 @@ class BatchEnrollStudentAPIView(APIView):
                                 semester_taken=student.semester,
                             )
                             successful_enrollments.append(course_id)  # Append course_id to response
-                            enrollment_date = enrollment.enrollment_date
                     except serializers.ValidationError as e:
                         # Add validation error to failed enrollments
                         failed_enrollments.append({
@@ -795,6 +802,7 @@ class BatchEnrollStudentAPIView(APIView):
                 student.academic_year = acad_year
                 student.status = StudentService.set_status(student.id)
                 student.enrollment_status = "ENROLLED"
+                print(StudentService.set_section(student)) 
                 student.save()
 
             # Success response
@@ -933,7 +941,7 @@ class PasswordResetRequestView(APIView):
                 """
             )
 
-            return Response({"message": "Password reset email sent successfully."}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "Password reset email sent successfully."}, status=status.HTTP_200_OK)
         
         except User.DoesNotExist:
             return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
@@ -968,6 +976,7 @@ class PasswordResetConfirmView(APIView):
 
             return Response(
                 {
+                    "success": True,
                     "message": "Password reset successful.",
                     "groups": group_names,
                 },

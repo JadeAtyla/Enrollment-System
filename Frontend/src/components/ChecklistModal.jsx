@@ -41,17 +41,41 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
     }
   }, [data, error]);
 
-  // Update state for Year Level dropdown
-  const handleYearLevelChange = (e) => {
-    const yearLevel = parseInt(e.target.value, 10);
-    setSelectedYearLevel(yearLevel);
-  };
+// Update state for Year Level dropdown
+const handleYearLevelChange = (e) => {
+  const yearLevel = parseInt(e.target.value, 10);
 
-  // Update state for Semester dropdown
-  const handleSemesterChange = (e) => {
-    const semester = parseInt(e.target.value, 10);
-    setSelectedSemester(semester);
-  };
+  if (yearLevel === 0) {
+      // Reset both Year Level and Semester when Year Level is set to 0
+      setSelectedYearLevel(0);
+      setSelectedSemester(0);
+  } else {
+      // Update Year Level and set default Semester if Semester is invalid
+      setSelectedYearLevel(yearLevel);
+      if (selectedSemester === 0) {
+          setSelectedSemester(1);
+      }
+  }
+};
+
+// Update state for Semester dropdown
+const handleSemesterChange = (e) => {
+  const semester = parseInt(e.target.value, 10);
+
+  if (semester === 0) {
+      // Reset both Semester and Year Level when Semester is set to 0
+      setSelectedSemester(0);
+      setSelectedYearLevel(0);
+  } else {
+      // Update Semester only if a valid Year Level is selected
+      if (selectedYearLevel !== 0) {
+          setSelectedSemester(semester);
+      }
+  }
+};
+
+
+
 
   // Filter courses based on selected year level and semester
   const filteredCourses = courseGrade.filter(
@@ -82,7 +106,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                     course_code: course.course.code, // Course code from the course object
                     program: student.program,         // Program from the student object
                     new_grade: newGrade,              // The new grade to be updated
-                    // grade_id: course.grade_id,        // Ensure this matches the backend expectation
+                    verified: true                    // Confirms grade to the checklist
                 };
 
                 // Log the payload for debugging purposes
@@ -93,13 +117,17 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
             }
         }
 
+        let successfulUpdate = true;
         // Send updates for each course in the updatedCourses array
         for (const updatedPayload of updatedCourses) {
             // Call the updateData function with the payload
             const res = await updateData(student.id, updatedPayload);
             if(!res?.success){
               // console.log("Error fetch: ", );
+              successfulUpdate = false;
               triggerAlert("error", "Error", res?.data?.error || `Failed to update course ${updatedPayload.course_code}:` || "Unknown error", 2000);
+            } else {
+              triggerAlert("success", "Success", `Successfully updated course ${updatedPayload.course_code}`, 2000);
             }
             // // Check the response to determine if the update was successful
             // if (!res?.success) {
@@ -110,7 +138,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
             // }
         }
         // Trigger a success alert if the update was successful
-        triggerAlert("success", "Success", "Checklist saved successfully.");
+        if(successfulUpdate) triggerAlert("success", "Success", "Checklist saved successfully.");
 
         // Log all updated courses after processing for debugging
         console.log("Updated courses:", updatedCourses);
@@ -189,6 +217,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
+                  <option value="0">Mid Year</option>
                 </select>
               </div>
               <div className="w-1/2">
@@ -200,6 +229,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                 >
                   <option value="1">1st Semester</option>
                   <option value="2">2nd Semester</option>
+                  <option value="0">Mid Year</option>
                 </select>
               </div>
             </div>

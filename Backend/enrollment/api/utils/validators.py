@@ -111,38 +111,46 @@ class EnrollmentValidator:
 
     @staticmethod
     def is_enrollment_day(program) -> dict:
-        # Fetch the latest enrollment date for the given program
-        enrollment_date = Enrollment_Date.objects.filter(program=program).order_by("-date").first()
+        """
+        Determines if today's date falls within the enrollment period (from_date to to_date) for the given program.
+        Returns a dictionary with the enrollment status and an appropriate message.
+        """
+        # Fetch the latest enrollment dates for the program
+        enrollment_date = Enrollment_Date.objects.filter(program=program).order_by("-from_date").first()
 
-        # Check if the enrollment_date exists
-        if enrollment_date is None:
-            response = {
+        # Check if enrollment dates exist
+        if not enrollment_date:
+            return {
                 "is_enrollment": False,
-                "message": "Enrollment has not been set for this program yet."
+                "message": "Enrollment dates have not been set for this program yet."
             }
-            return response
 
-        # Determine if today is the enrollment day
+        # Get today's date and the enrollment period
         today = datetime.now().date()
-        formatted_date = enrollment_date.date.strftime("%B %d, %Y")
-        if enrollment_date.date == today:
-            message = "Enrollment is ongoing today."
-            is_enrollment = True
-        elif enrollment_date.date > today:
-            message = f"Enrollment has not yet begun. It is scheduled for {formatted_date}."
-            is_enrollment = False
+        from_date = enrollment_date.from_date
+        to_date = enrollment_date.to_date
+
+        # Format the dates for the message
+        formatted_from_date = from_date.strftime("%B %d, %Y")
+        formatted_to_date = to_date.strftime("%B %d, %Y")
+
+        # Determine enrollment status based on today's date
+        if from_date <= today <= to_date:
+            return {
+                "is_enrollment": True,
+                "message": f"Enrollment is ongoing from {formatted_from_date} to {formatted_to_date}."
+            }
+        elif today < from_date:
+            return {
+                "is_enrollment": False,
+                "message": f"Enrollment has not yet begun. It is scheduled from {formatted_from_date} to {formatted_to_date}."
+            }
         else:
-            message = f"Enrollment has already been done on {formatted_date}."
-            is_enrollment = False
-
-        # Construct the response
-        response = {
-            "is_enrollment": is_enrollment,
-            "message": message
-        }
-
-        return response
-
+            return {
+                "is_enrollment": False,
+                "message": f"Enrollment has already ended. The period was from {formatted_from_date} to {formatted_to_date}."
+            }
+            
     @staticmethod
     def valid_residency(student_id: int) -> bool:
         student_enrollment_year = int(str(student_id)[:4])

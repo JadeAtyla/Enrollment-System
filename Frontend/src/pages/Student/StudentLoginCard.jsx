@@ -62,6 +62,23 @@ const StudentLoginCard = ({ onLogin }) => {
     navigate('/forget-password/');
   }
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleLoginClick();
+    }
+  };
+
+useEffect(() => {
+  // Add event listener for keydown
+  window.addEventListener("keydown", handleKeyDown);
+
+  // Cleanup the event listener on unmount
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [studentNumber, password]);
+
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">
       <div className="relative flex flex-col lg:flex-row items-center justify-center rounded-[32px] shadow-lg overflow-hidden w-full max-w-[1027px] h-auto lg:h-[641px] mx-4 lg:mx-0">
@@ -141,7 +158,7 @@ const StudentLoginCard = ({ onLogin }) => {
 
             {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
 
-            <button onClick={handleLoginClick} className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md">
+            <button onClick={handleLoginClick} onKeyDown={handleKeyDown} className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md">
               Login
             </button>
           </div>

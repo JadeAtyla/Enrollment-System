@@ -46,13 +46,17 @@ class AcadTermBillingAdmin(Searchable, admin.ModelAdmin):
     # list_display = ["id", "barangay", "street", "city", "province"]
     list_filter = ["year_level", "semester"]
 
+class GradeAdmin(Searchable, admin.ModelAdmin):
+    list_display = ["student_id", "course__code", "grade", "course__year_level", "course__semester"]
+    list_filter = ["student", "course__year_level", "course__semester"]
+
 
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Instructor, Searchable)
 admin.site.register(Course, Searchable)
 admin.site.register(Enrollment, EnrollmentAdmin)
-admin.site.register(Grade, Searchable)
+admin.site.register(Grade, GradeAdmin)
 admin.site.register(Receipt, Searchable)
 admin.site.register(Sectioning, Searchable)
 admin.site.register(Program, Searchable)

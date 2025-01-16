@@ -5,32 +5,47 @@ import loginIcon from "../images/loginIcon.svg";
 // import loginIcon from "../../images/loginIcon.svg";
 import useData from "./DataUtil";
 import { FaArrowLeft } from "react-icons/fa";
+import Loader from "./Loader";
+import { useAlert } from "./Alert";
 
 const ForgotPassword = () => {
   const [username, setUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const {triggerAlert} = useAlert();
 
   const { createData, data, error } = useData("/api/password_reset/"); // API endpoint to trigger password reset username
 
   useEffect(()=>{
     if(data) setSuccessMessage( data?.message || "If this Student Number is registered, a password reset link has been sent.");
-    if(error) setErrorMessage(error?.data?.error || 'An error occured');
+    if(error) {
+      triggerAlert("error", "Error", error?.data?.error || "Error sending reset link.");
+      setErrorMessage(error?.data?.error || 'An error occured');
+    }
   }, [data, error]);
 
   const handleForgotPassword = async () => {
+    setSuccessMessage("");
+    setErrorMessage(""); // Clear error message if successful
+
     if (!username) {
-      setErrorMessage("Student Number is required.");
+      setErrorMessage("Username is required.");
       return;
     }
 
     const resetData = { username: username };
     try {
-      await createData(resetData); // Call the API to send the reset link
-      setErrorMessage(""); // Clear error message if successful
-      setUsername(""); // Clear username input
+      setIsLoading(true);
+      const res = await createData(resetData); // Call the API to send the reset link
+      if(res.success){
+        setIsLoading(false);
+        setUsername(""); // Clear username input
+        triggerAlert("success", "Success", `A password reset link has been sent to user ${resetData.username}.`)
+      } 
     } catch (error) {
+      setIsLoading(false);
       setErrorMessage(error?.response?.data?.error || "Error sending reset link.");
     }
   };
@@ -38,6 +53,23 @@ const ForgotPassword = () => {
   const handleBackToLogin = () => {
     navigate("/student");
   };
+
+  const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleForgotPassword();
+      }
+    };
+  
+  useEffect(() => {
+    // Add event listener for keydown
+    window.addEventListener("keydown", handleKeyDown);
+  
+    // Cleanup the event listener on unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [username]);
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">
@@ -73,9 +105,6 @@ const ForgotPassword = () => {
             FORGOT PASSWORD
           </h2>
 
-          {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
-          {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
-
           <div className="w-full max-w-[350px]">
             <div className="relative mb-6">
               <input
@@ -87,13 +116,18 @@ const ForgotPassword = () => {
               />
             </div>
           </div>
+          {isLoading && <Loader />}
+          {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
+          {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
 
           <button
             onClick={handleForgotPassword}
+            onKeyDown={handleKeyDown}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Send Reset Link
           </button>
+          
         </div>
       </div>
     </div>

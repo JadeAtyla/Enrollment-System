@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from ..enums import STUDENT_CATEGORY, STUDENT_REG_STATUS, PAYMENT_STATUS, PROGRAM, GRADE_REMARKS
 from django.db.models import Sum
 from rest_framework.exceptions import NotFound
-from ..models import Enrollment, Student, Course, Receipt, AcadTermBilling, BillingList, Grade, Enrollment_Date
+from ..models import Enrollment, Student, Course, Sectioning, Receipt, AcadTermBilling, BillingList, Grade, Enrollment_Date
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
@@ -127,37 +127,74 @@ class StudentService:
             raise ValidationError({"error": "Student is not enrolled in any courses."})
         except ObjectDoesNotExist:
             raise ValidationError("The specified student or course does not exist.")
+    
+    @staticmethod
+    def set_section(student):
+        """
+        Assigns a student to a section based on the section limits and availability.
+        Returns the section (either existing or newly created) assigned to the student.
+        """
+        program = student.program  # Assuming the Student model has a program field
+        year_level = student.year_level  # Assuming the Student model has a year_level field
+        
+        # Fetch the sections for the given program and year level
+        sections = Sectioning.objects.filter(program=program, year_level=year_level, deleted=False).order_by('id')
+        
+        # Find a section with available slots
+        for section in sections:
+            current_student_count = Student.objects.filter(section=section).count()
+            if current_student_count < section.limit_per_section:
+                return section
+
+        # If no section has room, create a new section
+        new_section = Sectioning.objects.create(
+            limit_per_section=sections.first().limit_per_section if sections.exists() else 30,  # Default limit
+            year_level=year_level,
+            program=program
+        )
+
+        # student.section = new_section
+        # student.save()
+        return new_section
 
 class EnrollmentService:
 
     @staticmethod
     def enrollment_date():
-        # Fetch all enrollment dates for all programs
-        enrollment_dates = Enrollment_Date.objects.all().order_by("-date")
+        """
+        Fetch all enrollment periods and their status for all programs.
+        """
+        enrollment_periods = Enrollment_Date.objects.filter(deleted=False).order_by("-from_date")
+        today = datetime.now().date()  # Current date
         response = []
 
-        for enrollment_date in enrollment_dates:
-            # Determine if today is the enrollment day
-            today = datetime.now().date()
-            formatted_date = enrollment_date.date.strftime("%B %d, %Y")
-            if enrollment_date.date == today:
-                message = "Enrollment is ongoing today."
+        for period in enrollment_periods:
+            # Format the dates for response
+            from_date_str = period.from_date.strftime("%B %d, %Y")
+            to_date_str = period.to_date.strftime("%B %d, %Y")
+
+            # Determine the enrollment status
+            if period.from_date <= today <= period.to_date:
+                message = f"Enrollment is ongoing today ({from_date_str} to {to_date_str})."
                 is_enrollment = True
-            elif enrollment_date.date > today:
-                message = f"Enrollment has not yet begun. It is scheduled for {formatted_date}."
+            elif today < period.from_date:
+                message = f"Enrollment has not yet started. It is scheduled from {from_date_str} to {to_date_str}."
                 is_enrollment = False
-            else:
-                message = f"Enrollment has already been done on {formatted_date}."
+            else:  # today > period.to_date
+                message = f"Enrollment period ended on {to_date_str}."
                 is_enrollment = False
 
             response.append({
-                "program_name": enrollment_date.program.id,
+                "program_name": period.program.id,  # Assuming `id` is the program's unique identifier
+                "program_description": period.program.description,  # Include program name/description if needed
                 "is_enrollment": is_enrollment,
-                "enrollment_date": formatted_date,
-                "message": message
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+                "message": message,
             })
 
         return response
+
 
     @staticmethod
     def target_year_level_semester(year_level, semester):

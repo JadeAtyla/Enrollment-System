@@ -69,11 +69,11 @@ const COR = ({ onLogout }) => {
   };
 
   const labFees = billings.filter(
-    (billingData) => billingData.billing_list.category === "LAB FEES"
+    (billingData) => billingData.billing_list.category === "LAB_FEES"
   );
 
   const otherFees = billings.filter(
-    (billingData) => billingData.billing_list.category === "OTHER FEES"
+    (billingData) => billingData.billing_list.category === "OTHER_FEES"
   );
 
   const assessment = billings.filter(
@@ -84,6 +84,8 @@ const COR = ({ onLogout }) => {
     <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
       {/* Header Section */}
       <Header onLogout={onLogout} />
+      <div className="flex justify-center items-center">
+      <div className="w-[57rem] max-w-[57rem]">
       <div className="flex justify-center items-center bg-[#e4ecfa] py-3">
         <h1 className="text-[36px] font-extrabold text-[#000000] uppercase tracking-wide mt-5 text-center w-full sm:w-auto">
           Certificate of Registration
@@ -105,7 +107,7 @@ const COR = ({ onLogout }) => {
                 className="h-16 mx-auto mb-4"
               />
               <h2 className="text-[20px] font-bold uppercase">
-                Cavite State University
+                Cavite State Univ ersity
               </h2>
               <p className="text-[16px] font-medium">Bacoor Campus</p>
               <h3 className="text-[20px] font-bold mt-4">Registration Form</h3>
@@ -153,7 +155,10 @@ const COR = ({ onLogout }) => {
                 </div>
                 <div className="flex">
                   <p className="font-bold w-1/3">Date:</p>
-                  <p className="ml-4">[dd-mm-yyyy]</p>
+                  <p className="ml-4">{new Date(enrollments[0]?.date).toLocaleDateString(
+                  "en-US",
+                  { year: "numeric", month: "numeric", day: "numeric" }
+                )}</p>
                 </div>
                 <div className="flex">
                   <p className="font-bold w-1/3">Section:</p>
@@ -326,7 +331,6 @@ const COR = ({ onLogout }) => {
             {/* Additional Student Information Section */}
             <div>
               <h3 className="font-bold text-left mb-4">
-                <br />
                 Additional Information
               </h3>
               <div className="text-sm">
@@ -367,6 +371,8 @@ const COR = ({ onLogout }) => {
               <button className="bg-blue-500 text-white px-6 py-3 sm:px-4 sm:py-2 rounded hover:bg-blue-600 absolute bottom-4 right-4">
                 Print PDF
               </button>
+            </div>
+            </div>
             </div>
           </div>
         </div>

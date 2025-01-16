@@ -6,13 +6,12 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const CertificateOfRegistration = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
   const [isMobile, setIsMobile] = useState(false);
   const [corData, setCorData] = useState(null);
-
+  const navigate = useNavigate();
   const { studentId } = useParams();
 
-  const navigate = useNavigate();
+  const { data, error, getData } = useData(`/api/cor/?id=${studentId}`);
 
   useLayoutEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -23,9 +22,7 @@ const CertificateOfRegistration = ({ onLogout }) => {
 
   useEffect(() => {
     if (!studentId) navigate("/registrar/enrollmentList");
-  }, [studentId]);
-
-  const { data, error, getData } = useData(`/api/cor/?id=${studentId}`);
+  }, [studentId, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,35 +43,45 @@ const CertificateOfRegistration = ({ onLogout }) => {
     return <div>Loading...</div>;
   }
 
+  const labFees = corData.acad_term_billings.filter(
+    (billing) => billing.billing_list.category === "LAB_FEES"
+  );
+
+  const otherFees = corData.acad_term_billings.filter(
+    (billing) => billing.billing_list.category === "OTHER_FEES"
+  );
+
+  const assessment = corData.acad_term_billings.filter(
+    (billing) => billing.billing_list.category === "ASSESSMENT"
+  );
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="flex min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0]">
-        {/* Sidebar */}
         <RegistrarSidebar
           onLogout={onLogout}
           currentPage="certificate"
           isCollapsed={isSidebarCollapsed}
           onToggleSidebar={setIsSidebarCollapsed}
           className={isMobile ? "sidebar-collapsed" : ""}
-          />
-    
-          <div
-            className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-              isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
-            } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
-          >
-          <div className="w-full max-w-[57rem]">
-            {/* Certificate of Registration Title */}
+        />
+
+        <div
+          className={`flex flex-col items-center flex-1 transition-all duration-300 ${
+            isMobile
+              ? "ml-[12rem]"
+              : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+          } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
+        >
+          <div className="w-[57rem] max-w-[57rem]">
             <div className="text-center mb-8">
               <h1 className="text-[36px] font-extrabold text-[#000000] uppercase tracking-wide">
                 Certificate of Registration
               </h1>
             </div>
 
-            {/* Main Content */}
             <div className="flex justify-center items-center">
               <div className="bg-white w-full rounded-[20px] shadow-lg p-8">
-                {/* Header Section */}
                 <div className="text-center mb-6">
                   <img
                     src={universityLogo}
@@ -90,41 +97,35 @@ const CertificateOfRegistration = ({ onLogout }) => {
                   </h3>
                 </div>
 
-                {/* Student Info Section */}
                 <div className="grid grid-cols-2 gap-x-24 gap-y-6 mb-6 text-[14px]">
                   <div>
                     <div className="flex">
                       <p className="font-bold w-1/3">Student Number:</p>
                       <p className="ml-4">{corData.student.id}</p>
                     </div>
-
                     <div className="flex">
                       <p className="font-bold w-1/3">Student Name:</p>
                       <p className="ml-4">
                         {`${corData.student.last_name}, ${corData.student.first_name} ${corData.student.middle_name}`}
                       </p>
                     </div>
-
                     <div className="flex">
                       <p className="font-bold w-1/3">Course:</p>
                       <p className="ml-4">{corData.student.program}</p>
                     </div>
-
                     <div className="flex">
                       <p className="font-bold w-1/3">Year:</p>
                       <p className="ml-4">{corData.student.year_level}</p>
                     </div>
-
                     <div className="flex">
                       <p className="font-bold w-1/3">Address:</p>
-                      <p className="ml-4">{`${
-                        corData.student.address.street || ""
-                      } ${corData.student.address.barangay || ""} ${
-                        corData.student.address.city
-                      }, ${corData.student.address.province}`}</p>
+                      <p className="ml-4">{`${corData.student.address.street || ""} ${
+                        corData.student.address.barangay || ""
+                      } ${corData.student.address.city}, ${
+                        corData.student.address.province
+                      }`}</p>
                     </div>
                   </div>
-
                   <div className="ml-20">
                     <div className="flex">
                       <p className="font-bold w-1/3">Semester:</p>
@@ -132,14 +133,17 @@ const CertificateOfRegistration = ({ onLogout }) => {
                     </div>
                     <div className="flex">
                       <p className="font-bold w-1/3">Date:</p>
-                      <p className="ml-4">[dd-mm-yyyy]</p>
+                      <p className="ml-4">{new Date(corData.enrollments[0].date).toLocaleDateString(
+                  "en-US",
+                  { year: "numeric", month: "numeric", day: "numeric" }
+                )}</p>
                     </div>
                     <div className="flex">
                       <p className="font-bold w-1/3">Section:</p>
                       <p className="ml-4">
-                        {`${corData.student.program} ${
-                          corData.student.year_level
-                        }-${corData.student.section || "TBA"}`}
+                        {`${corData.student.program} ${corData.student.year_level}-${
+                          corData.student.section || "TBA"
+                        }`}
                       </p>
                     </div>
                     <div className="flex">
@@ -148,8 +152,7 @@ const CertificateOfRegistration = ({ onLogout }) => {
                     </div>
                   </div>
                 </div>
-
-                {/* Course Table */}
+                <div className="overflow-x-auto">         
                 <table className="w-full text-left border-collapse mb-6 text-[14px]">
                   <thead>
                     <tr className="bg-gray-200">
@@ -166,13 +169,13 @@ const CertificateOfRegistration = ({ onLogout }) => {
                       ? corData.enrollments.map((enrollment, index) => (
                           <tr key={index}>
                             <td className="border p-2">
-                              {enrollment.course.code}
+                              {enrollment.course?.code}
                             </td>
                             <td className="border p-2">
-                              {enrollment.course.title}
+                              {enrollment.course?.title}
                             </td>
                             <td className="border p-2">
-                              {enrollment.course.units}
+                              {enrollment.course?.units || 0}
                             </td>
                             <td className="border p-2">
                               {enrollment.schedule?.time || "N/A"}
@@ -197,155 +200,117 @@ const CertificateOfRegistration = ({ onLogout }) => {
                         ))}
                   </tbody>
                 </table>
-
-                {/* Fee and Assessment Section */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {/* Left Column with 3 sections in 3 columns */}
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* Lab Fees */}
-                    <div className="flex flex-col">
-                      <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
-                        <h3 className="font-bold">Lab Fees</h3>
-                      </div>
-                      {corData.acad_term_billings
-                        .filter(
-                          (billing) =>
-                            billing.billing_list.category === "LAB FEES"
-                        )
-                        .map((billing, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center"
-                          >
-                            <p className="mr-2">{billing.billing_list.name}:</p>
-                            <p>{billing.billing_list.price}</p>
-                          </div>
-                        ))}
-                    </div>
-
-                    {/* Other Fees */}
-                    <div className="flex flex-col">
-                      <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
-                        <h3 className="font-bold">Other Fees</h3>
-                      </div>
-                      {corData.acad_term_billings
-                        .filter(
-                          (billing) =>
-                            billing.billing_list.category === "OTHER FEES"
-                        )
-                        .map((billing, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center"
-                          >
-                            <p className="mr-2">{billing.billing_list.name}:</p>
-                            <p>{billing.billing_list.price}</p>
-                          </div>
-                        ))}
-                    </div>
-
-                    {/* Assessment */}
-                    <div className="flex flex-col">
-                      <div className="border p-2 mb-2 rounded-2xl border-black flex justify-center items-center">
-                        <h3 className="font-bold">Assessment</h3>
-                      </div>
-                      {corData.acad_term_billings
-                        .filter(
-                          (billing) =>
-                            billing.billing_list.category === "ASSESSMENT"
-                        )
-                        .map((billing, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center"
-                          >
-                            <p className="mr-2">{billing.billing_list.name}:</p>
-                            <p>{billing.billing_list.price}</p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="ml-20">
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="font-bold border p-2 rounded-lg border-black">
-                        Total UNITS:
-                      </p>
-                      <p>21</p>
-                    </div>
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="font-bold border p-2 rounded-lg border-black">
-                        Total HOURS:
-                      </p>
-                      <p>31</p>
-                    </div>
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="font-bold border p-2 rounded-lg border-black">
-                        Total AMOUNT:
-                      </p>
-                      <p>₱{corData.total_acad_term_billing_price}</p>
-                    </div>
-
-                    {/* Scholarship Section */}
-                    <div className="mt-4">
-                      <h3 className="font-bold text-center mb-2">
-                        Scholarship
-                      </h3>
-                      <p className="text-center font-medium">
-                        <strong>CHED Free Tuition and Misc. Fee</strong>
-                      </p>
-                      <div className="mt-2">
-                        <p className="flex justify-between">
-                          <span>Tuition</span>
-                          <span>₱3800.00</span>
-                        </p>
-                        <p className="flex justify-between">
-                          <span>SFDF</span>
-                          <span>₱3800.00</span>
-                        </p>
-                        <p className="flex justify-between">
-                          <span>SRF</span>
-                          <span>₱3800.00</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Terms of Payment Section */}
-                    <div className="mt-6">
-                      <h3 className="font-bold text-center mb-2">
-                        Terms of Payment
-                      </h3>
-                      <p className="flex justify-between">
-                        <span>First</span>
-                        <span>₱3800.00</span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span>Second</span>
-                        <span>-</span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span>Third</span>
-                        <span>-</span>
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
-                {/* Additional Student Information Section */}
+              <div className="overflow-x-auto mb-6">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700">
+                    <th className="border p-3">Lab Fees</th>
+                    <th className="border p-3">Other Fees</th>
+                    <th className="border p-3">Assessment</th>
+                    <th className="border p-3">Payments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                      {labFees.map((lab, index) => (
+                        <div key={index} className="flex justify-between">
+                          {lab.billing_list.name || "-"}
+                          <span>{lab.billing_list.price || "-"}</span>
+                        </div>
+                      ))}
+                      {labFees.length === 0 && (
+                        <div className="border p-2 text-center" colSpan="6">
+                          No billings available.
+                        </div>
+                      )}
+                    </td>
+                    <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                      {otherFees.map((other, index) => (
+                        <div key={index} className="flex justify-between">
+                          {other.billing_list.name || "-"}
+                          <span>{other.billing_list.price || "-"}</span>
+                        </div>
+                      ))}
+                      {otherFees.length === 0 && (
+                        <div className="border p-2 text-center" colSpan="6">
+                          No billings available.
+                        </div>
+                      )}
+                    </td>
+                    <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
+                      {assessment.map((assess, index) => (
+                        <div key={index} className="flex justify-between">
+                          {assess.billing_list.name || "-"}
+                          <span>{assess.billing_list.price || "-"}</span>
+                        </div>
+                      ))}
+                      {assessment.length === 0 && (
+                        <div className="border p-2 text-center" colSpan="6">
+                          No billings available.
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="border align-top">
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Total Units:<span>1</span>
+                    </td>
+                  </tr>
+                  <tr className="border align-top">
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Total Hours:<span>1</span>
+                    </td>
+                  </tr>
+                  <tr className="border align-top">
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Total Amount:<span>1</span>
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Scholarship<span>1</span>
+                    </td>
+                  </tr>
+                  <tr className="border align-top">
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Tuition:<span>1</span>
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      SFDF:<span>1</span>
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      SRF:<span>1</span>
+                    </td>
+                  </tr>
+                  <tr className="border p-3 align-top">
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Terms of Payment
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      First:<span>1</span>
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Second:<span>1</span>
+                    </td>
+                    <td className="pb-2 pr-5 pl-5 flex justify-between">
+                      Third:<span>1</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+
                 <div>
-                  <h3 className="font-bold text-left mb-4">
-                    Additional Information
-                  </h3>
+                  <h3 className="font-bold text-left mb-4">Additional Information</h3>
                   <div className="text-sm">
                     <div className="flex justify-start mb-2">
                       <p className="font-bold mr-2 w-1/6">Old/New Student:</p>
                       <p className="ml-2">{corData.student.category}</p>
                     </div>
                     <div className="flex justify-start mb-2">
-                      <p className="font-bold mr-2 w-1/6">
-                        Registration Status:
-                      </p>
+                      <p className="font-bold mr-2 w-1/6">Registration Status:</p>
                       <p className="ml-2">{corData.student.status}</p>
                     </div>
                     <div className="flex justify-start mb-2">
@@ -361,19 +326,18 @@ const CertificateOfRegistration = ({ onLogout }) => {
                       <p className="ml-2">{corData.student.contact_number}</p>
                     </div>
                     <div className="flex justify-start mb-2">
-                      <p className="font-bold mr-2  w-1/6">Email Address:</p>
+                      <p className="font-bold mr-2 w-1/6">Email Address:</p>
                       <p className="ml-2">{corData.student.email}</p>
                     </div>
                   </div>
 
-                  {/* Student's Signature Section */}
                   <div className="mt-6">
                     <p className="font-bold mb-1">Student's Signature:</p>
-                    <div className="border-t-2 border-black w-1/3 mx-40"></div>
+                    <div className="border-t-2 border-black w-1/3 mx-40 sm:w-1/2 xs:w-full sm:mx-40 xs:mx-2"></div>
                   </div>
                 </div>
 
-                <div className="relative mt-6">
+                <div className="relative mt-6 h-20">
                   <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 absolute bottom-0 right-0 mb-4 mr-4">
                     Print PDF
                   </button>

@@ -164,6 +164,7 @@ class Grade(models.Model):
     grade = models.CharField(max_length=4, db_comment='1.00 to 5.00 or S scale')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name="grades_given", blank=True, null=True)
     remarks = models.CharField(max_length=20, blank=True, null=True, choices=GRADE_REMARKS.choices)
+    verified = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)

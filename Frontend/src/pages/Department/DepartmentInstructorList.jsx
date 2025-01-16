@@ -229,7 +229,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
             </div>
 
             <div className="text-gray-400 italic mb-4 ">
-              Double-click a row to edit its details.
+              Double-click a row to view its details.
             </div>
 
             <div className="overflow-x-auto md:overflow-x-hidden">
@@ -314,6 +314,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
           data={selectedInstructor}
           onClose={closeEditModal}
           onSave={handleSaveInstructor}
+          isEditable={false}
         />
       )}
       {isAddInstructorModalOpen && (

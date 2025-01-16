@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import loginIcon from "../../images/Registrar/LogInIcons/OfficerIcon.svg";
@@ -40,6 +40,24 @@ const RegistrarLoginCard = ({ onLogin }) => {
   const handleForgotPassword = () => {
     navigate('/forget-password/');
   }
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleLoginClick();
+    }
+  };
+
+  useEffect(() => {
+    // Add event listener for keydown
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup the event listener on unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [username, password]); // Empty dependency array ensures it runs once on mount
+
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-yellow-400 to-blue-900">
@@ -105,10 +123,12 @@ const RegistrarLoginCard = ({ onLogin }) => {
           </div>
           <button
             onClick={handleLoginClick}
+            onKeyDown={handleKeyDown}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600"
           >
             Login
           </button>
+
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useData from "./DataUtil";
 import { useAlert } from "./Alert";
 
-const InformationModal = ({ url, data, onClose, onSave, isEditable = true }) => {
+const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=false, isEditable = true }) => {
   const [updatedData, setUpdatedData] = useState({ ...data });
   const {triggerAlert} = useAlert();
 
@@ -25,6 +25,16 @@ const InformationModal = ({ url, data, onClose, onSave, isEditable = true }) => 
     }
     onClose(); // Close modal
   };
+
+  const handleEnroll = () =>{
+    if(onEnroll){
+      onEnroll(data);
+    }
+  }
+
+  useEffect(()=>{
+    console.log(isEnrollee);
+  }, []);
 
   const renderFormFields = () => {
     return Object.keys(updatedData).map((key) => {
@@ -133,6 +143,14 @@ const InformationModal = ({ url, data, onClose, onSave, isEditable = true }) => 
               hidden={!isEditable}
             >
               Save
+            </button>
+            <button
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              onClick={handleEnroll}
+              disabled={!isEditable}  // Disable save button if not editable
+              hidden={!isEditable || !isEnrollee}
+            >
+              Enroll Student
             </button>
           </div>
         </div>

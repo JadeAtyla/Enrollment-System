@@ -43,11 +43,14 @@ const RegisterForm = () => {
     console.log(formData.password);
     console.log(formData.re_password);
     console.log(formData.password == formData.re_password);
+    if(!formData.password || !formData.password || !formData.re_password){
+      return setErrorMessage('Fill out student number and password fields.');
+    }
 
     if(formData.password === formData.re_password){
       await createData(formData);
     } else {
-      setErrorMessage('Password do not match.');
+      return setErrorMessage('Password do not match.');
     }
     // if (registrationResult === true) {
     //   setIsModalOpen(true); // Open modal on successful registration
@@ -77,6 +80,23 @@ const RegisterForm = () => {
     setIsModalOpen(false);
     navigate("/student"); // Redirect to login after closing modal
   };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleRegisterClick();
+    }
+  };
+
+useEffect(() => {
+  // Add event listener for keydown
+  window.addEventListener("keydown", handleKeyDown);
+
+  // Cleanup the event listener on unmount
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [formData]);
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-r from-yellow-400 to-blue-900 overflow-hidden">
@@ -161,6 +181,7 @@ const RegisterForm = () => {
 
           <button
             onClick={handleRegisterClick}
+            onKeyDown={handleKeyDown}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Register
