@@ -106,7 +106,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
     <div className="flex min-h-screen">
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentInstructorList"
+        currentPage="instructor"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
@@ -115,13 +115,13 @@ const DepartmentInstructorList = ({ onLogout }) => {
               navigate("/department");
               break;
             case "enroll":
-              navigate("/departmentInstructorList/enroll");
+              navigate("/departmentDashboard/enroll");
               break;
             case "list":
-              navigate("/departmentInstructorList/list");
+              navigate("/departmentDashboard/list");
               break;
             case "account":
-              navigate("/departmentInstructorList/account");
+              navigate("/departmentDashboard/account");
               break;
             default:
               break;
@@ -237,7 +237,9 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-6 py-4 border-b">Instructor ID</th>
-                    <th className="px-6 py-4 border-b cell-4">Instructor Name</th>
+                    <th className="px-6 py-4 border-b cell-4">
+                      Instructor Name
+                    </th>
                     <th className="px-6 py-4 border-b">Email</th>
                     <th className="px-6 py-4 border-b">Contact No.</th>
                     <th className="px-6 py-4 border-b">Address</th>

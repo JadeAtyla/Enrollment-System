@@ -99,7 +99,7 @@ const DepartmentMasterList = ({ onLogout }) => {
     <div className="flex min-h-screen">
       <DepartmentSidebar
         onLogout={onLogout}
-        currentPage="departmentMasterList"
+        currentPage="course"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
@@ -108,13 +108,13 @@ const DepartmentMasterList = ({ onLogout }) => {
               navigate("/department");
               break;
             case "enroll":
-              navigate("/departmentMasterList/enroll");
+              navigate("/departmentDashboard/enroll");
               break;
             case "list":
-              navigate("/departmentMasterList/list");
+              navigate("/departmentDashboard/list");
               break;
             case "account":
-              navigate("/departmentMasterList/account");
+              navigate("/departmentDashboard/account");
               break;
             default:
               break;
