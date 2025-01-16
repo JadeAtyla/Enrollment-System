@@ -150,7 +150,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
               disabled={!isEditable}  // Disable save button if not editable
               hidden={!isEditable || !isEnrollee}
             >
-              Enroll Student
+              Verify Student
             </button>
           </div>
         </div>

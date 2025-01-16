@@ -258,7 +258,10 @@ const DepartmentStudentList = ({ onLogout }) => {
 
             <div className="text-gray-400 italic mb-4 flex justify-between">
               <span>Double-click a row to edit its details.</span>
-              <span>You can also enroll students when they are marked as red.</span>
+              <span>You can also verify students for enrollment when they are marked as 
+              <span className={`inline-block w-2 h-2 bg-red-500 rounded-full ml-2`}></span>
+                <span className="text-red-500">red</span>
+              .</span>
             </div>
 
             <table className="w-full text-center border-collapse">
