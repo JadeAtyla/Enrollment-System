@@ -14,6 +14,7 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showText, setShowText] = useState(!isCollapsed);
 
   const menuItems = [
     { name: "dashboard", icon: DashboardIcon, label: "Dashboard", path: "/registrar/dashboard" },
@@ -41,6 +42,12 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
       const newCollapsedState = !isCollapsed;
       setIsCollapsed(newCollapsedState);
       localStorage.setItem("sidebarCollapsed", newCollapsedState);
+
+      if (newCollapsedState) {
+        setShowText(false); // Hide text immediately on collapse
+      } else {
+        setTimeout(() => setShowText(true), 180); // Show text after transition
+      }
     }
   };
 
@@ -124,6 +131,13 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
               )}
             </button>
           </div>
+        </div>
+
+        {/* Footer Section */}
+        <div className="text-center text-white text-xs font-light py-4">
+          {isCollapsed || isMobile || !showText
+            ? "ⓒ CVSU" // Collapsed, mobile, or text is hidden
+            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}{" "}
         </div>
 
         {/* Toggle Button */}

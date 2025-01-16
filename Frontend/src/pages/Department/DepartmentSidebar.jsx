@@ -146,10 +146,10 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
           </div>
 
           {/* Divider Line below Account Section */}
-          <div className="border-b border-white mt-[0rem]"></div>
+          {/* <div className="border-b border-white mt-[0rem]"></div> */}
 
           {/* Logout Button with Floating Effect */}
-          <div className="w-full px-4 mb-[7rem]">
+          <div className="w-full px-4 ">
             <button
               className="flex items-center p-3 rounded-lg transition-all duration-300 transform hover:bg-red-500 hover:text-white text-white hover:shadow-2xl w-full hover:scale-105"
               onClick={handleLogoutClick}
@@ -170,7 +170,7 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
         <div className="text-center text-white text-xs font-light py-4">
           {isCollapsed || isMobile || !showText
             ? "ⓒ CVSU" // Collapsed, mobile, or text is hidden
-            : "ⓒ 2024 CvSU Bacoor. All Rights Reserved"}{" "}
+            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}{" "}
         </div>
 
         {/* Toggle Button */}
