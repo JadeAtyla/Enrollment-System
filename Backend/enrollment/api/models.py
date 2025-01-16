@@ -13,6 +13,9 @@ class Address(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.street or ''} {self.barangay or ''} {self.city} {self.province}"
+
     class Meta:
         db_table = 'address'
 
@@ -23,6 +26,9 @@ class Program(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.id}"  # Return the id as a string
 
     class Meta:
         db_table = 'program'
@@ -35,6 +41,10 @@ class Sectioning(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        year_lvl_str = ["1ST YEAR", "2ND YEAR", "3RD YEAR", "4TH YEAR"]
+        return f"{self.program} ({year_lvl_str[self.year_level-1]})"
 
     class Meta:
         db_table = 'sectioning'
@@ -98,6 +108,9 @@ class Student(models.Model):
 
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.id}"  # Return the name as a string
+
     class Meta:
         db_table = 'student'
 
@@ -114,6 +127,10 @@ class Instructor(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        middle_initial = f"{self.middle_name[0]}." if self.middle_name else ''  # Get the initial of middle_name with a dot
+        return f"{self.first_name or ''} {middle_initial} {self.last_name or ''} {self.suffix or ''}"
 
     class Meta:
         db_table = 'instructor'
@@ -134,6 +151,9 @@ class Course(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.code} ({self.program})"  # Return the name as a string
+
     class Meta:
         db_table = 'course'
         constraints = [
@@ -151,6 +171,10 @@ class Enrollment(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student.id} {self.course.code}"
+
 
     class Meta:
         db_table = 'enrollment'
@@ -229,6 +253,9 @@ class BillingList(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
 
+    def __str__(self):
+        return str(self.name)  # Return the name as a string
+
     class Meta:
         db_table = 'billing_list'
 
@@ -276,6 +303,9 @@ class Receipt(models.Model):
 
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.student}"
+
     class Meta:
         db_table = 'receipt'
 
@@ -286,6 +316,12 @@ class Enrollment_Date(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        # Format the dates to "January 1, 2025"
+        from_date_str = self.from_date.strftime('%B %d, %Y') if self.from_date else ''
+        to_date_str = self.to_date.strftime('%B %d, %Y') if self.to_date else ''
+        return f"{from_date_str} to {to_date_str}"
 
     class Meta:
         db_table = 'enrollment_date'

@@ -266,7 +266,7 @@ const DepartmentStudentList = ({ onLogout }) => {
 
             <table className="w-full text-center border-collapse">
               <thead className="bg-gray-100">
-                <tr>
+                <tr>p
                   <th className="px-6 py-4 border-b">Student Number</th>
                   <th className="px-6 py-4 border-b">Student Name</th>
                   <th className="px-6 py-4 border-b">Program</th>

@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv  # imports env
 import os  # helps to access environment variables
+import datetime
 
 load_dotenv()  # initialize env
 
@@ -137,9 +138,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 JAZZMIN_SETTINGS = {
     "site_title": "Enrollment Admin",
     "site_header": "Enrollment System",
-    "site_logo": "jazzmin/img/transparent-logo.png",
+    "site_logo": "/images/Uni_Logo.png",  # Ensure correct path to logo
     "welcome_sign": "Welcome to the Enrollment System Admin",
-    "copyright": "Enrollment System © 2024",
+    "copyright": f"Enrollment System © {datetime.datetime.now().year}",
     "search_model": "auth.User",  # Model to search by default
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
@@ -152,7 +153,10 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        "api.address": "fa-solid fa-house",
+        # "api.address": "fa-solid fa-house",
+        "api.acadtermbilling": "fa-solid fa-money-bill",
+        "api.enrollment_date": "fa-solid fa-calendar",
+        "api.receipt": "fa-solid fa-receipt",
         "api.billing": "fa-solid fa-money-bill",
         "api.course": "fa-solid fa-book",
         "api.enrollment": "fa-solid fa-clipboard-check",
@@ -165,7 +169,7 @@ JAZZMIN_SETTINGS = {
         "api.program": "fa-solid fa-microchip",
     },
 
-    "related_modal_active": True, # X_FRAME_OPTIONS mus be SAMEORIGIN
+    "related_modal_active": True,  # X_FRAME_OPTIONS must be SAMEORIGIN
     "changeform_format": "horizontal_tabs",  # Horizontal tabs in the change form
 }
 
@@ -179,11 +183,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Email settings for sending reset emails
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Or another SMTP provider
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'jamadigal@gmail.com'  # Your email address
-EMAIL_HOST_PASSWORD = 'bvme okxm eerp uyaz'  # Your email password or app password
+EMAIL_HOST = os.environ.get('EMAIL_HOST')  # Or another SMTP provider
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Your email address
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # Your email password or app password
 
 # DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'  # The sender email address
 
