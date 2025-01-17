@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "./Header"; // Custom Header
 import Sidebar from "./Sidebar"; // Custom Sidebar
 import universityLogo from "../../images/universityLogo.svg";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
 
+// For creating pdf
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 const COR = ({ onLogout }) => {
   const navigate = useNavigate();
+  const contentRef = useRef();
 
   const year = "3rd Year"; // Replace with dynamic value if needed
   const section = "A"; // Replace with dynamic value if needed
@@ -80,6 +85,24 @@ const COR = ({ onLogout }) => {
     (billingData) => billingData.billing_list.category === "ASSESSMENT"
   );
 
+  // Function to download PDF
+  const downloadPDF = () => {
+    const input = contentRef.current; // Get the content from the reference
+    const printPDFButton = document.getElementById("printPDFButton");
+
+    printPDFButton.style.display = "none";
+    html2canvas(input, { scale: 3 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("Certificate_of_Registration.pdf");
+    });
+
+    printPDFButton.style.display = "";
+  };
+
   return (
     <div className="w-screen min-h-screen bg-gradient-to-b from-[#e4ecfa] to-[#fefae0] flex flex-col">
       {/* Header Section */}
@@ -97,7 +120,7 @@ const COR = ({ onLogout }) => {
         <Sidebar onNavigate={handleNavigate} activeSection={currentSection} />
 
         {/* Main Content */}
-        <div className="flex flex-1 justify-center items-center w-full mt-7 sm:mt-5 md:mt-7 mb-[7rem] sm:mb-5 px-4 sm:px-0">
+        <div ref={contentRef} className="flex flex-1 justify-center items-center w-full mt-7 sm:mt-5 md:mt-7 mb-[7rem] sm:mb-5 px-4 sm:px-0">
           <div className="bg-white w-full max-w-4xl rounded-[20px] shadow-lg p-8 sm:p-6 xs:p-4">
             {/* Header Section */}
             <div className="text-center mb-6">
@@ -107,7 +130,7 @@ const COR = ({ onLogout }) => {
                 className="h-16 mx-auto mb-4"
               />
               <h2 className="text-[20px] font-bold uppercase">
-                Cavite State Univ ersity
+                Cavite State University
               </h2>
               <p className="text-[16px] font-medium">Bacoor Campus</p>
               <h3 className="text-[20px] font-bold mt-4">Registration Form</h3>
@@ -243,44 +266,45 @@ const COR = ({ onLogout }) => {
                   <tr>
                     <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
                       {labFees.map((lab, index) => (
-                        <div key={index} className="flex justify-between">
+                        <td key={index} className="flex justify-between">
                           {lab.billing_list.name || "-"}
                           <span>{lab.billing_list.price || "-"}</span>
-                        </div>
+                        </td>
                       ))}
                       {labFees.length === 0 && (
-                        <div className="border p-2 text-center" colSpan="6">
+                        <td className="border p-2 text-center" colSpan="6">
                           No billings available.
-                        </div>
+                        </td>
                       )}
                     </td>
                     <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
                       {otherFees.map((other, index) => (
-                        <div key={index} className="flex justify-between">
+                        <td key={index} className="flex justify-between">
                           {other.billing_list.name || "-"}
                           <span>{other.billing_list.price || "-"}</span>
-                        </div>
+                        </td>
                       ))}
                       {otherFees.length === 0 && (
-                        <div className="border p-2 text-center" colSpan="6">
+                        <td className="border p-2 text-center" colSpan="6">
                           No billings available.
-                        </div>
+                        </td>
                       )}
                     </td>
                     <td className="border pb-5 pr-5 pl-5 align-top" rowSpan={10}>
                       {assessment.map((assess, index) => (
-                        <div key={index} className="flex justify-between">
+                        <td key={index} className="flex justify-between">
                           {assess.billing_list.name || "-"}
                           <span>{assess.billing_list.price || "-"}</span>
-                        </div>
+                        </td>
                       ))}
                       {assessment.length === 0 && (
-                        <div className="border p-2 text-center" colSpan="6">
+                        <td className="border p-2 text-center" colSpan="6">
                           No billings available.
-                        </div>
+                        </td>
                       )}
                     </td>
                   </tr>
+                  <tr>
                   <tr className="border align-top">
                     <td className="pb-2 pr-5 pl-5 flex justify-between">
                       Total Units:<span>1</span>
@@ -323,6 +347,7 @@ const COR = ({ onLogout }) => {
                     <td className="pb-2 pr-5 pl-5 flex justify-between">
                       Third:<span>1</span>
                     </td>
+                  </tr>
                   </tr>
                 </tbody>
               </table>
@@ -368,7 +393,7 @@ const COR = ({ onLogout }) => {
             </div>
 
             <div className="relative mt-6 h-20">
-              <button className="bg-blue-500 text-white px-6 py-3 sm:px-4 sm:py-2 rounded hover:bg-blue-600 absolute bottom-4 right-4">
+              <button id="printPDFButton" onClick={downloadPDF} className="bg-blue-500 text-white px-6 py-3 sm:px-4 sm:py-2 rounded hover:bg-blue-600 absolute bottom-4 right-4">
                 Print PDF
               </button>
             </div>
