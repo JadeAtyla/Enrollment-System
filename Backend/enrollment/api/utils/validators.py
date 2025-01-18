@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 from datetime import datetime
 from rest_framework.response import Response
 import re
-from api.models import Student, Grade, Course, Enrollment, Enrollment_Date
+from api.models import Student, Grade, Course, Enrollment, EnrollmentDate
 from datetime import datetime
 
 class LengthValidator:
@@ -116,10 +116,10 @@ class EnrollmentValidator:
         Returns a dictionary with the enrollment status and an appropriate message.
         """
         # Fetch the latest enrollment dates for the program
-        enrollment_date = Enrollment_Date.objects.filter(program=program).order_by("-from_date").first()
+        EnrollmentDate = EnrollmentDate.objects.filter(program=program).order_by("-from_date").first()
 
         # Check if enrollment dates exist
-        if not enrollment_date:
+        if not EnrollmentDate:
             return {
                 "is_enrollment": False,
                 "message": "Enrollment dates have not been set for this program yet."
@@ -127,8 +127,8 @@ class EnrollmentValidator:
 
         # Get today's date and the enrollment period
         today = datetime.now().date()
-        from_date = enrollment_date.from_date
-        to_date = enrollment_date.to_date
+        from_date = EnrollmentDate.from_date
+        to_date = EnrollmentDate.to_date
 
         # Format the dates for the message
         formatted_from_date = from_date.strftime("%B %d, %Y")

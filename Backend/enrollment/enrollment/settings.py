@@ -155,7 +155,7 @@ JAZZMIN_SETTINGS = {
         "auth.Group": "fas fa-users",
         # "api.address": "fa-solid fa-house",
         "api.acadtermbilling": "fa-solid fa-money-bill",
-        "api.enrollment_date": "fa-solid fa-calendar",
+        "api.enrollmentdate": "fa-solid fa-calendar",
         "api.receipt": "fa-solid fa-receipt",
         "api.billing": "fa-solid fa-money-bill",
         "api.course": "fa-solid fa-book",

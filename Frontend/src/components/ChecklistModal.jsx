@@ -219,30 +219,29 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
     // Temporarily set both Year Level and Semester to 5
     const prevYearLevel = selectedYearLevel;
     const prevSemester = selectedSemester;
-    
+
     setSelectedYearLevel(5);
     setSelectedSemester(5);
-    
+
     // Wait for state update and then trigger PDF generation
     setTimeout(() => {
       if (pdfGeneratorRef.current) {
         console.log("Printing...");
         // Safely access the function and trigger PDF download
-        try{
-        pdfGeneratorRef.current.downloadAndPrintPDF(false, true); // false means ready to print but not saving the pdf
+        try {
+          pdfGeneratorRef.current.downloadAndPrintPDF(false, true); // false means ready to print but not saving the pdf
         } catch (error) {
           console.log(error);
         }
       } else {
         console.error("PDFGenerator ref is not set!");
       }
-      
+
       // After PDF generation, revert the state back to the previous values
       setSelectedYearLevel(prevYearLevel);
       setSelectedSemester(prevSemester);
     }, 1000); // Wait 1 second to ensure the state is updated
-  };  
-  
+  };
 
   return (
     <div
@@ -254,7 +253,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
     >
       <PDFGenerator
         ref={pdfGeneratorRef}
-        excludeIds={["printPDFButton"]}
+        excludeIds={["printPDFButton", "saveButton", "exitButton"]}
         downloadAndPrintPDF={() => {}}
       >
         <div
@@ -267,6 +266,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
           {/* Close Button */}
           {onClose && (
             <button
+              id="exitButton"
               className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl font-bold"
               onClick={onClose}
             >
@@ -333,79 +333,85 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
             </div>
           )}
 
-          <p className="text-center text-[1rem] font-bold uppercase mb-4">
-            {`Year ${student?.year_level || selectedYearLevel} - ${
-              selectedSemester === 1 ? "1st Semester" : "2nd Semester"
-            }`}
-          </p>
+          {selectedYearLevel !== 5 && selectedSemester !== 5 ? (
+            <>
+              <p className="text-center text-[1rem] font-bold uppercase mb-4">
+                {`Year ${student?.year_level || selectedYearLevel} - ${
+                  selectedSemester === 1 ? "1st Semester" : "2nd Semester"
+                }`}
+              </p>
 
-          {/* Course Table */}
-          <div className="overflow-auto">
-            <table className="w-full text-left border-collapse mb-6 text-[0.875rem]">
-              <thead>
-                <tr className="bg-[#FFDA62] font-bold">
-                  <th className="border p-2">Course Code</th>
-                  <th className="border p-2">Course Title</th>
-                  <th className="border p-2">Grade</th>
-                  <th className="border p-2">Status</th>
-                  <th className="border p-2">Year</th>
-                  <th className="border p-2">Sem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCourses.map((courseData, index) => (
-                  <tr key={index}>
-                    <td className="border p-2">{courseData?.course?.code}</td>
-                    <td className="border p-2">{courseData?.course?.title}</td>
-                    <td className="border p-2 w-fit">
-                      {isEditable ? (
-                        <input
-                          type="text"
-                          value={
-                            courseData?.grade !== "No Grade"
-                              ? courseData?.grade
-                              : ""
-                          }
-                          placeholder="Enter grade"
-                          onChange={(e) =>
-                            handleGradeChange(
-                              courseData?.course?.code,
-                              e.target.value
-                            )
-                          }
-                          className="border p-2 w-full"
-                        />
-                      ) : (
-                        courseData?.grade
-                      )}
-                    </td>
-                    <td className="border p-2">{courseData?.remarks}</td>
-                    <td className="border p-2">
-                      {courseData?.course?.year_level}
-                    </td>
-                    <td className="border p-2">
-                      {courseData?.course?.semester}
-                    </td>
-                  </tr>
-                ))}
-                {filteredCourses.length === 0 && (
-                  <tr>
-                    <td className="border p-2 text-center" colSpan="6">
-                      No courses available.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {selectedYearLevel === 5 && selectedSemester === 5 && (
+              {/* Course Table */}
+              <div className="overflow-auto">
+                <table className="w-full text-left border-collapse mb-6 text-[0.875rem]">
+                  <thead>
+                    <tr className="bg-[#FFDA62] font-bold">
+                      <th className="border p-2">Course Code</th>
+                      <th className="border p-2">Course Title</th>
+                      <th className="border p-2">Grade</th>
+                      <th className="border p-2">Status</th>
+                      <th className="border p-2">Year</th>
+                      <th className="border p-2">Sem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCourses.map((courseData, index) => (
+                      <tr key={index}>
+                        <td className="border p-2">
+                          {courseData?.course?.code}
+                        </td>
+                        <td className="border p-2">
+                          {courseData?.course?.title}
+                        </td>
+                        <td className="border p-2 w-fit">
+                          {isEditable ? (
+                            <input
+                              type="text"
+                              value={
+                                courseData?.grade !== "No Grade"
+                                  ? courseData?.grade
+                                  : ""
+                              }
+                              placeholder="Enter grade"
+                              onChange={(e) =>
+                                handleGradeChange(
+                                  courseData?.course?.code,
+                                  e.target.value
+                                )
+                              }
+                              className="border p-2 w-full"
+                            />
+                          ) : (
+                            courseData?.grade
+                          )}
+                        </td>
+                        <td className="border p-2">{courseData?.remarks}</td>
+                        <td className="border p-2">
+                          {courseData?.course?.year_level}
+                        </td>
+                        <td className="border p-2">
+                          {courseData?.course?.semester}
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredCourses.length === 0 && (
+                      <tr>
+                        <td className="border p-2 text-center" colSpan="6">
+                          No courses available.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
             <div>
               {Object.keys(groupedCourses).map((key) => {
                 const [yearLevel, semester] = key.split("-");
                 return (
                   <div key={key}>
-                    <h2 className="text-xl font-semibold mb-2">
+                    <h2 className="text-center text-[1rem] font-bold uppercase mb-4">
                       Year {yearLevel} - {semester === "1" ? "1st" : "2nd"}{" "}
                       Semester
                     </h2>
@@ -415,19 +421,31 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                           <th className="border p-2">Course Code</th>
                           <th className="border p-2">Course Title</th>
                           <th className="border p-2">Grade</th>
+                          <th className="border p-2">Status</th>
+                          <th className="border p-2">Year</th>
+                          <th className="border p-2">Sem</th>
                         </tr>
                       </thead>
                       <tbody>
                         {groupedCourses[key].map((courseData, index) => (
                           <tr key={index}>
                             <td className="border p-2">
-                              {courseData.course.code}
+                              {courseData?.course?.code}
                             </td>
                             <td className="border p-2">
-                              {courseData.course.name}
+                              {courseData?.course?.title}
+                            </td>
+                            <td className="border p-2 w-fit">
+                              {courseData?.grade || "No Grade"}
                             </td>
                             <td className="border p-2">
-                              {courseData.grade || "No Grade"}
+                              {courseData?.remarks}
+                            </td>
+                            <td className="border p-2">
+                              {courseData?.course?.year_level}
+                            </td>
+                            <td className="border p-2">
+                              {courseData?.course?.semester}
                             </td>
                           </tr>
                         ))}
@@ -449,6 +467,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
               Export as PDF
             </button>
             <button
+              id="saveButton"
               className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition-all"
               hidden={!isEditable}
               onClick={handleSaveChecklist}

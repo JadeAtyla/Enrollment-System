@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from ..enums import STUDENT_CATEGORY, STUDENT_REG_STATUS, PAYMENT_STATUS, PROGRAM, GRADE_REMARKS
 from django.db.models import Sum
 from rest_framework.exceptions import NotFound
-from ..models import Enrollment, Student, Course, Sectioning, Receipt, AcadTermBilling, BillingList, Grade, Enrollment_Date
+from ..models import Enrollment, Student, Course, Sectioning, Receipt, AcadTermBilling, BillingList, Grade, EnrollmentDate
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
@@ -50,9 +50,9 @@ class StudentService:
     #     #Checks if the student with the given ID is registered
     #     return User.objects.filter(username=student_id).exists()
     # @staticmethod
-    # def set_year_level(enrollment_date: str):
+    # def set_year_level(EnrollmentDate: str):
     #     # Retrieve year_level values for the given academic year
-    #     year_levels = Enrollment.objects.filter(enrollment_date=enrollment_date).values_list('year_level_taken', flat=True)
+    #     year_levels = Enrollment.objects.filter(EnrollmentDate=EnrollmentDate).values_list('year_level_taken', flat=True)
         
     #     if not year_levels:
     #         return None  # Handle the case where no year_levels are found
@@ -164,7 +164,7 @@ class EnrollmentService:
         """
         Fetch all enrollment periods and their status for all programs.
         """
-        enrollment_periods = Enrollment_Date.objects.filter(deleted=False).order_by("-from_date")
+        enrollment_periods = EnrollmentDate.objects.filter(deleted=False).order_by("-from_date")
         today = datetime.now().date()  # Current date
         response = []
 

@@ -46,7 +46,7 @@ const Dashboard = ({ onLogout, role }) => {
  
    // Data for the pie chart
    const pieData = {
-     labels: ["Regular", "Irregular", "Transferee", "Returnee"],
+     labels: ["Regular", "Irregular", "Transferee", "New Student"],
      datasets: [
        {
          label: "Students",
@@ -54,7 +54,7 @@ const Dashboard = ({ onLogout, role }) => {
            dashboardData?.regular_students || 0,
            dashboardData?.irregular_students || 0,
            dashboardData?.transferee_students || 0,
-           dashboardData?.returnee_students || 0,
+           dashboardData?.new_students || 0,
          ],
          backgroundColor: ["#22C55E", "#EF4444", "#3B82F6", "#FACC15"],
          borderWidth: 1,
@@ -191,12 +191,12 @@ return (
           <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
             <img
               src={StudentIcon}
-              alt="Returnee Students"
+              alt="New Students"
               className="h-[3rem] w-[3rem] mx-auto mb-[0.5rem]"
             />
-            <h3 className="text-sm font-medium text-gray-500">Returnee</h3>
+            <h3 className="text-sm font-medium text-gray-500">New Students</h3>
             <p className="text-xl font-bold">
-              {dashboardData?.returnee_students || 0}
+              {dashboardData?.new_students || 0}
             </p>
           </div>
           <div className="bg-white shadow rounded-[1.875rem] p-6 text-center h-[10rem]">
@@ -234,7 +234,7 @@ return (
             </div>
             <div className="flex items-center justify-center">
               <span className="h-[1rem] w-[1rem] bg-yellow-500 rounded-full mr-2"></span>
-              Returnee
+              New Students
             </div>
           </div>
         </div>

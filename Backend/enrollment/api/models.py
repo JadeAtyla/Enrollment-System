@@ -309,7 +309,7 @@ class Receipt(models.Model):
     class Meta:
         db_table = 'receipt'
 
-class Enrollment_Date(models.Model):
+class EnrollmentDate(models.Model):
     from_date = models.DateField()
     to_date = models.DateField()
     program = models.ForeignKey('Program', on_delete=models.CASCADE)

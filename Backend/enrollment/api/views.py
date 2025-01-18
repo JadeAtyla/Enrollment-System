@@ -842,12 +842,21 @@ class DashboardView(APIView):
         # Base counts for total students
         total_students = Student.objects.count()
 
-        # Dynamic filters for statuses
+        # Dynamic filters for statuses and categories
         statuses = ["REGULAR", "IRREGULAR", "RETURNEE", "TRANSFEREE"]
+        categories = ["NEW"]
+
+        # Create a dictionary to hold counts for both statuses and categories
         status_counts = {
-            f"{status.lower()}_students": Student.objects.filter(status=status).count() 
+            f"{status.lower()}_students": Student.objects.filter(status=status).count()
             for status in statuses
         }
+
+        # Add counts for categories to the same dictionary
+        status_counts.update({
+            f"{category.lower()}_students": Student.objects.filter(category=category).count()
+            for category in categories
+        })
 
         # Dynamic filters for programs
         programs = ["BSCS", "BSIT"]
