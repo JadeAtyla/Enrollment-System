@@ -41,6 +41,7 @@ urlpatterns = [
 
     # Excel
     path('excel/student/', StudentExcelAPI.as_view(), name='student_excel'),
+    path('excel/import/', ImportExcelView.as_view(), name='import_excel'),
     # path('excel/billing/', BillingExcelAPI.as_view(), name='billing_excel'),
     path('excel/cor/<int:student_id>/', GenerateCORAPI.as_view(), name='generate_cor'),
 

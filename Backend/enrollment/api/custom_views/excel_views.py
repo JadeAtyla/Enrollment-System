@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from django.http import FileResponse
 from ..utils.services import StudentExcelService #, BillingExcelService
-from api.models import Student, AcadTermBilling, Grade, Enrollment, BillingList, Receipt
+from api.models import Student, AcadTermBilling, Grade, Course, Instructor, Enrollment, BillingList, Receipt
 from ..utils.validators import FileValidator
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -243,75 +243,106 @@ class GenerateCORAPI(APIView):
         wb.save(file_path)
         return file_path
 
-
-    
-# Importing
+# For imports
 class ImportExcelView(APIView):
-    parser_classes = [MultiPartParser]# Specify the parser to handle multipart file uploads
-    # Validates that the required columns are present in the uploaded Excel file.
-    def validate_columns(self, data, required_columns): 
+    parser_classes = [MultiPartParser]
+
+    def validate_columns(self, data, required_columns):
+        """Validate that the required columns exist in the Excel data."""
         missing_columns = set(required_columns) - set(data.columns)
         if missing_columns:
-            raise ValueError(f"Missing required columns: {missing_columns}")#Raises a ValueError if any required column is missing.
-    
-    # Processes the student data from the Excel file.
+            raise ValueError(f"Missing required columns: {missing_columns}")
+
     def process_students(self, data):
+        """Process student data from the uploaded Excel file."""
         required_columns = [
             "id", "first_name", "last_name", "email",
             "contact_number", "program", "gender", "year_level", "status"
         ]
-        self.validate_columns(data, required_columns)# Validate that all required columns are present in the data
-
-
-        students = [
-            Student(
-                id=row["id"],
-                first_name=row["first_name"],
-                last_name=row["last_name"],
-                email=row["email"],
-                contact_number=row["contact_number"],
-                program_id=row["program"],
-                gender=row["gender"],
-                year_level=row["year_level"],
-                status=row["status"],
-            )
-            for _, row in data.iterrows()
-        ]
-        with transaction.atomic():  # Perform a bulk insert operation within a database transaction
-            Student.objects.bulk_create(students, ignore_conflicts=True)
-        return f"Successfully imported {len(students)} students."
-
-    # Processes the grade data from the Excel file.
-    def process_grades(self, data):
-        required_columns = ["student_id", "course_code", "grade", "semester", "academic_year"]
         self.validate_columns(data, required_columns)
 
-        grades = [
-            Grade(
-                student_id=row["student_id"],
-                course_code=row["course_code"],
-                grade=row["grade"],
-                semester=row["semester"],
-                academic_year=row["academic_year"],
-            )
-            for _, row in data.iterrows()
-        ]
-        with transaction.atomic():
-            Grade.objects.bulk_create(grades, ignore_conflicts=True)
-        return f"Successfully imported {len(grades)} grades."
+        created_count, updated_count = 0, 0
 
-    # Handles the POST request to upload an Excel file.
+        for _, row in data.iterrows():
+            student, created = Student.objects.update_or_create(
+                id=row["id"],
+                defaults={
+                    "first_name": row["first_name"],
+                    "last_name": row["last_name"],
+                    "email": row["email"],
+                    "contact_number": row["contact_number"],
+                    "program_id": row["program"],
+                    "gender": row["gender"],
+                    "year_level": row["year_level"],
+                    "status": row["status"],
+                }
+            )
+            if created:
+                created_count += 1
+            else:
+                updated_count += 1
+
+        return f"Successfully imported {created_count} new students and updated {updated_count} existing students."
+
+    def process_grades(self, data):
+        """Process grade data from the uploaded Excel file."""
+        required_columns = ["student_id", "course_code", "grade", "instructor"]
+        self.validate_columns(data, required_columns)
+
+        created_count, updated_count = 0, 0
+
+        for _, row in data.iterrows():
+            try:
+                # Retrieve the student
+                student = Student.objects.get(id=row["student_id"])
+                
+                # Retrieve the course by code and ensure it belongs to the student's program
+                course = Course.objects.get(code=row["course_code"], program=student.program)
+
+                # Attempt to find the instructor or set it to None
+                instructor_raw = row["instructor"]
+                instructor = None
+                if pd.notna(instructor_raw) and isinstance(instructor_raw, str):
+                    name_parts = instructor_raw.split()
+                    if len(name_parts) >= 2:
+                        instructor = Instructor.objects.filter(
+                            first_name=name_parts[0],
+                            last_name=name_parts[-1]
+                        ).first()
+
+                # Use update_or_create to handle both inserts and updates
+                grade, created = Grade.objects.update_or_create(
+                    student=student,
+                    course=course,
+                    verified = True,
+                    defaults={
+                        "grade": row["grade"],
+                        "instructor": instructor,  # Can be None
+                    }
+                )
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            except Student.DoesNotExist:
+                raise ValueError(f"Student with ID {row['student_id']} does not exist.")
+            except Course.DoesNotExist:
+                raise ValueError(f"Course with code {row['course_code']} does not exist.")
+
+        return f"Successfully imported {created_count} new grades and updated {updated_count} existing grades."
+
     def post(self, request, *args, **kwargs):
-        file = request.FILES.get('file', None) # Retrieve the uploaded file and the type of data being processed
+        """Handle the POST request for importing an Excel file."""
+        file = request.FILES.get('file', None)
         data_type = request.data.get('type', None)
 
-        # Check if a file was uploaded
         if not file:
             return Response({"error": "No file uploaded."}, status=400)
         if data_type not in ['students', 'grades']:
             return Response({"error": "Invalid or missing data type. Use 'students' or 'grades'."}, status=400)
 
-        try: # Read the uploaded Excel file into a Pandas DataFrame
+        try:
             data = pd.read_excel(file)
 
             if data_type == 'students':
@@ -319,10 +350,9 @@ class ImportExcelView(APIView):
             elif data_type == 'grades':
                 message = self.process_grades(data)
 
-            return Response({"message": message}, status=200) # Return a success response with the result
+            return Response({"message": message}, status=200)
 
         except ValueError as e:
-            return Response({"error": str(e)}, status=400) # Return a response for validation errors
-
+            return Response({"error": str(e)}, status=400)
         except Exception as e:
-            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)# Handle unexpected errors
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)

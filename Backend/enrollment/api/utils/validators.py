@@ -116,10 +116,10 @@ class EnrollmentValidator:
         Returns a dictionary with the enrollment status and an appropriate message.
         """
         # Fetch the latest enrollment dates for the program
-        EnrollmentDate = EnrollmentDate.objects.filter(program=program).order_by("-from_date").first()
+        enrollment_date = EnrollmentDate.objects.filter(program=program).order_by("-from_date").first()
 
         # Check if enrollment dates exist
-        if not EnrollmentDate:
+        if not enrollment_date:
             return {
                 "is_enrollment": False,
                 "message": "Enrollment dates have not been set for this program yet."
@@ -127,8 +127,8 @@ class EnrollmentValidator:
 
         # Get today's date and the enrollment period
         today = datetime.now().date()
-        from_date = EnrollmentDate.from_date
-        to_date = EnrollmentDate.to_date
+        from_date = enrollment_date.from_date
+        to_date = enrollment_date.to_date
 
         # Format the dates for the message
         formatted_from_date = from_date.strftime("%B %d, %Y")

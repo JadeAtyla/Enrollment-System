@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
 import { useAlert } from "../../components/Alert";
 import ChecklistModal from "../../components/ChecklistModal";
+import ImportExcelModal from "../../components/ImportExcelModal";
 
 const ListOfStudents = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,8 +40,11 @@ const ListOfStudents = ({ onLogout }) => {
   const [students, setStudents] = useState([]);
 
   // Fetching enrollment data for the selected student
-  const apiEnrolledUrl = selectedStudent ? `/api/enrollment/?student=${selectedStudent?.id}&school_year=${selectedStudent?.academic_year}` : null;
-  const { data: enrollmentData, getData: getEnrollmentData } = useData(apiEnrolledUrl);
+  const apiEnrolledUrl = selectedStudent
+    ? `/api/enrollment/?student=${selectedStudent?.id}&school_year=${selectedStudent?.academic_year}`
+    : null;
+  const { data: enrollmentData, getData: getEnrollmentData } =
+    useData(apiEnrolledUrl);
 
   useLayoutEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -87,25 +91,48 @@ const ListOfStudents = ({ onLogout }) => {
     }, 0); // Use a timeout to ensure the state updates correctly
   };
 
-  const filteredStudents = students?.filter((student) => {
-    const matchesYearLevel =
-      !filters.year_level || student?.year_level?.toString() === filters.year_level;
-    const matchesProgram =
-      !filters.program || student?.program?.toLowerCase() === filters.program.toLowerCase();
-    const matchesSection =
-      !filters.section || student?.section?.toLowerCase() === filters.section.toLowerCase();
-    const matchesSearch =
-      !filters.search ||
-      student?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      student?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      student?.id?.toString().includes(filters.search);
+  const filteredStudents =
+    students?.filter((student) => {
+      const matchesYearLevel =
+        !filters.year_level ||
+        student?.year_level?.toString() === filters.year_level;
+      const matchesProgram =
+        !filters.program ||
+        student?.program?.toLowerCase() === filters.program.toLowerCase();
+      const matchesSection =
+        !filters.section ||
+        student?.section?.toLowerCase() === filters.section.toLowerCase();
+      const matchesSearch =
+        !filters.search ||
+        student?.first_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
+        student?.last_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
+        student?.id?.toString().includes(filters.search);
 
-    return matchesYearLevel && matchesProgram && matchesSection && matchesSearch;
-  }) || [];
+      return (
+        matchesYearLevel && matchesProgram && matchesSection && matchesSearch
+      );
+    }) || [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsImportModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsImportModalOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -113,7 +140,7 @@ const ListOfStudents = ({ onLogout }) => {
         onLogout={onLogout}
         currentPage="list"
         isCollapsed={isSidebarCollapsed}
-        onToggleSidebar ={() => setIsSidebarCollapsed((prev) => !prev)}
+        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         onNavigate={(section) => {
           if (section === "logout") {
             navigate("/registrar");
@@ -139,7 +166,9 @@ const ListOfStudents = ({ onLogout }) => {
                 placeholder="Search here..."
                 className="border border-gray-300 rounded-full px-4 py-2 w-full pl-10 focus:ring-2 focus:ring-blue-500"
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, search: e.target.value })
+                }
               />
               <span className="absolute left-4 top-2/4 transform -translate-y-2/4 text-gray-500">
                 <FaSearch />
@@ -149,7 +178,9 @@ const ListOfStudents = ({ onLogout }) => {
               <select
                 name="year_level"
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, year_level: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, year_level: e.target.value })
+                }
                 value={filters.year_level}
               >
                 <option value="">Year Level</option>
@@ -161,7 +192,9 @@ const ListOfStudents = ({ onLogout }) => {
               <select
                 name="program"
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, program: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, program: e.target.value })
+                }
                 value={filters.program}
               >
                 <option value="">Course</option>
@@ -171,7 +204,9 @@ const ListOfStudents = ({ onLogout }) => {
               <select
                 name="section"
                 className="border border-gray-300 rounded-full px-4 py-2 pr-8"
-                onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, section: e.target.value })
+                }
                 value={filters.section}
               >
                 <option value="">Section</option>
@@ -185,10 +220,17 @@ const ListOfStudents = ({ onLogout }) => {
 
           <div className="bg-white shadow rounded-[1.875rem] p-8">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-[1.875rem] font-semibold text-gray-800">List Of Students</h1>
+              <h1 className="text-[1.875rem] font-semibold text-gray-800">
+                List Of Students
+              </h1>
+              <div className="flex gap-4">
+              <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700" onClick={openModal}>
+                Import as Excel
+              </button>
               <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
                 Export as Excel
               </button>
+              </div>
             </div>
 
             <table className="w-full border-collapse">
@@ -207,17 +249,43 @@ const ListOfStudents = ({ onLogout }) => {
               </thead>
               <tbody>
                 {currentStudents.map((student) => (
-                  <tr key={student?.id} className="hover:bg-gray-50 text-center" onDoubleClick={() => handleRowDoubleClick(student)}>
+                  <tr
+                    key={student?.id}
+                    className="hover:bg-gray-50 text-center"
+                    onDoubleClick={() => handleRowDoubleClick(student)}
+                  >
                     <td className="px-6 py-4 border-b">{student?.id}</td>
-                    <td className="px-6 py-4 border-b">{student?.last_name}, {student?.first_name} {student?.middle_name}</td>
-                    <td className="px-6 py-4 border-b">{student?.program || "-"}</td>
-                    <td className="px-6 py-4 border-b">{student?.year_level || "-"}</td>
-                    <td className="px-6 py-4 border-b">{student?.section || "TBA"}</td>
-                    <td className="px-6 py-4 border-b">{student?.semester || "-"}</td>
-                    <td className="px-6 py-4 border-b">{student?.academic_year || "-"}</td>
-                    <td className="px-6 py-4 border-b">{student?.status || "-"}</td>
                     <td className="px-6 py-4 border-b">
-                      <span className={`${student?.enrollment_status?.toLowerCase() === "enrolled" ? `bg-green-100 text-green-700` : `bg-red-100 text-red-700`} px-3 py-1 rounded-full text-xs font-medium`}>
+                      {student?.last_name}, {student?.first_name}{" "}
+                      {student?.middle_name}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.program || "-"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.year_level || "-"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.section || "TBA"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.semester || "-"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.academic_year || "-"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      {student?.status || "-"}
+                    </td>
+                    <td className="px-6 py-4 border-b">
+                      <span
+                        className={`${
+                          student?.enrollment_status?.toLowerCase() ===
+                          "enrolled"
+                            ? `bg-green-100 text-green-700`
+                            : `bg-red-100 text-red-700`
+                        } px-3 py-1 rounded-full text-xs font-medium`}
+                      >
                         {student?.enrollment_status || "-"}
                       </span>
                     </td>
@@ -235,12 +303,16 @@ const ListOfStudents = ({ onLogout }) => {
                 Previous
               </button>
               <p>
-                Page {currentPage} of {Math.ceil(filteredStudents.length / studentsPerPage)}
+                Page {currentPage} of{" "}
+                {Math.ceil(filteredStudents.length / studentsPerPage)}
               </p>
               <button
                 className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
                 onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === Math.ceil(filteredStudents.length / studentsPerPage)}
+                disabled={
+                  currentPage ===
+                  Math.ceil(filteredStudents.length / studentsPerPage)
+                }
               >
                 Next
               </button>
@@ -250,12 +322,19 @@ const ListOfStudents = ({ onLogout }) => {
       </div>
       {isEditModalOpen && (
         <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center mb-[6rem] sm:mb-0">
-          <ChecklistModal 
-            student_id={selectedStudent.id} 
-            onClose={closeEditModal} 
+          <ChecklistModal
+            student_id={selectedStudent.id}
+            onClose={closeEditModal}
             isEditable={true}
-            />
-      </div>
+          />
+        </div>
+      )}
+      {isImportModalOpen && (
+        <ImportExcelModal
+          isOpen={openModal}
+          onClose={closeModal}
+          excelType={"grades"}
+        />
       )}
     </div>
   );
