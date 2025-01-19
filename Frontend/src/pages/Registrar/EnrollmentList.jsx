@@ -36,7 +36,7 @@ const EnrollmentList = ({ onLogout }) => {
     setIsLimitModalOpen(false);
   };
 
-  const { data, error, getData } = useData("/api/student/?enrollment_status=WAITLISTED");
+  const { data, error, getData } = useData("/api/student/?enrollment_status=PENDING_REQUEST");
 
     useLayoutEffect(() => {
        const handleResize = () => setIsMobile(window.innerWidth <= 768);

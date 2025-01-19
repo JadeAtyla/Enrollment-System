@@ -105,19 +105,19 @@ class BaseView(APIView):
 
         return Response({"success": True, "updated_instances": updated_instances}, status=status.HTTP_200_OK)
 
-    def delete(self, request, pk=None):
-        if pk:
-            try:
-                instance = self.model.objects.get(id=pk)
-                instance.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except self.model.DoesNotExist:
-                raise NotFound(detail=f"{self.model.__name__} with ID {pk} not found")
+    # def delete(self, request, pk=None):
+    #     if pk:
+    #         try:
+    #             instance = self.model.objects.get(id=pk)
+    #             instance.delete()
+    #             return Response(status=status.HTTP_204_NO_CONTENT)
+    #         except self.model.DoesNotExist:
+    #             raise NotFound(detail=f"{self.model.__name__} with ID {pk} not found")
 
-        # Delete instances based on filters
-        queryset = self.get_queryset(request)
-        if not queryset.exists():
-            return Response({"detail": "No matching records found to delete"}, status=status.HTTP_404_NOT_FOUND)
+    #     # Delete instances based on filters
+    #     queryset = self.get_queryset(request)
+    #     if not queryset.exists():
+    #         return Response({"detail": "No matching records found to delete"}, status=status.HTTP_404_NOT_FOUND)
 
-        deleted_count = queryset.delete()[0]  # Returns a tuple (count, details)
-        return Response({"detail": f"Deleted {deleted_count} instance(s)"}, status=status.HTTP_204_NO_CONTENT)
+    #     deleted_count = queryset.delete()[0]  # Returns a tuple (count, details)
+    #     return Response({"detail": f"Deleted {deleted_count} instance(s)"}, status=status.HTTP_204_NO_CONTENT)

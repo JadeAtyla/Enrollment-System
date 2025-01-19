@@ -55,7 +55,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
       } else {
         const selectOptions = {
           gender: ["MALE", "FEMALE", "PREFER NOT TO SAY"],
-          enrollment_status: ["ENROLLED", "WAITLISTED", "NOT_ENROLLED"],
+          enrollment_status: ["ENROLLED", "WAITLISTED", "NOT_ENROLLED", "PENDING_REQUEST"],
           program: ["BSCS", "BSIT"],
           status: ["REGULAR", "IRREGULAR", "TRANSFEREE", "RETURNEE"],
           category: ["OLD", "NEW"],

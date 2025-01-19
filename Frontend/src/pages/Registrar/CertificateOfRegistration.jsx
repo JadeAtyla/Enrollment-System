@@ -296,46 +296,69 @@ const CertificateOfRegistration = ({ onLogout }) => {
                           <tbody>
                             <tr className="border">
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Total Units:<span>1</span>
+                                Total Units:<span>{corData?.total_units}</span>
                               </td>
                             </tr>
                             <tr className="border">
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Total Hours:<span>1</span>
+                                Total Hours:<span>{corData?.total_hours}</span>
                               </td>
                             </tr>
                             <tr className="border">
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Total Amount:<span>1</span>
+                                Total Amount:
+                                <span>
+                                  {corData?.total_acad_term_billing_price}
+                                </span>
                               </td>
-                              <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Scholarship:<span>1</span>
+                              <td className="pb-2 pr-5 pl-5 flex flex-col justify-between items-center">
+                                <span className="self-start">Scholarship:</span>
+                                <span className="text-center">
+                                  {corData?.scholarship || "-"}
+                                </span>
                               </td>
                             </tr>
                             <tr className="border">
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Tuition:<span>1</span>
+                                Tuition:
+                                <span>
+                                  {
+                                    assessment.find(
+                                      (item) =>
+                                        item.billing_list.name === "Tuition Fee"
+                                    ).billing_list.price
+                                  }
+                                </span>
                               </td>
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                SFDF:<span>1</span>
+                                SFDF:
+                                <span>
+                                  {assessment.find(
+                                    (item) => item.billing_list.name === "SFDF"
+                                  ).billing_list.price || "-"}
+                                </span>
                               </td>
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                SRF:<span>1</span>
+                                SRF:
+                                <span>
+                                  {assessment.find(
+                                    (item) => item.billing_list.name === "SRF"
+                                  ).billing_list.price || "-"}
+                                </span>
                               </td>
                             </tr>
                             <tr className="border">
                               <td className="pb-2 pr-5 pl-5 flex justify-between">
                                 Terms of Payment
                               </td>
-                              <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                First:<span>1</span>
-                              </td>
-                              <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Second:<span>1</span>
-                              </td>
-                              <td className="pb-2 pr-5 pl-5 flex justify-between">
-                                Third:<span>1</span>
-                              </td>
+                              {corData.terms_payment.map((terms, index) => (
+                                <td
+                                  key={index}
+                                  className="pb-2 pr-5 pl-5 flex justify-between"
+                                >
+                                  {terms?.term}:<span>{terms?.amount}</span>
+                                </td>
+                              ))}
                             </tr>
                           </tbody>
                         </table>

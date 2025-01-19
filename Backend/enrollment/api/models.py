@@ -281,9 +281,10 @@ class Receipt(models.Model):
     remaining = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     terms = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=55, choices=PAYMENT_STATUS.choices, null=True, blank=True)
+    paid_by_scholarship = models.BooleanField(default=True)
     date = models.DateTimeField(auto_now_add=True)
     school_year = models.CharField(max_length=20)
-    deleted = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         self.terms = 1

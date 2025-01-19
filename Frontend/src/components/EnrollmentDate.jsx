@@ -8,7 +8,8 @@ const EnrollmentDate = ({
   message = null, 
   program_names = [], 
   show_button = false, 
-  student_id = "" 
+  student_id = "",
+  student_status = "NOT_ENROLLED"
 }) => {
   const { data, error, getData } = useData(`/api/enrollment_date/`);
   const { updateData } = useData(`/api/student/`);
@@ -55,7 +56,7 @@ const EnrollmentDate = ({
     if (!student_id)
       triggerAlert("error", "Error", "Cannot enroll student, it has no id.");
     try {
-      const payload = { enrollment_status: "WAITLISTED" };
+      const payload = { enrollment_status: "PENDING_REQUEST" };
       const res = await updateData(student_id, payload);
 
       if (res?.success) {
@@ -115,13 +116,14 @@ const EnrollmentDate = ({
           {show_button && (
             <button
               className={`px-6 py-3 rounded-lg shadow-md transition-all ${
-                program?.is_enrollment
+                (program?.is_enrollment || student_status === "WAITLISTED")
                   ? "bg-[#1d3557] text-white hover:bg-[#457b9d]"
                   : "bg-gray-400 text-gray-700 cursor-not-allowed"
               }`}
-              disabled={!program?.is_enrollment}
+              hidden={!program?.is_enrollment || student_status !== "WAITLISTED"}
               onClick={() => {
                 if (program?.is_enrollment) {
+                  console.log(student_status)
                   handleRequestEnroll();
                 }
               }}

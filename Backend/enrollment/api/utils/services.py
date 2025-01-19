@@ -366,6 +366,31 @@ class EnrollmentService:
     #     except Exception as e:
     #         return {"error": f"An unexpected error occurred: {str(e)}"}
 
+class CourseService:
+    @staticmethod
+    def total_units(school_year: str) -> int:
+        # Query all courses matching the criteria
+        courses = Enrollment.objects.filter(school_year=school_year)
+
+        # Sum up lecture and laboratory units
+        total_lec_units = courses.aggregate(total_lec=Sum('course__lec_units'))['total_lec'] or 0
+        total_lab_units = courses.aggregate(total_lab=Sum('course__lab_units'))['total_lab'] or 0
+
+        # Return the total units
+        return total_lec_units + total_lab_units
+    
+    @staticmethod
+    def total_hours(school_year: str) -> int:
+        # Query all courses matching the criteria
+        courses = Enrollment.objects.filter(school_year=school_year)
+
+        # Sum up lecture and laboratory units
+        total_lec_hrs = courses.aggregate(total_lec_hrs=Sum('course__contact_hr_lab'))['total_lec_hrs'] or 0
+        total_lab_hrs = courses.aggregate(total_lab_hrs=Sum('course__contact_hr_lec'))['total_lab_hrs'] or 0
+
+        # Return the total hours
+        return total_lec_hrs + total_lab_hrs
+
 class GradeService:
     @staticmethod
     def set_remarks(grade: float) -> str:

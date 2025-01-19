@@ -350,13 +350,13 @@ class CORView(APIView):
         try:
             # Check if query parameters are provided
             if request.query_params:
-                print("Has Param")
+                # print("Has Param")
                 # Filter the Student queryset based on query parameters
                 student = QuerysetFilter.filter_queryset(Student, request.query_params).first()
                 if not student:
                     return Response({"error": "No student found matching the query parameters."}, status=404)   
             else:
-                print("No Param")
+                # print("No Param")
                 # Default: Retrieve the student using the logged-in user's username
                 student = Student.objects.get(id=request.user.username)
         
@@ -386,9 +386,9 @@ class CORView(APIView):
                 "billing_list": {
                     "name": billing.name,
                     "category": billing.category,
-                    "price": acad_term_billing.price if acad_term_billing else None,
-                    "year_level": acad_term_billing.year_level if acad_term_billing else None,
-                    "semester": acad_term_billing.semester if acad_term_billing else None
+                    "price": acad_term_billing.price if acad_term_billing else '-',
+                    "year_level": acad_term_billing.year_level if acad_term_billing else '-',
+                    "semester": acad_term_billing.semester if acad_term_billing else '-'
                 }
             })
         
@@ -400,9 +400,30 @@ class CORView(APIView):
             semester=student_data['semester']
         ).aggregate(total_price=Sum('price'))['total_price'] or 0
 
+        # Calculate total units in the enrolled courses
+        total_units = CourseService.total_units(student_data["academic_year"])
+
+        # Calculate total hours in the enrolled courses
+        total_hours = CourseService.total_hours(student_data["academic_year"])
+
         # Fetch all receipts for the student
         receipts = Receipt.objects.filter(student=student, school_year=student_data['academic_year'])
         receipts_data = ReceiptSerializer(receipts, many=True).data
+        receipt = []
+        terms = ["1st Term", "2nd Term", "3rd Term"]
+        scholarship = None
+
+        # Ensure that we loop over the terms list and the receipts correctly
+        for i in range(len(terms)):  # Use len(terms) to loop correctly
+            # If your Receipt model has a 'term' field, it should be accessed via instance.term, not terms[i]
+            for instance in receipts:
+                receipt.append({
+                    'term': terms[i],  # Assign term label correctly
+                    'amount': instance.remaining if i == instance.terms-1 else "-"
+                })
+
+                scholarship = "CHED Free Tuition and Misc. Fee" if instance.paid_by_scholarship else "Student not a scholar, paid by cash"
+
 
         # Return the response with all the data
         return Response({
@@ -410,7 +431,11 @@ class CORView(APIView):
             "enrollments": enrollments_data,
             "acad_term_billings": joined_data,
             "total_acad_term_billing_price": total_acad_term_billings,
-            "receipts": receipts_data
+            "receipts": receipts_data,
+            "total_units": total_units or '-',
+            "total_hours": total_hours or '-',
+            "terms_payment": receipt,
+            "scholarship": scholarship
         })
     
 class ChecklistView(APIView):

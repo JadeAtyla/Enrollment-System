@@ -163,7 +163,7 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </div>
       <div className="w-full max-w-screen-lg mx-auto bg-white shadow-lg rounded-[1.875rem] p-[1.5rem] mb-[1.5rem] flex flex-wrap items-center justify-evenly gap-4">
-        <EnrollmentDate program_names={[student?.program_id]} show_button={true} student_id={student.id}/>
+        <EnrollmentDate program_names={[student?.program_id]} show_button={true} student_id={student.id} student_status={student.enrollment_status}/>
       </div>
       </div>
     </div>
