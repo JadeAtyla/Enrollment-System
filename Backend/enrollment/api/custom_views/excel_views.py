@@ -13,7 +13,7 @@ from django.db.models import Sum
 from ..serializers import StudentSerializer, EnrollmentSerializer, ReceiptSerializer
 from ..utils.filterer import QuerysetFilter
 import os
-from django.db import transaction
+from django.db import transaction, IntegrityError
 import pandas as pd
 
 class StudentExcelAPI(APIView):
@@ -247,11 +247,23 @@ class GenerateCORAPI(APIView):
 class ImportExcelView(APIView):
     parser_classes = [MultiPartParser]
 
-    def validate_columns(self, data, required_columns):
-        """Validate that the required columns exist in the Excel data."""
-        missing_columns = set(required_columns) - set(data.columns)
+    def find_required_headers(self, data, required_columns):
+        """Find the required headers in the DataFrame and return a mapping."""
+        found_headers = {col: None for col in required_columns}
+        
+        # Flatten the DataFrame to search for headers
+        for col in data.columns:
+            for required_col in required_columns:
+                if col.strip().lower() == required_col.lower():
+                    found_headers[required_col] = col
+                    break
+        
+        # Check for missing columns
+        missing_columns = [col for col, mapped in found_headers.items() if mapped is None]
         if missing_columns:
             raise ValueError(f"Missing required columns: {missing_columns}")
+        
+        return found_headers
 
     def process_students(self, data):
         """Process student data from the uploaded Excel file."""
@@ -259,22 +271,22 @@ class ImportExcelView(APIView):
             "id", "first_name", "last_name", "email",
             "contact_number", "program", "gender", "year_level", "status"
         ]
-        self.validate_columns(data, required_columns)
+        found_headers = self.find_required_headers(data, required_columns)
 
         created_count, updated_count = 0, 0
 
         for _, row in data.iterrows():
             student, created = Student.objects.update_or_create(
-                id=row["id"],
+                id=row[found_headers["id"]],
                 defaults={
-                    "first_name": row["first_name"],
-                    "last_name": row["last_name"],
-                    "email": row["email"],
-                    "contact_number": row["contact_number"],
-                    "program_id": row["program"],
-                    "gender": row["gender"],
-                    "year_level": row["year_level"],
-                    "status": row["status"],
+                    "first_name": row[found_headers["first_name"]],
+                    "last_name": row[found_headers["last_name"]],
+                    "email": row[found_headers["email"]],
+                    "contact_number": row[found_headers["contact_number"]],
+                    "program_id": row[found_headers["program"]],
+                    "gender": row[found_headers["gender"]],
+                    "year_level": row[found_headers["year_level"]],
+                    "status": row[found_headers["status"]],
                 }
             )
             if created:
@@ -287,20 +299,20 @@ class ImportExcelView(APIView):
     def process_grades(self, data):
         """Process grade data from the uploaded Excel file."""
         required_columns = ["student_id", "course_code", "grade", "instructor"]
-        self.validate_columns(data, required_columns)
+        found_headers = self.find_required_headers(data, required_columns)
 
         created_count, updated_count = 0, 0
 
         for _, row in data.iterrows():
             try:
                 # Retrieve the student
-                student = Student.objects.get(id=row["student_id"])
+                student = Student.objects.get(id=row[found_headers["student_id"]])
                 
                 # Retrieve the course by code and ensure it belongs to the student's program
-                course = Course.objects.get(code=row["course_code"], program=student.program)
+                course = Course.objects.get(code=row[found_headers["course_code"]], program=student.program)
 
                 # Attempt to find the instructor or set it to None
-                instructor_raw = row["instructor"]
+                instructor_raw = row[found_headers["instructor"]]
                 instructor = None
                 if pd.notna(instructor_raw) and isinstance(instructor_raw, str):
                     name_parts = instructor_raw.split()
@@ -310,25 +322,33 @@ class ImportExcelView(APIView):
                             last_name=name_parts[-1]
                         ).first()
 
-                # Use update_or_create to handle both inserts and updates
-                grade, created = Grade.objects.update_or_create(
-                    student=student,
-                    course=course,
-                    verified = True,
-                    defaults={
-                        "grade": row["grade"],
-                        "instructor": instructor,  # Can be None
-                    }
-                )
-                if created:
-                    created_count += 1
-                else:
+                # Check for existing grade before creating/updating
+                existing_grade = Grade.objects.filter(student=student, course=course).first()
+                if existing_grade:
+                    # Update the existing grade
+                    existing_grade.grade = row[found_headers["grade"]]
+                    existing_grade.instructor = instructor
+                    existing_grade.verified = True
+                    existing_grade.save()
                     updated_count += 1
+                else:
+                    # Create a new grade
+                    Grade.objects.create(
+                        student=student,
+                        course=course,
+                        grade=row[found_headers["grade"]],
+                        instructor=instructor,
+                        verified=True
+                    )
+                    created_count += 1
 
             except Student.DoesNotExist:
-                raise ValueError(f"Student with ID {row['student_id']} does not exist.")
+                raise ValueError(f"Student with ID {row[found_headers['student_id']]} does not exist.")
             except Course.DoesNotExist:
-                raise ValueError(f"Course with code {row['course_code']} does not exist.")
+                raise ValueError(f"Course with code {row[found_headers['course_code']]} does not exist.")
+            except IntegrityError as e:
+                # Handle the duplicate entry error
+                print(f"Duplicate entry for student {student.id} and course {course.code}: {str(e)}")
 
         return f"Successfully imported {created_count} new grades and updated {updated_count} existing grades."
 
@@ -343,7 +363,8 @@ class ImportExcelView(APIView):
             return Response({"error": "Invalid or missing data type. Use 'students' or 'grades'."}, status=400)
 
         try:
-            data = pd.read_excel(file)
+            # Read the Excel file without specifying a header row
+            data = pd.read_excel(file)  # Read the file without a specific header
 
             if data_type == 'students':
                 message = self.process_students(data)

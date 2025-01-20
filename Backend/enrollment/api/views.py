@@ -499,7 +499,8 @@ class ChecklistView(APIView):
                 },
                 "grade_id": grade.id if grade else '',
                 "grade": grade.grade if grade else "No Grade",  # If no grade exists, show "No Grade"
-                "remarks": grade.remarks if grade else "No Remarks"  # If no grade, show "No Remarks"
+                "remarks": grade.remarks if grade else "No Remarks",  # If no grade, show "No Remarks"
+                "instructor": grade.instructor.__str__() if grade and grade.instructor else "N/A",  # If no grade exists, show "No Grade"
             }
             data["courses_and_grades"].append(grade_data)
 
@@ -573,73 +574,386 @@ class ChecklistView(APIView):
         
         return student
 
-class BatchEnrollStudentAPIView(APIView):
-    def get(self, request):
-        # Initialize `billings` with a default value
-        billings = []
+class AdvisingView(APIView):
+    def get_student(self, request):
+        """
+        Retrieve the student instance based on the request.
+        """
+        student_id = request.query_params.get("id")  # Or fetch from request.data if POST
+        if not student_id:
+            raise ValidationError({"error": "Student ID is required."})
 
-        # Filter students using QuerysetFilter
-        students_queryset = QuerysetFilter.filter_queryset(Student, request.query_params)
+        try:
+            student = Student.objects.get(id=student_id)
+            return student
+        except Student.DoesNotExist:
+            raise ValidationError({"error": "Student not found."})
 
-        # Ensure only one student is provided (or handle multiple students as needed)
-        if students_queryset.count() > 1:
-            return Response({"error": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
-        if not students_queryset.exists():
-            return Response({"error": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
+    def get_program_courses(self, student):
+        """
+        Retrieve all courses for the student's program.
+        """
+        return Course.objects.filter(program=student.program, deleted=False).order_by("year_level", "semester")
 
-        # Get the single student object
-        student = students_queryset.first()
+    def get(self, request, *args, **kwargs):
+        """
+        Dynamically generate default courses and suggestions for advising based on the algorithm.
+        """
+        student = self.get_student(request)  # Retrieve the student object
+        program_courses = self.get_program_courses(student)
 
-        #Checks first if it is enrollment day
-        enrollment = EnrollmentValidator.is_enrollment_day(student.program)
-        if not enrollment["is_enrollment"]:
-            raise serializers.ValidationError({"error": enrollment['message']})
-
-        # Validate student residency
-        valid_residency = EnrollmentValidator.valid_residency(student.id)
-
-        if not valid_residency:
-            raise serializers.ValidationError({"error": f"Student {student.id} has exceeded the 6 years maximum residency period."})
-
-        # Get all courses for the student's program
-        program_courses = Course.objects.filter(program=student.program)
+        # Prepare lists for default courses and suggestions
+        default_courses_list = []
         eligible_courses = []
-        default_courses = []
 
-        # # Helper function to get unmet prerequisites recursively
-        # def get_unmet_prerequisites(course, student):
-        #     unmet_prerequisites = []
-        #     for prerequisite in course.pre_requisites.all():
-        #         if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
-        #             unmet_prerequisites.append(prerequisite)
-        #             unmet_prerequisites += get_unmet_prerequisites(prerequisite, student)
-        #     return unmet_prerequisites
+        # Calculate the target year level and semester
+        next_year_level, next_semester = EnrollmentService.target_year_level_semester(
+            student.year_level, student.semester
+        )
 
-        # Determine the next semester and year level
-        next_year_level, next_semester = EnrollmentService.target_year_level_semester(student.year_level, student.semester)
+        # Apply the EnrollmentService algorithm
+        EnrollmentService.set_courses(
+            student, program_courses, default_courses_list, eligible_courses, next_year_level, next_semester
+        )
+
+        # Format the default courses for the response
+        default_courses_data = [
+            {
+                "id": course["id"],
+                "code": course["code"],
+                "title": course["title"],
+                "lab_units": course["lab_units"],
+                "lec_units": course["lec_units"],
+                "contact_hr_lab": course["contact_hr_lab"],
+                "contact_hr_lec": course["contact_hr_lec"],
+                "year_level": course["year_level"],
+                "semester": course["semester"],
+                "program": course["program"],
+            }
+            for course in default_courses_list
+        ]
+
+        # Format the suggestions for the response
+        suggestions_data = [
+            {
+                "id": course["id"],
+                "code": course["code"],
+                "title": course["title"],
+                "lab_units": course["lab_units"],
+                "lec_units": course["lec_units"],
+                "contact_hr_lab": course["contact_hr_lab"],
+                "contact_hr_lec": course["contact_hr_lec"],
+                "year_level": course["year_level"],
+                "semester": course["semester"],
+                "program": course["program"],
+            }
+            for course in eligible_courses
+        ]
+
+        # Return both defaults and suggestions
+        return Response(
+            {
+                "default_courses": default_courses_data,
+                "suggestions": suggestions_data,
+            },
+            status=200,
+        )
+
+    def post(self, request, *args, **kwargs):
+        """
+        Save the default courses to the database for a student.
+        """
+        student = self.get_student(request)  # Retrieve the student object
+        default_courses = request.data.get("default_courses", [])
+
+        if not default_courses:
+            return Response({"error": "No default courses provided."}, status=400)
+
+        # Save the provided default courses to the database
+        saved_courses = []
+        for course_id in default_courses:
+            try:
+                course = Course.objects.get(id=course_id)
+                # Check if the course is already saved as a default for this student
+                default_course, created = DefaultCourses.objects.get_or_create(
+                    student=student, course=course, defaults={"is_edited": False}
+                )
+                if created:
+                    saved_courses.append(course_id)
+            except Course.DoesNotExist:
+                continue
+
+        return Response(
+            {"message": "Default courses saved successfully.", "saved_courses": saved_courses},
+            status=201,
+        )
+
+
+# class BatchEnrollStudentAPIView(APIView):
+#     # def get(self, request):
+#     #     # Initialize `billings` with a default value
+#     #     billings = []
+
+#     #     # Filter students using QuerysetFilter
+#     #     students_queryset = QuerysetFilter.filter_queryset(Student, request.query_params)
+
+#     #     # Ensure only one student is provided (or handle multiple students as needed)
+#     #     if students_queryset.count() > 1:
+#     #         return Response({"error": "Multiple students found. Please provide a specific filter to target a single student."}, status=status.HTTP_400_BAD_REQUEST)
+#     #     if not students_queryset.exists():
+#     #         return Response({"error": "No students found matching the provided filters."}, status=status.HTTP_404_NOT_FOUND)
+
+#     #     # Get the single student object
+#     #     student = students_queryset.first()
+
+#     #     #Checks first if it is enrollment day
+#     #     enrollment = EnrollmentValidator.is_enrollment_day(student.program)
+#     #     if not enrollment["is_enrollment"]:
+#     #         raise serializers.ValidationError({"error": enrollment['message']})
+
+#     #     # Validate student residency
+#     #     valid_residency = EnrollmentValidator.valid_residency(student.id)
+
+#     #     if not valid_residency:
+#     #         raise serializers.ValidationError({"error": f"Student {student.id} has exceeded the 6 years maximum residency period."})
+
+#     #     # Get all courses for the student's program
+#     #     program_courses = Course.objects.filter(program=student.program)
+#     #     eligible_courses = []
+#     #     default_courses = []
+
+#     #     # # Helper function to get unmet prerequisites recursively
+#     #     # def get_unmet_prerequisites(course, student):
+#     #     #     unmet_prerequisites = []
+#     #     #     for prerequisite in course.pre_requisites.all():
+#     #     #         if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
+#     #     #             unmet_prerequisites.append(prerequisite)
+#     #     #             unmet_prerequisites += get_unmet_prerequisites(prerequisite, student)
+#     #     #     return unmet_prerequisites
+
+#     #     # Determine the next semester and year level
+#     #     next_year_level, next_semester = EnrollmentService.target_year_level_semester(student.year_level, student.semester)
         
-        # # Ensure `billings` is set properly
-        # billings = AcadTermBillingSerializer(
-        #     AcadTermBilling.objects.filter(
-        #         year_level=next_year_level,
-        #         semester=next_semester
-        #         ), many=True
-        # ).data
+#     #     # # Ensure `billings` is set properly
+#     #     # billings = AcadTermBillingSerializer(
+#     #     #     AcadTermBilling.objects.filter(
+#     #     #         year_level=next_year_level,
+#     #     #         semester=next_semester
+#     #     #         ), many=True
+#     #     # ).data
 
-        # if not billings:
-        #     # Billing information not found, raise an error and rollback
-        #     raise serializers.ValidationError(
-        #         {"error": "Billing information not found for the student's year level and semester."}
-        #     )
+#     #     # if not billings:
+#     #     #     # Billing information not found, raise an error and rollback
+#     #     #     raise serializers.ValidationError(
+#     #     #         {"error": "Billing information not found for the student's year level and semester."}
+#     #     #     )
                 
-        # # Calculate total price from academic term billings
-        # total_amount = sum(float(item['price']) for item in billings)
+#     #     # # Calculate total price from academic term billings
+#     #     # total_amount = sum(float(item['price']) for item in billings)
 
-        # # Ensure both values are Decimal
-        # total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
+#     #     # # Ensure both values are Decimal
+#     #     # total_amount = Decimal(total_amount)  # Ensure total_amount is Decimal
         
-        # Ensure `billings` is set properly
+#     #     # Ensure `billings` is set properly
 
+#     #     billings = AcadTermBillingSerializer(
+#     #     AcadTermBilling.objects.filter(
+#     #         year_level=next_year_level,
+#     #         semester=next_semester
+#     #         ), many=True
+#     #     ).data
+
+#     #     total_amount = EnrollmentService.set_billing_total(billings)
+
+#     #     # Setup defaults and eligiable courses
+#     #     EnrollmentService.set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester)
+#     #     # for course in program_courses:
+#     #     #     if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
+#     #     #         continue  # Skip course if already passed
+            
+#     #     #     if Enrollment.objects.filter(student=student, course=course).exists():
+#     #     #         continue
+
+#     #     #     # Special condition for mid-year courses
+#     #     #     if course.year_level == 0 and course.semester == 0:
+#     #     #         if (student.program.id == "BSIT" and student.year_level > 2) or \
+#     #     #         (student.program.id == "BSCS" and student.year_level > 3):
+#     #     #             EnrollmentService.add_course(course, default_courses)
+#     #     #         else:
+#     #     #             EnrollmentService.add_course(course, eligible_courses)
+#     #     #         continue  # Skip other logic for mid-year courses
+                    
+#     #     #     # Handle REGULAR students
+#     #     #     if student.status == "REGULAR":
+#     #     #         if course.year_level == next_year_level and course.semester == next_semester:
+#     #     #             EnrollmentService.add_course(course, default_courses)
+#     #     #         else:
+#     #     #             EnrollmentService.add_course(course, eligible_courses)
+#     #     #         continue
+
+#     #     #     # Handle NON-REGULAR students: Check for unmet prerequisites
+#     #     #     unmet_prerequisites = get_unmet_prerequisites(course, student)
+#     #     #     if unmet_prerequisites:
+#     #     #         for prerequisite in unmet_prerequisites:
+#     #     #             if not any(c["id"] == prerequisite.id for c in default_courses):
+#     #     #                 EnrollmentService.add_course(prerequisite, default_courses)
+#     #     #     else:
+#     #     #         if course.year_level == next_year_level and course.semester == next_semester:
+#     #     #             EnrollmentService.add_course(course, default_courses)
+
+#     #     #     # Add eligible courses (same for both REGULAR and NON-REGULAR students)
+#     #     #     if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
+#     #     #         EnrollmentService.add_course(course, eligible_courses)
+#     #     #         print(next_year_level, next_semester)
+
+#     #     return Response({
+#     #         "default_courses": default_courses,
+#     #         "eligible_courses": eligible_courses,
+#     #         "billings": billings,
+#     #         "billlings_total": total_amount
+#     #     }, status=status.HTTP_200_OK)
+#     def get_student(self, request):
+#         """
+#         Retrieve the student instance based on the request.
+#         """
+#         student_id = request.query_params.get("id")  # Or fetch from request.data if POST
+#         if not student_id:
+#             raise ValidationError({"error": "Student ID is required."})
+
+#         try:
+#             student = Student.objects.get(id=student_id)
+#             return student
+#         except Student.DoesNotExist:
+#             raise ValidationError({"error": "Student not found."})
+
+#     def get_program_courses(self, student):
+#         """
+#         Retrieve all courses for the student's program.
+#         """
+#         return Course.objects.filter(program=student.program, deleted=False).order_by("year_level", "semester")
+
+#     def get(self, request, *args, **kwargs):
+#         """
+#         Retrieve default courses and suggestions for a student.
+#         """
+#         student = self.get_student(request)  # Retrieve the student object
+
+#         # Check if default courses already exist
+#         default_courses = DefaultCourses.objects.filter(student=student)
+#         if not default_courses.exists():
+#             # Generate default courses using EnrollmentService
+#             program_courses = self.get_program_courses(student)
+#             default_courses_list = []
+#             eligible_courses = []
+#             next_year_level, next_semester = EnrollmentService.target_year_level_semester(
+#                 student.year_level, student.semester
+#             )
+
+#             # Set courses using the EnrollmentService
+#             EnrollmentService.set_courses(
+#                 student, program_courses, default_courses_list, eligible_courses, next_year_level, next_semester
+#             )
+
+#             # Save generated default courses in the database
+#             for course in default_courses_list:
+#                 DefaultCourses.objects.create(student=student, course_id=course["id"])
+
+#             # Re-fetch default courses
+#             default_courses = DefaultCourses.objects.filter(student=student)
+
+#         # Format the default courses for the response
+#         default_courses_data = [
+#             {
+#                 "id": default_course.course.id,
+#                 "code": default_course.course.code,
+#                 "title": default_course.course.title,
+#                 "lab_units": default_course.course.lab_units,
+#                 "lec_units": default_course.course.lec_units,
+#                 "contact_hr_lab": default_course.course.contact_hr_lab,
+#                 "contact_hr_lec": default_course.course.contact_hr_lec,
+#                 "year_level": default_course.course.year_level,
+#                 "semester": default_course.course.semester,
+#                 "program": default_course.course.program.id,
+#                 "is_edited": default_course.is_edited,
+#             }
+#             for default_course in default_courses
+#         ]
+
+#         # Generate suggestions dynamically
+#         suggestions_data = []
+#         program_courses = self.get_program_courses(student)
+#         eligible_courses = []
+#         next_year_level, next_semester = EnrollmentService.target_year_level_semester(
+#             student.year_level, student.semester
+#         )
+#         EnrollmentService.set_courses(
+#             student, program_courses, [], eligible_courses, next_year_level, next_semester
+#         )
+
+#         # Format eligible courses for suggestions
+#         for course in eligible_courses:
+#             suggestions_data.append({
+#                 "id": course["id"],
+#                 "code": course["code"],
+#                 "title": course["title"],
+#                 "lab_units": course["lab_units"],
+#                 "lec_units": course["lec_units"],
+#                 "contact_hr_lab": course["contact_hr_lab"],
+#                 "contact_hr_lec": course["contact_hr_lec"],
+#                 "year_level": course["year_level"],
+#                 "semester": course["semester"],
+#                 "program": course["program"],
+#             })
+
+#         # Return the response with both defaults and suggestions
+#         return Response(
+#             {
+#                 "default_courses": default_courses_data,
+#                 "suggestions": suggestions_data,
+#             },
+#             status=200,
+#         )
+
+class BatchEnrollStudentAPIView(APIView):
+    def get_student(self, request):
+        """
+        Retrieve the student instance based on the request.
+        """
+        student_id = request.query_params.get("id")  # Or fetch from request.data if POST
+        if not student_id:
+            raise ValidationError({"error": "Student ID is required."})
+
+        try:
+            student = Student.objects.get(id=student_id)
+            return student
+        except Student.DoesNotExist:
+            raise ValidationError({"error": "Student not found."})
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve default and eligible courses, billings, and total billing amount
+        for the given student based on the algorithm and saved defaults.
+        """
+        student = self.get_student(request)  # Retrieve the student object
+
+        # Calculate the next year level and semester
+        next_year_level, next_semester = EnrollmentService.target_year_level_semester(
+            student.year_level, student.semester
+        )
+
+        # Retrieve all program courses
+        program_courses = Course.objects.filter(program=student.program, deleted=False)
+
+        # Initialize default and eligible courses lists
+        default_courses = []
+        eligible_courses = []
+
+        # Set the courses using the EnrollmentService algorithm
+        EnrollmentService.set_courses(
+            student, program_courses, default_courses, eligible_courses, next_year_level, next_semester
+        )
+
+        # Retrieve billing details (assuming billing logic exists)
         billings = AcadTermBillingSerializer(
         AcadTermBilling.objects.filter(
             year_level=next_year_level,
@@ -649,53 +963,35 @@ class BatchEnrollStudentAPIView(APIView):
 
         total_amount = EnrollmentService.set_billing_total(billings)
 
-        # Setup defaults and eligiable courses
-        EnrollmentService.set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester)
-        # for course in program_courses:
-        #     if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
-        #         continue  # Skip course if already passed
-            
-        #     if Enrollment.objects.filter(student=student, course=course).exists():
-        #         continue
+        # Format the saved default courses for the response
+        saved_defaults = DefaultCourses.objects.filter(student=student).select_related("course")
+        saved_default_courses = [
+            {
+                "id": default.course.id,
+                "code": default.course.code,
+                "title": default.course.title,
+                "lab_units": default.course.lab_units,
+                "lec_units": default.course.lec_units,
+                "contact_hr_lab": default.course.contact_hr_lab,
+                "contact_hr_lec": default.course.contact_hr_lec,
+                "year_level": default.course.year_level,
+                "semester": default.course.semester,
+                "program": default.course.program.id,
+                "is_edited": default.is_edited,  # Indicates if the default was edited
+            }
+            for default in saved_defaults
+        ]
 
-        #     # Special condition for mid-year courses
-        #     if course.year_level == 0 and course.semester == 0:
-        #         if (student.program.id == "BSIT" and student.year_level > 2) or \
-        #         (student.program.id == "BSCS" and student.year_level > 3):
-        #             EnrollmentService.add_course(course, default_courses)
-        #         else:
-        #             EnrollmentService.add_course(course, eligible_courses)
-        #         continue  # Skip other logic for mid-year courses
-                    
-        #     # Handle REGULAR students
-        #     if student.status == "REGULAR":
-        #         if course.year_level == next_year_level and course.semester == next_semester:
-        #             EnrollmentService.add_course(course, default_courses)
-        #         else:
-        #             EnrollmentService.add_course(course, eligible_courses)
-        #         continue
-
-        #     # Handle NON-REGULAR students: Check for unmet prerequisites
-        #     unmet_prerequisites = get_unmet_prerequisites(course, student)
-        #     if unmet_prerequisites:
-        #         for prerequisite in unmet_prerequisites:
-        #             if not any(c["id"] == prerequisite.id for c in default_courses):
-        #                 EnrollmentService.add_course(prerequisite, default_courses)
-        #     else:
-        #         if course.year_level == next_year_level and course.semester == next_semester:
-        #             EnrollmentService.add_course(course, default_courses)
-
-        #     # Add eligible courses (same for both REGULAR and NON-REGULAR students)
-        #     if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
-        #         EnrollmentService.add_course(course, eligible_courses)
-        #         print(next_year_level, next_semester)
-
-        return Response({
-            "default_courses": default_courses,
-            "eligible_courses": eligible_courses,
-            "billings": billings,
-            "billlings_total": total_amount
-        }, status=status.HTTP_200_OK)
+        # Return the data
+        return Response(
+            {
+                "default_courses": saved_default_courses,  # Saved defaults from the database
+                "eligible_courses": eligible_courses,      # Calculated eligible courses
+                "billings": billings,                      # Billing information
+                "billings_total": total_amount             # Total billing amount
+            },
+            status=status.HTTP_200_OK
+        )
 
     def post(self, request):
         data = request.data
@@ -706,7 +1002,7 @@ class BatchEnrollStudentAPIView(APIView):
         voucher = data.get("voucher")
         paid_amount = data.get("paid")
         current_year = datetime.now().year
-        acad_year = f"{current_year}-{current_year + 1}"
+        acad_year = f"{current_year}-{current_year + 1}"    
 
         if not course_ids:
             return Response(

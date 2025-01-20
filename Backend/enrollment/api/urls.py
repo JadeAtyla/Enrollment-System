@@ -31,6 +31,7 @@ urlpatterns = [
     # Enrollment endpoints
     path('batch/', BatchEnrollStudentAPIView.as_view(), name='batch'),
     path('enrollment_date/', EnrollmentDateView.as_view(), name='enrollment_date'),
+    path('advising/', AdvisingView.as_view(), name='advising'),
 
     # Student Forms
     path('cor/', CORView.as_view(), name='cor'),

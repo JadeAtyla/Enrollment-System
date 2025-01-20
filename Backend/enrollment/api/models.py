@@ -326,3 +326,23 @@ class EnrollmentDate(models.Model):
 
     class Meta:
         db_table = 'enrollment_date'
+
+class DefaultCourses(models.Model):
+    student = models.ForeignKey(
+        "Student", on_delete=models.CASCADE, related_name="default_courses"
+    )
+    course = models.ForeignKey(
+        "Course", on_delete=models.CASCADE, related_name="default_course"
+    )
+    is_edited = models.BooleanField(default=False)  # Indicates if the default has been edited by the user
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("student", "course")  # Ensures no duplicate default courses for a student
+        verbose_name = "Default Course"
+        verbose_name_plural = "Default Courses"
+
+    def __str__(self):
+        return f"DefaultCourse(student={self.student.id}, course={self.course.code}, is_edited={self.is_edited})"

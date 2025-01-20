@@ -207,8 +207,89 @@ class EnrollmentService:
 
         return next_year_level, next_semester
 
+    # @staticmethod
+    # # Helper function to add course data
+    # def add_course(course, target_list):
+    #     target_list.append({
+    #         "id": course.id,
+    #         "code": course.code,
+    #         "title": course.title,
+    #         "lab_units": course.lab_units,
+    #         "lec_units": course.lec_units,
+    #         "contact_hr_lab": course.contact_hr_lab,
+    #         "contact_hr_lec": course.contact_hr_lec,
+    #         "year_level": course.year_level,
+    #         "semester": course.semester,
+    #         "program": course.program.id,
+    #         "pre_requisites": [prerequisite.id for prerequisite in course.pre_requisites.all()],
+    #     })
+    
     @staticmethod
-    # Helper function to add course data
+    # Helper function to get unmet prerequisites recursively
+    def get_unmet_prerequisites(course, student):
+        unmet_prerequisites = []
+        for prerequisite in course.pre_requisites.all():
+            if not Grade.objects.filter(student=student, course=prerequisite, grade=None, remarks="PASSED").exists():
+                unmet_prerequisites.append(prerequisite)
+                unmet_prerequisites += EnrollmentService.get_unmet_prerequisites(prerequisite, student)
+        return unmet_prerequisites
+    
+    @staticmethod
+    def set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester):
+        """
+        Add courses to default or eligible lists based on conditions.
+        """
+        for course in program_courses:
+            if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
+                continue  # Skip course if already passed
+
+            if Enrollment.objects.filter(student=student, course=course).exists():
+                continue
+
+            # Special condition for mid-year courses
+            if course.year_level == 0 and course.semester == 0:
+                if (student.program.id == "BSIT" and student.year_level > 2) or \
+                        (student.program.id == "BSCS" and student.year_level > 3):
+                    EnrollmentService.add_course(course, default_courses)
+                else:
+                    EnrollmentService.add_course(course, eligible_courses)
+                continue
+
+            # Handle REGULAR students
+            if student.status == "REGULAR":
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    EnrollmentService.add_to_default(course, default_courses, next_year_level, next_semester)
+                    EnrollmentService.add_course(course, default_courses)
+                elif not Grade.objects.filter(student=student, course=course).exists():
+                    # Include courses with no grades even if below next year level/semester
+                    EnrollmentService.add_to_default(course, default_courses, next_year_level, next_semester)
+                elif course.year_level <= next_year_level and (course.semester <= next_semester or course.year_level < next_year_level):
+                    # Default courses must be equal or lower than next_year_level and next_semester
+                    EnrollmentService.add_to_default(course, default_courses, next_year_level, next_semester)
+                else:
+                    EnrollmentService.add_course(course, eligible_courses)
+                continue
+
+            # Handle NON-REGULAR students: Check for unmet prerequisites
+            unmet_prerequisites = EnrollmentService.get_unmet_prerequisites(course, student)
+            if unmet_prerequisites:
+                for prerequisite in unmet_prerequisites:
+                    if not any(c["id"] == prerequisite.id for c in default_courses):
+                        EnrollmentService.add_to_default(prerequisite, default_courses, next_year_level, next_semester)
+            else:
+                if course.year_level == next_year_level and course.semester == next_semester:
+                    EnrollmentService.add_to_default(course, default_courses, next_year_level, next_semester)
+
+            # Add eligible courses (same for both REGULAR and NON-REGULAR students)
+            if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
+                EnrollmentService.add_course(course, eligible_courses)
+
+    @staticmethod
+    def add_to_default(course, target_list, next_year_level, next_semester):
+        if course.year_level <= next_year_level and (course.semester <= next_semester or course.year_level < next_year_level):
+            EnrollmentService.add_course(course, target_list)
+
+    @staticmethod
     def add_course(course, target_list):
         target_list.append({
             "id": course.id,
@@ -223,58 +304,6 @@ class EnrollmentService:
             "program": course.program.id,
             "pre_requisites": [prerequisite.id for prerequisite in course.pre_requisites.all()],
         })
-    
-    @staticmethod
-    # Helper function to get unmet prerequisites recursively
-    def get_unmet_prerequisites(course, student):
-        unmet_prerequisites = []
-        for prerequisite in course.pre_requisites.all():
-            if not Grade.objects.filter(student=student, course=prerequisite, remarks="PASSED").exists():
-                unmet_prerequisites.append(prerequisite)
-                unmet_prerequisites += EnrollmentService.get_unmet_prerequisites(prerequisite, student)
-        return unmet_prerequisites
-    
-    @staticmethod
-    def set_courses(student, program_courses, default_courses, eligible_courses, next_year_level, next_semester):
-        # Setup defaults and eligiable courses
-        for course in program_courses:
-            if Grade.objects.filter(student=student, course=course, remarks="PASSED").exists():
-                continue  # Skip course if already passed
-            
-            if Enrollment.objects.filter(student=student, course=course).exists():
-                continue
-
-            # Special condition for mid-year courses
-            if course.year_level == 0 and course.semester == 0:
-                if (student.program.id == "BSIT" and student.year_level > 2) or \
-                (student.program.id == "BSCS" and student.year_level > 3):
-                    EnrollmentService.add_course(course, default_courses)
-                else:
-                    EnrollmentService.add_course(course, eligible_courses)
-                continue  # Skip other logic for mid-year courses
-                    
-            # Handle REGULAR students
-            if student.status == "REGULAR":
-                if course.year_level == next_year_level and course.semester == next_semester:
-                    EnrollmentService.add_course(course, default_courses)
-                else:
-                    EnrollmentService.add_course(course, eligible_courses)
-                continue
-
-            # Handle NON-REGULAR students: Check for unmet prerequisites
-            unmet_prerequisites = EnrollmentService.get_unmet_prerequisites(course, student)
-            if unmet_prerequisites:
-                for prerequisite in unmet_prerequisites:
-                    if not any(c["id"] == prerequisite.id for c in default_courses):
-                        EnrollmentService.add_course(prerequisite, default_courses)
-            else:
-                if course.year_level == next_year_level and course.semester == next_semester:
-                    EnrollmentService.add_course(course, default_courses)
-
-            # Add eligible courses (same for both REGULAR and NON-REGULAR students)
-            if course.year_level >= next_year_level and (course.semester >= next_semester or course.year_level > next_year_level):
-                EnrollmentService.add_course(course, eligible_courses)
-                print(next_year_level, next_semester)
 
     @staticmethod
     def set_billing_total(billings):

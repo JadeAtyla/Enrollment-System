@@ -24,6 +24,7 @@ import EvaluatePayment from "./pages/Registrar/EvaluatePayment";
 import EvaluateStudent from "./pages/Department/EvaluateStudent";
 import CertificateOfRegistration from "./pages/Registrar/CertificateOfRegistration";
 
+import AdvisingStudent from "./pages/Department/AdvisingStudent";
 import DepartmentLoginCard from "./pages/Department/DepartmentLoginCard";
 import DepartmentDashboard from "./pages/Department/DepartmentDashboard";
 import DepartmentInstructorList from "./pages/Department/DepartmentInstructorList";
@@ -268,6 +269,15 @@ function App() {
           element={
             <ProtectedRoute group="department">
               <DepartmentAccount onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/department/advisingStudent/:studentId?"
+          element={
+            <ProtectedRoute group="department">
+              <AdvisingStudent onLogout={handleLogout} />
             </ProtectedRoute>
           }
         />

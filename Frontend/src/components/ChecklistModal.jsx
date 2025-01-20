@@ -352,6 +352,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                       <th className="border p-2">Status</th>
                       <th className="border p-2">Year</th>
                       <th className="border p-2">Sem</th>
+                      <th className="border p-2">Instructor</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -372,14 +373,14 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                                   ? courseData?.grade
                                   : ""
                               }
-                              placeholder="Enter grade"
+                              placeholder="Grade"
                               onChange={(e) =>
                                 handleGradeChange(
                                   courseData?.course?.code,
                                   e.target.value
                                 )
                               }
-                              className="border p-2 w-full"
+                              className="border p-2 w-[4rem]"
                             />
                           ) : (
                             courseData?.grade
@@ -392,6 +393,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                         <td className="border p-2">
                           {courseData?.course?.semester}
                         </td>
+                        <td className="border p-2">{courseData?.instructor}</td>
                       </tr>
                     ))}
                     {filteredCourses.length === 0 && (
@@ -424,6 +426,7 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                           <th className="border p-2">Status</th>
                           <th className="border p-2">Year</th>
                           <th className="border p-2">Sem</th>
+                          <th className="border p-2">Instructor</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -446,6 +449,9 @@ const ChecklistModal = ({ student_id, onClose, isEditable = false }) => {
                             </td>
                             <td className="border p-2">
                               {courseData?.course?.semester}
+                            </td>
+                            <td className="border p-2">
+                              {courseData?.instructor}
                             </td>
                           </tr>
                         ))}
