@@ -936,6 +936,16 @@ class BatchEnrollStudentAPIView(APIView):
         for the given student based on the algorithm and saved defaults.
         """
         student = self.get_student(request)  # Retrieve the student object
+        
+        #Checks first if it is enrollment day
+        enrollment = EnrollmentValidator.is_enrollment_day(student.program)
+        if not enrollment["is_enrollment"]:
+            raise serializers.ValidationError({"error": enrollment['message']})
+        
+        # Validate student residency
+        valid_residency = EnrollmentValidator.valid_residency(student.id)
+        if not valid_residency:
+            raise serializers.ValidationError({"error": "Student has exceeded 6 years policy of the school."})
 
         # Calculate the next year level and semester
         next_year_level, next_semester = EnrollmentService.target_year_level_semester(
