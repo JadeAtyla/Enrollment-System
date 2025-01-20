@@ -191,6 +191,7 @@ const EnrollStudent = ({ onLogout }) => {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
               <div className="bg-white p-8 rounded-xl w-[80%] max-w-[900px]">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">COURSE SELECTION</h2>
+                <div className="max-h-[70vh] overflow-y-auto">
                 <table className="w-full text-center border-collapse mb-4">
                   <thead className="bg-gray-100">
                     <tr>
@@ -261,6 +262,7 @@ const EnrollStudent = ({ onLogout }) => {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <div className="flex justify-between">
                   <button onClick={toggleModal} className="px-6 py-3 rounded-md bg-gray-600 text-white">
                     CANCEL

@@ -232,14 +232,12 @@ const DepartmentInstructorList = ({ onLogout }) => {
               Double-click a row to view its details.
             </div>
 
-            <div className="overflow-x-auto md:overflow-x-hidden">
+            {/* <div className="overflow-x-auto md:overflow-x-hidden"> */}
               <table className="w-full text-center border-collapse">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-6 py-4 border-b">Instructor ID</th>
-                    <th className="px-6 py-4 border-b cell-4">
-                      Instructor Name
-                    </th>
+                    <th className="px-6 py-4 border-b">Instructor Name</th>
                     <th className="px-6 py-4 border-b">Email</th>
                     <th className="px-6 py-4 border-b">Contact No.</th>
                     <th className="px-6 py-4 border-b">Address</th>
@@ -281,7 +279,7 @@ const DepartmentInstructorList = ({ onLogout }) => {
                   )}
                 </tbody>
               </table>
-            </div>
+            {/* </div> */}
 
             <div className="flex flex-wrap justify-center md:justify-between items-center mt-6 gap-4">
               <button

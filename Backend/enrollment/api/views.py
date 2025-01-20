@@ -671,9 +671,9 @@ class AdvisingView(APIView):
 
         # Save the provided default courses to the database
         saved_courses = []
-        for course_id in default_courses:
+        for course_id in default_courses:   
             try:
-                course = Course.objects.get(id=course_id)
+                course = Course.objects.get(code=course_id, program=student.program)
                 # Check if the course is already saved as a default for this student
                 default_course, created = DefaultCourses.objects.get_or_create(
                     student=student, course=course, defaults={"is_edited": False}
@@ -684,7 +684,7 @@ class AdvisingView(APIView):
                 continue
 
         return Response(
-            {"message": "Default courses saved successfully.", "saved_courses": saved_courses},
+            {"success": True, "message": "Default courses saved successfully.", "saved_courses": saved_courses},
             status=201,
         )
 
@@ -919,6 +919,7 @@ class BatchEnrollStudentAPIView(APIView):
         """
         Retrieve the student instance based on the request.
         """
+        print("PARAMETER: ", request.query_params.get)
         student_id = request.query_params.get("id")  # Or fetch from request.data if POST
         if not student_id:
             raise ValidationError({"error": "Student ID is required."})

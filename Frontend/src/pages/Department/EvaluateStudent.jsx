@@ -88,9 +88,9 @@ const EvaluateStudent = ({ onLogout }) => {
   };
 
   const handleEnrollment = () => {
-    // navigate(`/registrar/enroll-student/${student.id}`, {
-    //   state: { student: student },
-    // });
+    navigate(`/department/advisingStudent/${student.id}`, {
+      state: { student: student },
+    });
     console.log("Add to enroll student");
   };
 

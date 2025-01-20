@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useData from "./DataUtil";
 import { useAlert } from "./Alert";
 
 const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=false, isEditable = true }) => {
   const [updatedData, setUpdatedData] = useState({ ...data });
   const {triggerAlert} = useAlert();
+  const navigate = useNavigate();
 
   const { updateData } = useData(url);
 
@@ -28,7 +30,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
 
   const handleEnroll = () =>{
     if(onEnroll){
-      onEnroll(data);
+      navigate(`/department/evaluate-student/${data.id}`, { state: { student: data } });
     }
   }
 
