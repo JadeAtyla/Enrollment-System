@@ -16,7 +16,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.get(endpoint);
+      const response = await axios.get(endpoint, { withCredentials: true });
       setData(response.data); // Update state with the response data
       setError(null); // Clear any previous error
       return response.data;
@@ -33,7 +33,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.post(endpoint, newData);
+      const response = await axios.post(endpoint, newData, { withCredentials: true });
       setData(response.data); // Update state with the new data
       setError(null); // Clear any previous error
       return response.data; // Return data after creation
@@ -58,7 +58,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.put(endpoint_param, updatedData);
+      const response = await axios.put(endpoint_param, updatedData, { withCredentials: true });
       setData(response.data); // Update state with the updated data
       setError(null); // Clear any previous error
       return response.data; // Return updated data
@@ -76,7 +76,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      await axios.delete(`${endpoint}/${id}`);
+      await axios.delete(`${endpoint}/${id}`, { withCredentials: true });
       setData(null); // Clear data after deletion
       setError(null); // Clear any previous error
     } catch (err) {
