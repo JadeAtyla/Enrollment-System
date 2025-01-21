@@ -2,6 +2,8 @@
 
 set -o errexit  # Exit on error
 
+python -m venv env
+
 source env/Scripts/activate
 
 # Install dependencies
