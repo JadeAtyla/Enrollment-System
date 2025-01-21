@@ -58,6 +58,7 @@ ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://enrollment-system-gjvr.onrender.com",
+    "https://enrollment-system-amber.vercel.app",
 ]
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 
