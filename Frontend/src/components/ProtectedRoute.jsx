@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children, group }) {
   const auth = async () => {
     try {
       // Send a request to the Protected API to validate the user's group and token
-      const res = await axios.post(`/api/protect/${group}/`);
+      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/protect/${group}/`);
 
       if (res.data.success) {
         setIsAuthorized(true);
@@ -30,7 +30,7 @@ export default function ProtectedRoute({ children, group }) {
   const refresh = async () => {
     try {
       // Send a request to the Protected API to validate the refresh token
-      const res = await axios.post(`/api/refresh/`);
+      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/refresh/`);
 
       if (res.data.refreshed) {
         setIsAuthorized(true);
