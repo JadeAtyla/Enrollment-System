@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-set -o or errexit # Exit on error
+set -o errexit # Exit on error
+
+# Activate virtual environment (optional, if used)
+source env/bin/activate
 
 pip install -r requirements.txt
 
