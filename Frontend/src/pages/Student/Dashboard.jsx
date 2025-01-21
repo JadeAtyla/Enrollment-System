@@ -31,7 +31,7 @@ const Dashboard = ({ onLogout }) => {
       await getData(); // Fetch data
     };
     fetchData();
-  }, []);
+  }, [getData]);
 
   useEffect(() => {
     // Update the `student` state when `data` changes
@@ -50,7 +50,7 @@ const Dashboard = ({ onLogout }) => {
     } else if(error){
       console.log(error?.response);
     }
-  }, [data]);
+  }, [data, error, student]);
 
   const handleNavigate = (section) => {
     setCurrentSection(section); // Update the current section

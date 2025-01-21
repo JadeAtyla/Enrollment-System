@@ -14,7 +14,7 @@ const StudentProfile = ({ onLogout }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Fetch student and user data
-  const { data: studentData, getData: getStudentData } = useData("/api/student/");
+  const { data: studentData, error: studentError, getData: getStudentData } = useData("/api/student/");
   const { data: userData, error: userError, getData: getUserData, updateData: updateUserData } = useData("/api/user/");
   const [student, setStudent] = useState(null);
   const [user, setUser] = useState(null);
@@ -32,7 +32,7 @@ const StudentProfile = ({ onLogout }) => {
   useEffect(() => {
     // Update student and user states when data is fetched
     if (studentData) setStudent(studentData[0]); // Access the first item in the array
-  }, [studentData]);
+  }, [studentData, studentError]);
 
   useEffect(()=>{
     if (userData) {
@@ -44,7 +44,7 @@ const StudentProfile = ({ onLogout }) => {
     } else if (userError) {
       console.log(userError?.error);
     }
-  }, [userData])
+  }, [userData, userError])
 
   const handleSavePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
