@@ -37,7 +37,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
         if (error) {
             setTrigger(false);
         }
-    }, [data, error, createData, trigger]);
+    }, [data, error, createData, trigger, triggerAlert]);
 
     useEffect(() => {
         if (error) {
@@ -57,7 +57,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
             triggerAlert("error", "Error", "An unexpected error occurred.");
           }
         }
-      }, [error, triggerAlert]);   
+      }, [error]);
 
     const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -154,7 +154,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
             triggerAlert("error", "Error", error?.message|| error?.detail || "An error occurred");
         }
         
-    }, [trigger]);
+    }, [trigger, error, handleNext, triggerAlert]);
 
     const cancelRegister = () => {
         setShowConfirmation(false);
