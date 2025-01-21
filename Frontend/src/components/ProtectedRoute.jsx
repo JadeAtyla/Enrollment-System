@@ -8,15 +8,10 @@ export default function ProtectedRoute({ children, group }) {
   const auth = async () => {
     try {
       // Send a request to the Protected API to validate the user's group and token
-      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/protect/${group}/`);
-
-      if (res?.data?.success) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-      }
+      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/protect/${group}/`, {withCredentials: true});
+      setIsAuthorized(res.data.success);
     } catch (error) {
-      console.log(error);
+      console.log("FROM AUTH: ", error);
       console.log("Authorization Error:", error.response?.data?.detail || error.message);
 
       // Check if the error is related to token expiration
@@ -31,15 +26,10 @@ export default function ProtectedRoute({ children, group }) {
   const refresh = async () => {
     try {
       // Send a request to the Protected API to validate the refresh token
-      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/refresh/`);
-
-      if (res?.data?.refreshed) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-      }
+      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/refresh/`, {withCredentials: true});
+      setIsAuthorized(res.data.refreshed);
     } catch (error) {
-      console.log(error);
+      console.log("FROM REFRESH: ", error);
       console.log("Refresh Error:", error.response?.data?.detail || error.message);
       setIsAuthorized(false);
     }
