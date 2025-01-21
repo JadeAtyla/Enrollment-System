@@ -5,6 +5,8 @@ const useData = (endpoint) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
+  endpoint = process.env.REACT_APP_API_BASE_URL + endpoint;
+
   // Fetch data
   const getData = useCallback(async () => {
     if (!endpoint) {
