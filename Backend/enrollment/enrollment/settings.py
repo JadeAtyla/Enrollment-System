@@ -57,8 +57,7 @@ ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 # CORS settings to allow frontend to communicate
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://enrollment-system-gjvr.onrender.com",
-    "https://enrollment-system-amber.vercel.app",
+    "https://enrollment-system-amber.vercel.app/",
 ]
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 
@@ -152,7 +151,7 @@ JAZZMIN_SETTINGS = {
     "search_model": "auth.User",  # Model to search by default
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Enrollment System", "url": "http://localhost:3000/", "new_window": True},
+        {"name": "Enrollment System", "url": "https://enrollment-system-amber.vercel.app/", "new_window": True},
     ],
     "usermenu_links": [
         {"name": "Support", "url": "https://support.example.com", "new_window": True},
