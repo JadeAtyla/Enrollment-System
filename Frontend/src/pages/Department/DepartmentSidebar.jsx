@@ -7,6 +7,8 @@ import AccountIcon from "../../images/Department/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Department/SidebarIcons/LogoutIcon.svg";
 import UniversityLogo from "../../images/universityLogo.svg";
 import CourseIcon from "../../images/Department/SidebarIcons/MasterListIcon.svg";
+import PrivacyPolicyModal from "../../components/PrivacyPolicyModal";
+import TermsAndConditionsModal from "../../components/TermsAndConditionsModal";
 
 const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   const navigate = useNavigate();
@@ -15,6 +17,8 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [showText, setShowText] = useState(!isCollapsed);
 
   const menuItems = [
@@ -145,9 +149,6 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
             ))}
           </div>
 
-          {/* Divider Line below Account Section */}
-          {/* <div className="border-b border-white mt-[0rem]"></div> */}
-
           {/* Logout Button with Floating Effect */}
           <div className="w-full px-4 ">
             <button
@@ -169,8 +170,25 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
         {/* Footer Section */}
         <div className="text-center text-white text-xs font-light py-4">
           {isCollapsed || isMobile || !showText
-            ? "ⓒ CVSU" // Collapsed, mobile, or text is hidden
-            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}{" "}
+            ? "ⓒ CVSU"
+            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}
+          {!isCollapsed && !isMobile && showText && (
+            <div>
+              <span
+                className="text-white underline cursor-pointer"
+                onClick={() => setIsPrivacyOpen(true)}
+              >
+                Privacy Policy
+              </span>{" "}
+              and{" "}
+              <span
+                className="text-white underline cursor-pointer"
+                onClick={() => setIsTermsOpen(true)}
+              >
+                Terms & Conditions
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Toggle Button */}
@@ -213,6 +231,22 @@ const DepartmentSidebar = ({ currentPage, onLogout, children }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Privacy Policy Modal */}
+      {isPrivacyOpen && (
+        <PrivacyPolicyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+        />
+      )}
+
+      {/* Terms & Conditions Modal */}
+      {isTermsOpen && (
+        <TermsAndConditionsModal
+          isOpen={isTermsOpen}
+          onClose={() => setIsTermsOpen(false)}
+        />
       )}
     </div>
   );

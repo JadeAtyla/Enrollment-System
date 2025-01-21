@@ -5,6 +5,8 @@ import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
 import useData from "../../components/DataUtil";
 import { useAlert } from "../../components/Alert";
+import PrivacyPolicyModal from "../../components/PrivacyPolicyModal";
+import TermsAndConditionsModal from "../../components/TermsAndConditionsModal";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +20,9 @@ const RegisterForm = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const navigate = useNavigate();
   const { data, error, createData } = useData("/api/register/");
   const {triggerAlert} = useAlert()
@@ -48,6 +53,11 @@ const RegisterForm = () => {
     if(!formData.password || !formData.password || !formData.re_password){
       triggerAlert("error", "Error", "Fill out student number and password fields.");
       return setErrorMessage('Fill out student number and password fields.');
+    }
+
+    if (!isAgreed) {
+      triggerAlert("error", "Error", "You must agree to the Privacy Policy and Terms & Conditions before registering.");
+      return;
     }
 
     if(formData.password === formData.re_password){
@@ -183,13 +193,35 @@ useEffect(() => {
             <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
           )}
 
+           {/* Single Checkbox */}
+           <div className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              id="agree"
+              className="mr-2"
+              onChange={(e) => setIsAgreed(e.target.checked)}
+            />
+            <label htmlFor="agree" className="text-sm text-gray-700 cursor-pointer">
+              I have read and agreed to the{" "}
+              <span className="text-blue-600 underline cursor-pointer" onClick={() => setIsPrivacyOpen(true)}>
+                Privacy Policy
+              </span>{" "}
+              and{" "}
+              <span className="text-blue-600 underline cursor-pointer" onClick={() => setIsTermsOpen(true)}>
+                Terms & Conditions
+              </span>.
+            </label>
+          </div>
+
           <button
             onClick={handleRegisterClick}
-            onKeyDown={handleKeyDown}
             className="w-[180px] py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Register
           </button>
+
+          <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+          <TermsAndConditionsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
         </div>
 
         {isModalOpen && (

@@ -6,6 +6,8 @@ import ListIcon from "../../images/Registrar/SidebarIcons/ListIcon.svg";
 import AccountIcon from "../../images/Registrar/SidebarIcons/AccountIcon.svg";
 import LogoutIcon from "../../images/Registrar/SidebarIcons/LogoutIcon.svg";
 import UniversityLogo from "../../images/universityLogo.svg";
+import PrivacyPolicyModal from "../../components/PrivacyPolicyModal";
+import TermsAndConditionsModal from "../../components/TermsAndConditionsModal";
 
 const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [showText, setShowText] = useState(!isCollapsed);
 
   const menuItems = [
@@ -159,8 +163,25 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
         {/* Footer Section */}
         <div className="text-center text-white text-xs font-light py-4">
           {isCollapsed || isMobile || !showText
-            ? "ⓒ CVSU" // Collapsed, mobile, or text is hidden
-            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}{" "}
+            ? "ⓒ CVSU"
+            : `ⓒ ${new Date().getFullYear()} CvSU Bacoor. All Rights Reserved`}
+          {!isCollapsed && !isMobile && showText && (
+            <div>
+              <span
+                className="text-white underline cursor-pointer"
+                onClick={() => setIsPrivacyOpen(true)}
+              >
+                Privacy Policy
+              </span>{" "}
+              and{" "}
+              <span
+                className="text-white underline cursor-pointer"
+                onClick={() => setIsTermsOpen(true)}
+              >
+                Terms & Conditions
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Toggle Button */}
@@ -203,6 +224,22 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Privacy Policy Modal */}
+      {isPrivacyOpen && (
+        <PrivacyPolicyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+        />
+      )}
+
+      {/* Terms & Conditions Modal */}
+      {isTermsOpen && (
+        <TermsAndConditionsModal
+          isOpen={isTermsOpen}
+          onClose={() => setIsTermsOpen(false)}
+        />
       )}
     </div>
   );
