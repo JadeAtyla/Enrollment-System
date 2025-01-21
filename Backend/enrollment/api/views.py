@@ -160,7 +160,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 value=str(access_token),
                 httponly=True,
                 secure=True,
-                samesite='None',
+                samesite='Lax',  # Changed from 'None' to 'Lax'
                 path='/'
             )
 
@@ -169,7 +169,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 value=str(refresh_token),
                 httponly=True,
                 secure=True,
-                samesite='None',
+                samesite='Lax',  # Changed from 'None' to 'Lax'
                 path='/'
             )
 
@@ -207,7 +207,7 @@ class CustomTokenRefreshView(TokenRefreshView):
                 value=access_token,
                 httponly=True,
                 secure=True,
-                samesite='None',
+                samesite='Lax',  # Changed from 'None' to 'Lax'
                 path='/'
             )
 
@@ -217,7 +217,7 @@ class CustomTokenRefreshView(TokenRefreshView):
                 value=new_refresh_token,
                 httponly=True,
                 secure=True,
-                samesite='None',
+                samesite='Lax',  # Changed from 'None' to 'Lax'
                 path='/'
             )
 
