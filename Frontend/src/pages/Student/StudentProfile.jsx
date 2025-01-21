@@ -14,7 +14,7 @@ const StudentProfile = ({ onLogout }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Fetch student and user data
-  const { data: studentData, error: studentError, getData: getStudentData } = useData("/api/student/");
+  const { data: studentData, getData: getStudentData } = useData("/api/student/");
   const { data: userData, error: userError, getData: getUserData, updateData: updateUserData } = useData("/api/user/");
   const [student, setStudent] = useState(null);
   const [user, setUser] = useState(null);

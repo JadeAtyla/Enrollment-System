@@ -24,7 +24,6 @@ const Dashboard = ({ onLogout }) => {
     enrollment_status: "",
     student_status: "", 
   });
-  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
     // Fetch student data on component mount
@@ -49,8 +48,7 @@ const Dashboard = ({ onLogout }) => {
       }); // Assuming the first item in the data array is the student
       console.log(student)
     } else if(error){
-      setFetchError(error.response);
-      console.log(fetchError);
+      console.log(error?.response);
     }
   }, [data]);
 

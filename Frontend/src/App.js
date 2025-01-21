@@ -32,9 +32,6 @@ import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
 import DepartmentMasterList from "./pages/Department/DepartmentMasterlist"; // Import the new component
 
-import AdminUserList from "./StaticFunctions/AdminUserList";
-
-import { validateCredentials } from "./StaticFunctions/staticFunctions";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
@@ -44,8 +41,6 @@ import ForgetPassword from "./components/ForgetPassword";
 import { useAlert } from "./components/Alert";
 
 function App() {
-  const [user, setUser] = useState(null); // Holds user information
-  const [role, setRole] = useState(null); // Tracks user role
   const {triggerAlert} = useAlert();
 
   const handleLogin = async (username, password, group) => {
