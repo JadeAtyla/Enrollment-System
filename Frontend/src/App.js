@@ -49,7 +49,7 @@ function App() {
     }
 
     try {
-      const res = await axios.post(`/api/login/${group}/`, {
+      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/login/${group}/`, {
         username,
         password,
       });
@@ -63,7 +63,7 @@ function App() {
   // For logging out all users
   const handleLogout = async () => {
     try {
-      const logoutUrl = `/api/logout/`;
+      const logoutUrl = `https://enrollmentsystem-b0is.onrender.com/api/logout/`;
 
       const res = await axios.post(logoutUrl);
 
@@ -86,7 +86,7 @@ function App() {
 
   // Redirect Component
   const RedirectToAdmin = () => {
-    window.location.href = "http://127.0.0.1:8000/admin/login/";
+    window.location.href = "https://enrollmentsystem-b0is.onrender.com/admin/login/";
     return null; // Return null since we don't render anything
   };
 
