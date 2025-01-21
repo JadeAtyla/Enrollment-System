@@ -2,10 +2,12 @@
 
 set -o errexit  # Exit on error
 
-# Ensure you are in the right directory (adjust path if necessary)
+# Debugging: List current directory contents
 echo "Current directory: $(pwd)"
+echo "Listing files:"
+ls -l
 
-# If backend/enrollment exists, navigate to it
+# Navigate to backend/enrollment if it exists
 if [ -d "backend/enrollment" ]; then
   cd backend/enrollment
 else
