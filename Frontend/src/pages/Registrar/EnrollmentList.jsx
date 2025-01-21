@@ -126,7 +126,7 @@ const EnrollmentList = ({ onLogout }) => {
       {/* Sidebar */}
       <RegistrarSidebar
         onLogout={onLogout}
-        currentPage="enrollmentList"
+        currentPage="enroll"
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         className={isMobile ? "sidebar-collapsed" : ""}

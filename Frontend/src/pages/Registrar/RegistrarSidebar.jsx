@@ -17,10 +17,30 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
   const [showText, setShowText] = useState(!isCollapsed);
 
   const menuItems = [
-    { name: "dashboard", icon: DashboardIcon, label: "Dashboard", path: "/registrar/dashboard" },
-    { name: "enroll", icon: EnrollIcon, label: "Enrollment List", path: "/registrar/enrollmentList" },
-    { name: "list", icon: ListIcon, label: "List of Students", path: "/registrar/studentList" },
-    { name: "account", icon: AccountIcon, label: "Account", path: "/registrar/account" },
+    {
+      name: "dashboard",
+      icon: DashboardIcon,
+      label: "Dashboard",
+      path: "/registrar/dashboard",
+    },
+    {
+      name: "enroll",
+      icon: EnrollIcon,
+      label: "Enrollment List",
+      path: "/registrar/enrollmentList",
+    },
+    {
+      name: "list",
+      icon: ListIcon,
+      label: "List of Students",
+      path: "/registrar/studentList",
+    },
+    {
+      name: "account",
+      icon: AccountIcon,
+      label: "Account",
+      path: "/registrar/account",
+    },
   ];
 
   useEffect(() => {
@@ -60,11 +80,12 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
   const confirmLogout = () => {
     closeModal();
     onLogout();
-    navigate('/registrar');
+    navigate("/registrar");
   };
 
   const sidebarWidth = isCollapsed || isMobile ? "w-[5rem]" : "w-[15.625rem]";
-  const contentMargin = isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
+  const contentMargin =
+    isCollapsed || isMobile ? "ml-[5rem]" : "ml-[15.625rem]";
 
   return (
     <div className="flex">
@@ -78,10 +99,12 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
             src={UniversityLogo}
             alt="University Logo"
             className={`transition-all duration-300 ${
-              isCollapsed || isMobile ? "w-[2.5rem] h-[2.5rem]" : "w-[4rem] h-[4rem]"
+              isCollapsed || isMobile
+                ? "w-[2.5rem] h-[2.5rem]"
+                : "w-[4rem] h-[4rem]"
             }`}
           />
-          {!isCollapsed && !isMobile && (
+          {!isCollapsed && !isMobile && showText && (
             <div className="ml-2 text-white text-sm font-bold text-center">
               <div>Cavite State</div>
               <div>University</div>
@@ -98,7 +121,7 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
                 key={item.name}
                 className={`flex items-center p-3 rounded-lg transition-all duration-300 transform ${
                   currentPage === item.name
-                    ? "bg-[#02458c] text-white shadow-lg translate-y-[-2px] scale-105"
+                    ? "bg-[#6E85B7] text-white shadow-lg translate-y-[-2px] scale-105"
                     : "hover:bg-[#6E85B7] hover:text-white text-gray-200 hover:scale-105 hover:shadow-lg"
                 }`}
                 onClick={() => handleMenuClick(item.path)}
@@ -108,7 +131,7 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
                   alt={`${item.label} Icon`}
                   className="w-[1.5rem] h-[1.5rem] mr-3"
                 />
-                {!isCollapsed && !isMobile && (
+                {!isCollapsed && !isMobile && showText && (
                   <span className="text-sm font-medium">{item.label}</span>
                 )}
               </button>
@@ -126,7 +149,7 @@ const RegistrarSidebar = ({ currentPage, onLogout, children }) => {
                 alt="Logout Icon"
                 className="w-[1.5rem] h-[1.5rem] mr-3"
               />
-              {!isCollapsed && !isMobile && (
+              {!isCollapsed && !isMobile && showText && (
                 <span className="text-sm font-medium">Log Out</span>
               )}
             </button>

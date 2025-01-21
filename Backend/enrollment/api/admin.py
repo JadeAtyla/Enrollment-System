@@ -71,26 +71,29 @@ class Searchable(BaseAdmin):
 
 class StudentAdmin(Searchable, BaseAdmin):
     @admin.display(description="Name")
-    def upper_case_name(obj):
-        return f"{obj.last_name} {obj.suffix or ""}, {obj.first_name} {obj.middle_name or ''}".upper()
+    def upper_case_name(self, obj):
+        return f"{obj.last_name} {obj.suffix or ''}, {obj.first_name} {obj.middle_name or ''}".upper()
 
     @admin.display(description="Year Level & Section")
-    def year_section(obj):
-        return f"{obj.program.id} {obj.year_level} - {obj.section or "TBA"}"
+    def year_section(self, obj):
+        return f"{obj.program.id} {obj.year_level} - {obj.section or 'TBA'}"
     
     @admin.display(description="Full Address")
-    def full_address(obj):
-        return f"{obj.address.street or ""} {obj.address.barangay or ""} {obj.address.city} {obj.address.province}"
-    
+    def full_address(self, obj):
+        return f"{obj.address.street or ''} {obj.address.barangay or ''} {obj.address.city} {obj.address.province}"
+
     list_display = ["id", upper_case_name, year_section, full_address]
 
+
 class EnrollmentAdmin(Searchable, BaseAdmin):
-    list_display = ["id", "student_id", "course__code", "year_level_taken", "semester_taken", "status", "school_year"]  # Replace with valid fields from your model
+    list_display = ["id", "student_id", "course__code", "year_level_taken", "semester_taken", "status", "school_year"]
     list_filter = ["student", "course", "school_year"]
+
 
 class AcadTermBillingAdmin(Searchable, BaseAdmin):
     list_display = ["id", "billing__name", "price", "year_level", "semester"]
     list_filter = ["year_level", "semester"]
+
 
 class GradeAdmin(Searchable, BaseAdmin):
     @admin.display(description="Instructor Name")
@@ -100,7 +103,7 @@ class GradeAdmin(Searchable, BaseAdmin):
         Handle cases where the middle name might be missing.
         """
         if obj.instructor:  # Check if the instructor exists
-            return f"{obj.instructor.last_name or ""} {obj.instructor.suffix or ""}, {obj.instructor.first_name} {obj.instructor.middle_name}".strip().upper()
+            return f"{obj.instructor.last_name or ''} {obj.instructor.suffix or ''}, {obj.instructor.first_name} {obj.instructor.middle_name}".strip().upper()
         return "N/A"  # If no instructor is assigned
 
     list_display = ["id", "student_id", "course__code", "grade", "remarks", "course__year_level", "course__semester", "upper_case_name"]
@@ -111,24 +114,29 @@ class CourseAdmin(Searchable, BaseAdmin):
     list_display = ["code", "title", "program", "lab_units", "lec_units", "contact_hr_lab", "contact_hr_lec", "year_level", "semester"]
     list_filter = ["year_level", "semester", "program"]
 
+
 class EnrollmentDateAdmin(Searchable, BaseAdmin):
-    list_display = ["id", "program", "__str__"]  # Replace with valid fields from your model
+    list_display = ["id", "program", "__str__"]
+
 
 class ReceiptAdmin(Searchable, BaseAdmin):
-    list_display = ["id", "student_id", "total", "paid", "remaining", "terms", "status", "school_year"]  # Replace with valid fields from your model
+    list_display = ["id", "student_id", "total", "paid", "remaining", "terms", "status", "school_year"]
+
 
 class SectioningAdmin(Searchable, BaseAdmin):
-    list_display = ["id", "__str__", "limit_per_section"]  # Replace with valid fields from your model
+    list_display = ["id", "__str__", "limit_per_section"]
+
 
 class InstructorAdmin(Searchable, BaseAdmin):
     @admin.display(description="Full Address")
-    def full_address(obj):
-        return f"{obj.address.street or ""} {obj.address.barangay or ""} {obj.address.city} {obj.address.province}"
-    
-    list_display = ["id", "__str__", "email", full_address]  # Replace with valid fields from your model
+    def full_address(self, obj):
+        return f"{obj.address.street or ''} {obj.address.barangay or ''} {obj.address.city} {obj.address.province}"
+
+    list_display = ["id", "__str__", "email", full_address]
+
 
 class ProgramAdmin(Searchable, BaseAdmin):
-    list_display = ["id", "__str__", "description"]  # Replace with valid fields from your model
+    list_display = ["id", "__str__", "description"]
 
 
 # admin.site.register(Address, AddressAdmin)
