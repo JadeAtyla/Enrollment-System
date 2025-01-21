@@ -224,12 +224,15 @@ const ListOfStudents = ({ onLogout }) => {
                 List Of Students
               </h1>
               <div className="flex gap-4">
-              <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700" onClick={openModal}>
-                Import as Excel
-              </button>
-              <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
-                Export as Excel
-              </button>
+                <button
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                  onClick={openModal}
+                >
+                  Import as Excel
+                </button>
+                <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                  Export as Excel
+                </button>
               </div>
             </div>
 
@@ -248,49 +251,57 @@ const ListOfStudents = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {currentStudents.map((student) => (
-                  <tr
-                    key={student?.id}
-                    className="hover:bg-gray-50 text-center"
-                    onDoubleClick={() => handleRowDoubleClick(student)}
-                  >
-                    <td className="px-6 py-4 border-b">{student?.id}</td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.last_name}, {student?.first_name}{" "}
-                      {student?.middle_name}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.program || "-"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.year_level || "-"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.section || "TBA"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.semester || "-"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.academic_year || "-"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      {student?.status || "-"}
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      <span
-                        className={`${
-                          student?.enrollment_status?.toLowerCase() ===
-                          "enrolled"
-                            ? `bg-green-100 text-green-700`
-                            : `bg-red-100 text-red-700`
-                        } px-3 py-1 rounded-full text-xs font-medium`}
-                      >
-                        {student?.enrollment_status || "-"}
-                      </span>
+                {currentStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-4 border-b text-center">
+                      No current students found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  currentStudents.map((student) => (
+                    <tr
+                      key={student?.id}
+                      className="hover:bg-gray-50 text-center"
+                      onDoubleClick={() => handleRowDoubleClick(student)}
+                    >
+                      <td className="px-6 py-4 border-b">{student?.id}</td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.last_name}, {student?.first_name}{" "}
+                        {student?.middle_name}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.program || "-"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.year_level || "-"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.section || "TBA"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.semester || "-"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.academic_year || "-"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.status || "-"}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        <span
+                          className={`${
+                            student?.enrollment_status?.toLowerCase() ===
+                            "enrolled"
+                              ? `bg-green-100 text-green-700`
+                              : `bg-red-100 text-red-700`
+                          } px-3 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {student?.enrollment_status || "-"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
 

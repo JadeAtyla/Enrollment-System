@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import registerIcon from "../../images/registerIcon.svg";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const RegisterForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const navigate = useNavigate();
   const { data, error, createData } = useData("/api/register/");
+  const {triggerAlert} = useAlert()
 
   useEffect(() => {
     const handleResize = () => {
@@ -44,19 +46,21 @@ const RegisterForm = () => {
     console.log(formData.re_password);
     console.log(formData.password == formData.re_password);
     if(!formData.password || !formData.password || !formData.re_password){
+      triggerAlert("error", "Error", "Fill out student number and password fields.");
       return setErrorMessage('Fill out student number and password fields.');
     }
 
     if(formData.password === formData.re_password){
-      await createData(formData);
+      const res = await createData(formData);
+      if(res?.success){
+        triggerAlert("success", "Success", "Registration successful.");
+      } else {
+        triggerAlert("error", "Error", "Registration failed.");
+      }
     } else {
+      triggerAlert("error", "Error", "Password do not match.");
       return setErrorMessage('Password do not match.');
     }
-    // if (registrationResult === true) {
-    //   setIsModalOpen(true); // Open modal on successful registration
-    // } else {
-    //   setErrorMessage(registrationResult);
-    // }
   };
 
   useEffect(() => {

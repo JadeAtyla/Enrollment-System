@@ -52,8 +52,8 @@ const AdvisingStudent = ({ onLogout }) => {
       if (data.suggestions) setSuggestedCourses(data.suggestions);
       if (data.billings) setBillings(data.billings);
 
-      console.log(defaultCourses);
-      console.log(suggestedCourses);
+      console.log("Default", defaultCourses);
+      console.log("Suggested", suggestedCourses);
     }
     if (error) {
       triggerAlert(
@@ -308,7 +308,6 @@ const AdvisingStudent = ({ onLogout }) => {
                         <th className="px-6 py-4 border-b invisible">ACTION</th>{" "}
                         {/* Invisible header */}
                         <th className="px-6 py-4 border-b">COURSE</th>
-                        <th className="px-6 py-4 border-b">SECTION</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -370,20 +369,6 @@ const AdvisingStudent = ({ onLogout }) => {
                                     {courseOption.semester})
                                   </option>
                                 ))}
-                            </select>
-                          </td>
-                          {/* Dropdown for Section */}
-                          <td className="px-6 py-4 border-b pr-8">
-                            <select
-                              value={course.section}
-                              onChange={(e) =>
-                                updateCourse(index, "section", e.target.value)
-                              }
-                              className="w-full p-2 border rounded-md"
-                            >
-                              <option value="3">3</option>
-                              <option value="4">4</option>
-                              {/* Add more section options */}
                             </select>
                           </td>
                         </tr>

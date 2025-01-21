@@ -33,7 +33,12 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
 
   const handleSave = async () => {
     if (!selectedSection) {
-      console.error("No section selected to update");
+      triggerAlert("error", "Error", "No section selected to update");
+      return;
+    }
+
+    if(limit < 0){
+      triggerAlert("error", "Error", "Limit must be set higher than 0.");
       return;
     }
   
@@ -136,7 +141,7 @@ const LimitStudentsModal = ({ currentLimit, onClose, onSave }) => {
               LIMIT STUDENTS
             </label>
             <input
-              type="number"
+              type="text"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
               className="border border-gray-300 rounded-full px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"

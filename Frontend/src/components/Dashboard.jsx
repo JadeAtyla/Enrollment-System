@@ -46,15 +46,15 @@ const Dashboard = ({ onLogout, role }) => {
  
    // Data for the pie chart
    const pieData = {
-     labels: ["Regular", "Irregular", "Transferee", "New Student"],
+     labels: ["Enrolled", "Not Enrolled", "Waitlisted", "Pending Request"],
      datasets: [
        {
          label: "Students",
          data: [
-           dashboardData?.regular_students || 0,
-           dashboardData?.irregular_students || 0,
-           dashboardData?.transferee_students || 0,
-           dashboardData?.new_students || 0,
+           dashboardData?.enrolled_students || 0,
+           dashboardData?.not_enrolled_students || 0,
+           dashboardData?.waitlisted_students || 0,
+           dashboardData?.pending_request_students || 0,
          ],
          backgroundColor: ["#22C55E", "#EF4444", "#3B82F6", "#FACC15"],
          borderWidth: 1,
@@ -222,19 +222,19 @@ return (
           <div className="grid grid-cols-2 gap-[0.5rem] text-sm mt-4 text-center">
             <div className="flex items-center justify-center">
               <span className="h-[1rem] w-[1rem] bg-green-500 rounded-full mr-2"></span>
-              Regular
+              Enrolled
             </div>
             <div className="flex items-center justify-center">
               <span className="h-[1rem] w-[1rem] bg-red-500 rounded-full mr-2"></span>
-              Irregular
+              Not Enrolled
             </div>
             <div className="flex items-center justify-center">
               <span className="h-[1rem] w-[1rem] bg-blue-500 rounded-full mr-2"></span>
-              Transferee
+              Waitlisted
             </div>
             <div className="flex items-center justify-center">
               <span className="h-[1rem] w-[1rem] bg-yellow-500 rounded-full mr-2"></span>
-              New Students
+              Pending Request
             </div>
           </div>
         </div>

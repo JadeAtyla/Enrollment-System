@@ -212,12 +212,6 @@ const DepartmentInstructorList = ({ onLogout }) => {
                 <button className="bg-green-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-green-700">
                   Export as Excel
                 </button>
-                <button
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-indigo-700"
-                  onClick={() => setIsAddInstructorModalOpen(true)}
-                >
-                  + Add Instructor
-                </button>
               </div>
             </div>
 

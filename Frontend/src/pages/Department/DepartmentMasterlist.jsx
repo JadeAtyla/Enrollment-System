@@ -207,7 +207,9 @@ const DepartmentMasterList = ({ onLogout }) => {
                 Number of Courses: {filteredCourses.length}
               </h3>
             </div>
-            <div className="text-gray-400 italic mb-4 ">Double-click a row to view its details.</div>
+            <div className="text-gray-400 italic mb-4 ">
+              Double-click a row to view its details.
+            </div>
             <table className="w-full border-collapse text-gray-800">
               <thead className="bg-gray-100">
                 <tr>
@@ -223,41 +225,49 @@ const DepartmentMasterList = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {currentCourses.map((course) => (
-                  <tr
-                    key={course?.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onDoubleClick={() => handleRowDoubleClick(course)}
-                  >
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.code}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.title}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.program}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.year_level}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.semester}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.lec_units}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.lab_units}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.contact_hr_lec}
-                    </td>
-                    <td className="px-6 py-4 border-b text-center">
-                      {course?.contact_hr_lab}
+                {currentCourses.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-4 border-b text-center">
+                      No current courses found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  currentCourses.map((course) => (
+                    <tr
+                      key={course?.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onDoubleClick={() => handleRowDoubleClick(course)}
+                    >
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.code}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.title}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.program}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.year_level}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.semester}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.lec_units}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.lab_units}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.contact_hr_lec}
+                      </td>
+                      <td className="px-6 py-4 border-b text-center">
+                        {course?.contact_hr_lab}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
             <div className="flex flex-wrap justify-center md:justify-between items-center mt-6 gap-4">

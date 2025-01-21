@@ -70,8 +70,7 @@ const DepartmentStudentList = ({ onLogout }) => {
   const getUniqueYearLevels = () => {
     const yearLevels = students
       .filter(
-        (student) =>
-          !filters.program || student?.program === filters.program // Include all if program is not selected
+        (student) => !filters.program || student?.program === filters.program // Include all if program is not selected
       )
       .map((student) => student?.year_level)
       .filter(Boolean);
@@ -84,7 +83,8 @@ const DepartmentStudentList = ({ onLogout }) => {
       .filter(
         (student) =>
           (!filters.program || student?.program === filters.program) && // Include all if program is not selected
-          (!filters.yearLevel || student?.year_level === parseInt(filters.yearLevel))
+          (!filters.yearLevel ||
+            student?.year_level === parseInt(filters.yearLevel))
       )
       .map((student) => student?.section)
       .filter(Boolean);
@@ -95,35 +95,58 @@ const DepartmentStudentList = ({ onLogout }) => {
     students?.filter((student) => {
       const matchesSearch =
         !filters.search ||
-        student?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        student?.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        student?.first_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
+        student?.last_name
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase()) ||
         student?.id?.toString().includes(filters.search);
 
       const matchesYearLevel =
-        !filters.yearLevel || student?.year_level === parseInt(filters.yearLevel);
+        !filters.yearLevel ||
+        student?.year_level === parseInt(filters.yearLevel);
 
       const matchesProgram =
         !filters.program || student?.program === filters.program;
 
       const matchesSection =
         !filters.section || student?.section === filters.section;
-      
-      const matchesEnrollmentStatus =
-      !filters.enrollment_status || student?.enrollment_status === filters.enrollment_status;
 
-      return matchesSearch && matchesYearLevel && matchesProgram && matchesSection && matchesEnrollmentStatus;
+      const matchesEnrollmentStatus =
+        !filters.enrollment_status ||
+        student?.enrollment_status === filters.enrollment_status;
+
+      return (
+        matchesSearch &&
+        matchesYearLevel &&
+        matchesProgram &&
+        matchesSection &&
+        matchesEnrollmentStatus
+      );
     }) || [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
-  
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
+
   const handleEnrollment = (student) => {
     console.log(student); // Log the student for debugging
     navigate(`/department/evaluate-student/${student?.id}`, {
       state: { student },
     });
-  };  
+  };
+
+  const color = [`red`, `blue`, `yellow`, `green`];
+  const enrollmentStatus = [
+    `NOT_ENROLLED`,
+    `WAITLISTED`,
+    `PENDING_REQUEST`,
+    `ENROLLED`,
+  ];
 
   return (
     <div className="flex min-h-screen">
@@ -155,9 +178,7 @@ const DepartmentStudentList = ({ onLogout }) => {
 
       <div
         className={`flex flex-col items-center flex-1 transition-all duration-300 ${
-          isMobile
-            ? "ml-[12rem]"
-            : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
+          isMobile ? "ml-[12rem]" : "ml-[15.625rem] md:ml-[20rem] lg:ml-[0rem]"
         } py-[2rem] px-[1rem] md:px-[2rem] lg:px-[4rem]`}
       >
         <div className="w-full max-w-[87.5rem] px-6">
@@ -172,7 +193,9 @@ const DepartmentStudentList = ({ onLogout }) => {
                   placeholder="Search here..."
                   className="ml-2 w-full bg-transparent border-none focus:outline-none focus:ring-0"
                   value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, search: e.target.value })
+                  }
                 />
               </div>
 
@@ -195,7 +218,9 @@ const DepartmentStudentList = ({ onLogout }) => {
                 </select>
                 <select
                   className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
-                  onChange={(e) => setFilters({ ...filters, yearLevel: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, yearLevel: e.target.value })
+                  }
                   value={filters.yearLevel}
                 >
                   <option value="">Select Year Level</option>
@@ -207,7 +232,9 @@ const DepartmentStudentList = ({ onLogout }) => {
                 </select>
                 <select
                   className="border border-gray-300 rounded-full px-4 py-2 pr-8 w-full sm:w-auto"
-                  onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, section: e.target.value })
+                  }
                   value={filters.section}
                 >
                   <option value="">Select Section</option>
@@ -258,10 +285,14 @@ const DepartmentStudentList = ({ onLogout }) => {
 
             <div className="text-gray-400 italic mb-4 flex justify-between">
               <span>Double-click a row to edit its details.</span>
-              <span>You can also verify students for enrollment when they are marked as 
-              <span className={`inline-block w-2 h-2 bg-red-500 rounded-full ml-2`}></span>
-                <span className="text-red-500">red</span>
-              .</span>
+              <span>
+                You can also verify students for enrollment when they are marked
+                as
+                <span
+                  className={`inline-block w-2 h-2 bg-yellow-500 rounded-full ml-2`}
+                ></span>
+                <span className="text-yellow-500">yellow</span>.
+              </span>
             </div>
 
             <table className="w-full text-center border-collapse">
@@ -279,39 +310,59 @@ const DepartmentStudentList = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody>
-                {currentStudents.map((student) => (
-                  <tr
-                    key={student?.id}
-                    className="hover:bg-gray-100 cursor-pointer"
-                    onDoubleClick={() => handleRowDoubleClick(student)}
-                  >
-                    <td className="px-6 py-4 border-b"><span className={`inline-block w-2 h-2 bg-${student?.enrollment_status === "ENROLLED" ? `green`:`red`}-500 rounded-full mr-2`}></span>{student?.id}</td>
-                    <td className="px-6 py-4 border-b">
-                      {`${student?.last_name}, ${student?.first_name}`}
+                {currentStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 border-b text-center">
+                      No current students found.
                     </td>
-                    <td className="px-6 py-4 border-b">{student?.program}</td>
-                    <td className="px-6 py-4 border-b">{student?.year_level}</td>
-                    <td className="px-6 py-4 border-b">{student?.semester}</td>
-                    <td className="px-6 py-4 border-b">{student?.section || "TBA"}</td>
-                    {/* {filteredStudents.some(
-                      (s) => s.enrollment_status === "PENDING_REQUEST"
-                    ) && (
-                      <td className="px-6 py-4 border-b">
-                        {student?.enrollment_status === "PENDING_REQUEST" ? (
-                          <button
-                            className="bg-blue-600 text-white px-4 py-2 w-[150px] rounded-full hover:bg-blue-700"
-                            onClick={() => handleEnrollment(student)}
-                          >
-                            Verify Student
-                          </button>
-                        ) : (
-                          // Empty <td> to maintain borders
-                          null
-                        )}
-                      </td>
-                    )} */}
                   </tr>
-                ))}
+                ) : (
+                  currentStudents.map((student) => (
+                    <tr
+                      key={student?.id}
+                      className={`${
+                        (student?.status !== "REGULAR" &&
+                          student?.enrollment_status === "NOT_ENROLLED") ||
+                        student?.enrollment_status === "NOT_ENROLLED"
+                          ? `bg-${color[2]}-400`
+                          : ``
+                      } ${
+                        (student?.status !== "REGULAR" &&
+                          student?.enrollment_status === "NOT_ENROLLED") ||
+                        student?.enrollment_status === "NOT_ENROLLED"
+                          ? `hover:bg-${color[2]}-100`
+                          : `hover:bg-gray-100`
+                      } cursor-pointer`}
+                      onDoubleClick={() => handleRowDoubleClick(student)}
+                    >
+                      <td className="px-6 py-4 border-b">
+                        <span
+                          className={`inline-block w-2 h-2 bg-${
+                            color[
+                              enrollmentStatus.indexOf(
+                                student?.enrollment_status
+                              )
+                            ]
+                          }-500 rounded-full mr-2`}
+                        ></span>
+                        {student?.id}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {`${student?.last_name}, ${student?.first_name}`}
+                      </td>
+                      <td className="px-6 py-4 border-b">{student?.program}</td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.year_level}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.semester}
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        {student?.section || "TBA"}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
             <div className="flex flex-wrap justify-center md:justify-between items-center mt-6 gap-4">
@@ -347,7 +398,10 @@ const DepartmentStudentList = ({ onLogout }) => {
           onClose={closeEditModal}
           onSave={handleSaveStudent}
           onEnroll={handleEnrollment}
-          isEnrollee={selectedStudent.enrollment_status !== "ENROLLED"}
+          neededAdvising={
+            selectedStudent?.enrollmentStatus !== "REGULAR" &&
+            selectedStudent?.enrollment_status === "NOT_ENROLLED"
+          }
           enrollment={true}
         />
       )}

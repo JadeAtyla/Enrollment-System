@@ -3,6 +3,7 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
+import { useAlert } from "../../components/Alert";
 
 const StudentProfile = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState("account");
@@ -17,6 +18,7 @@ const StudentProfile = ({ onLogout }) => {
   const { data: userData, error: userError, getData: getUserData, updateData: updateUserData } = useData("/api/user/");
   const [student, setStudent] = useState(null);
   const [user, setUser] = useState(null);
+  const {triggerAlert} = useAlert();
 
   useEffect(() => {
     // Fetch student and user data on component mount
@@ -46,12 +48,12 @@ const StudentProfile = ({ onLogout }) => {
 
   const handleSavePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
-      console.log("Please fill out all password fields.");
+      triggerAlert("error", "Empty Fields", "Please fill out all password fields.");
       return;
     }
   
     if (newPassword !== confirmPassword) {
-      console.log("Passwords do not match.");
+      triggerAlert("error", "Password Mismatch", "Passwords do not match.");
       return;
     }
   
@@ -60,8 +62,17 @@ const StudentProfile = ({ onLogout }) => {
       new_password: newPassword,
       confirm_password: confirmPassword,
     };
-
-    await updateUserData(user?.id, passwordPayload);
+    try {
+      const res = await updateUserData(user?.id, passwordPayload);
+      if (res?.success) {
+        triggerAlert("success", "Password Updated", "Password has been updated successfully.");
+        setCurrentView("account");
+      } else {
+        triggerAlert("error", "Password Update Failed", res?.error || "Failed to update password.");
+      }
+    } catch (error) {
+      triggerAlert("error", "Password Update Failed", error?.error || "Failed to update password.");
+    }
   };
   
   

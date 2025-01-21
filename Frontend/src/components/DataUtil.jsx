@@ -36,6 +36,7 @@ const useData = (endpoint) => {
       return response.data; // Return data after creation
     } catch (err) {
       handleError(err);
+      return err?.response;
     }
   };
 

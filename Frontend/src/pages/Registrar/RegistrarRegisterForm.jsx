@@ -126,8 +126,13 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
         } else {
             if (studentData) {
                 const payload = studentData;
-                await createData(payload);
-                triggerAlert("success", "Success", "Student added successfully");
+                const res = await createData(payload);
+                if (res?.success) {
+                    triggerAlert("success", "Success", "Student added successfully");
+                } else {
+                    triggerAlert("error", "Error", res?.data?.error || "An error occurred");
+                }
+                // triggerAlert("success", "Success", "Student added successfully");
             }
     
             if (onSave) {

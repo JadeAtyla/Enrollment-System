@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useData from "./DataUtil";
 import { useAlert } from "./Alert";
 
-const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=false, isEditable = true }) => {
+const InformationModal = ({ url, data, onClose, onSave, onEnroll, neededAdvising=false, isEditable = true }) => {
   const [updatedData, setUpdatedData] = useState({ ...data });
   const {triggerAlert} = useAlert();
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
   }
 
   useEffect(()=>{
-    console.log(isEnrollee);
+    console.log(neededAdvising);
   }, []);
 
   const renderFormFields = () => {
@@ -59,7 +59,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
           gender: ["MALE", "FEMALE", "PREFER NOT TO SAY"],
           enrollment_status: ["ENROLLED", "WAITLISTED", "NOT_ENROLLED", "PENDING_REQUEST"],
           program: ["BSCS", "BSIT"],
-          status: ["REGULAR", "IRREGULAR", "TRANSFEREE", "RETURNEE"],
+          status: ["REGULAR", "IRREGULAR", "TRANSFEREE"],
           category: ["OLD", "NEW"],
           year_level: ["1", "2", "3", "4"],
           semester: ["1", "2"],
@@ -150,7 +150,7 @@ const InformationModal = ({ url, data, onClose, onSave, onEnroll, isEnrollee=fal
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               onClick={handleEnroll}
               disabled={!isEditable}  // Disable save button if not editable
-              hidden={!isEditable || !isEnrollee}
+              hidden={!isEditable || !neededAdvising}
             >
               Verify Student
             </button>

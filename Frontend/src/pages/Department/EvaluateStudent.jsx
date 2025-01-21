@@ -79,6 +79,7 @@ const EvaluateStudent = ({ onLogout }) => {
     }
     if (gradeError) {
       console.error("Grade Error:", gradeError);
+      triggerAlert("error", "Error", `Grades not yet provided for this ${studentId} from its previous enrolled courses.`);
       navigate("/department/departmentStudentList");
     }
   }, [enrollmentError, gradeError, gradeData]);
