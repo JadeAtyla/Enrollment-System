@@ -3,7 +3,7 @@
 set -o errexit # Exit on error
 
 # Activate virtual environment (optional, if used)
-. env/bin/activate
+source env\Scripts\activate
 
 pip install -r requirements.txt
 
