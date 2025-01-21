@@ -10,7 +10,5 @@ source env/bin/activate
 
 pip install -r requirements.txt
 
-cd backend/enrollment
-
 python manage.py collectstatic --no-input
 python manage.py migrate
