@@ -4,6 +4,7 @@ import DepartmentSidebar from "./DepartmentSidebar";
 import InformationModal from "../../components/InformationModal";
 import { useNavigate } from "react-router-dom";
 import useData from "../../components/DataUtil";
+import exportStudentData from "../../functions/ExportExcel";
 
 const DepartmentStudentList = ({ onLogout }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -148,6 +149,19 @@ const DepartmentStudentList = ({ onLogout }) => {
     `ENROLLED`,
   ];
 
+  const handleExport = async () => {
+    try {
+      const data = await exportStudentData(
+        filters.yearLevel,
+        filters.section,
+        filters.program
+      );
+      // Handle the exported data (e.g., download as Excel)
+    } catch (error) {
+      console.error('Error exporting student data:', error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       <DepartmentSidebar
@@ -254,7 +268,7 @@ const DepartmentStudentList = ({ onLogout }) => {
                 Department Student List
               </h1>
               <div className="flex items-center space-x-4">
-                <button className="bg-green-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-green-700">
+                <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-[1.875rem] hover:bg-green-700">
                   Export as Excel
                 </button>
                 <select

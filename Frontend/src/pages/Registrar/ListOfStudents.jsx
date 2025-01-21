@@ -6,6 +6,7 @@ import useData from "../../components/DataUtil";
 import { useAlert } from "../../components/Alert";
 import ChecklistModal from "../../components/ChecklistModal";
 import ImportExcelModal from "../../components/ImportExcelModal";
+import exportStudentData from "../../functions/ExportExcel";
 
 const ListOfStudents = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -134,6 +135,19 @@ const ListOfStudents = ({ onLogout }) => {
     setIsImportModalOpen(false);
   };
 
+  const handleExport = async () => {
+    try {
+      const data = await exportStudentData(
+        filters.year_level,
+        filters.section,
+        filters.program
+      );
+      // Handle the exported data (e.g., download as Excel)
+    } catch (error) {
+      console.error('Error exporting student data:', error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       <RegistrarSidebar
@@ -230,7 +244,7 @@ const ListOfStudents = ({ onLogout }) => {
                 >
                   Import as Excel
                 </button>
-                <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                <button onClick={handleExport} className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
                   Export as Excel
                 </button>
               </div>
