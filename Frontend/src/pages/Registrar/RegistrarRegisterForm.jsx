@@ -27,7 +27,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
 
     const { data, error, createData } = useData(`/api/student/`);
     const [trigger, setTrigger] = useState(false);
-    const {triggerAlert} = useAlert();
+    const { triggerAlert } = useAlert();
 
     useEffect(() => {
         if (data) {
@@ -57,7 +57,7 @@ const RegistrarRegisterForm = ({ onClose, onSave }) => {
             triggerAlert("error", "Error", "An unexpected error occurred.");
           }
         }
-      }, [error]);      
+      }, [error, triggerAlert]);   
 
     const [showConfirmation, setShowConfirmation] = useState(false);
 

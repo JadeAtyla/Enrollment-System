@@ -3,7 +3,6 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import universityLogo from "../../images/universityLogo.svg";
 import loginIcon from "../../images/loginIcon.svg";
 import { useNavigate } from "react-router-dom";
-import { validateCredentials } from "../../StaticFunctions/staticFunctions";
 
 const StudentLoginCard = ({ onLogin }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
