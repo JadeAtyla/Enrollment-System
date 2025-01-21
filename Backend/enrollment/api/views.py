@@ -1012,7 +1012,7 @@ class BatchEnrollStudentAPIView(APIView):
                 "program": default.course.program.id,
                 "is_edited": default.is_edited,  # Indicates if the default was edited
             }
-            for default in (default_courses if student.status is "REGULAR" else saved_defaults)
+            for default in (default_courses if student.status == "REGULAR" else saved_defaults)
             if not Enrollment.objects.filter(student=student, course=default.course).exists()  # Use the 'id' key
         ]
 
