@@ -93,30 +93,35 @@ const ListOfStudents = ({ onLogout }) => {
   };
 
   const filteredStudents =
-    students?.filter((student) => {
-      const matchesYearLevel =
-        !filters.year_level ||
-        student?.year_level?.toString() === filters.year_level;
-      const matchesProgram =
-        !filters.program ||
-        student?.program?.toLowerCase() === filters.program.toLowerCase();
-      const matchesSection =
-        !filters.section ||
-        student?.section?.toLowerCase() === filters.section.toLowerCase();
-      const matchesSearch =
-        !filters.search ||
-        student?.first_name
-          ?.toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        student?.last_name
-          ?.toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        student?.id?.toString().includes(filters.search);
+  Array.isArray(students) // Check if students is an array
+    ? students
+        .filter((student) => student != null) // Remove null or undefined students
+        .filter((student) => {
+          const matchesYearLevel =
+            !filters.year_level ||
+            student?.year_level?.toString() === filters.year_level;
+          const matchesProgram =
+            !filters.program ||
+            student?.program?.toLowerCase() === filters.program.toLowerCase();
+          const matchesSection =
+            !filters.section ||
+            student?.section?.toLowerCase() === filters.section.toLowerCase();
+          const matchesSearch =
+            !filters.search ||
+            student?.first_name
+              ?.toLowerCase()
+              .includes(filters.search.toLowerCase()) ||
+            student?.last_name
+              ?.toLowerCase()
+              .includes(filters.search.toLowerCase()) ||
+            student?.id?.toString().includes(filters.search);
 
-      return (
-        matchesYearLevel && matchesProgram && matchesSection && matchesSearch
-      );
-    }) || [];
+          return (
+            matchesYearLevel && matchesProgram && matchesSection && matchesSearch
+          );
+        })
+    : []; // If students is not an array, return an empty array
+
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -144,7 +149,7 @@ const ListOfStudents = ({ onLogout }) => {
       );
       // Handle the exported data (e.g., download as Excel)
     } catch (error) {
-      console.error('Error exporting student data:', error);
+      console.error("Error exporting student data:", error);
     }
   };
 
@@ -244,7 +249,10 @@ const ListOfStudents = ({ onLogout }) => {
                 >
                   Import as Excel
                 </button>
-                <button onClick={handleExport} className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                <button
+                  onClick={handleExport}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                >
                   Export as Excel
                 </button>
               </div>

@@ -41,7 +41,7 @@ const DepartmentStudentList = ({ onLogout }) => {
   }, [getData]);
 
   useEffect(() => {
-    if (data) {
+    if (Array.isArray(data)) {
       setStudents(data);
     } else if (error) {
       console.error(error?.error);
