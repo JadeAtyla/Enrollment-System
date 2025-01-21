@@ -10,12 +10,13 @@ export default function ProtectedRoute({ children, group }) {
       // Send a request to the Protected API to validate the user's group and token
       const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/protect/${group}/`);
 
-      if (res.data.success) {
+      if (res?.data?.success) {
         setIsAuthorized(true);
       } else {
         setIsAuthorized(false);
       }
     } catch (error) {
+      console.log(error);
       console.log("Authorization Error:", error.response?.data?.detail || error.message);
 
       // Check if the error is related to token expiration
@@ -32,12 +33,13 @@ export default function ProtectedRoute({ children, group }) {
       // Send a request to the Protected API to validate the refresh token
       const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/refresh/`);
 
-      if (res.data.refreshed) {
+      if (res?.data?.refreshed) {
         setIsAuthorized(true);
       } else {
         setIsAuthorized(false);
       }
     } catch (error) {
+      console.log(error);
       console.log("Refresh Error:", error.response?.data?.detail || error.message);
       setIsAuthorized(false);
     }
