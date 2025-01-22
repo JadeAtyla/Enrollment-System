@@ -64,6 +64,12 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://enrollment-system-amber.vercel.app",
+    "https://enrollmentsystem-b0is.onrender.com",
+]
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'api.authentication.CookiesJWTAuthentication',

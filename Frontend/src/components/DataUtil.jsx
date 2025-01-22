@@ -6,7 +6,6 @@ const useData = (endpoint) => {
   const [error, setError] = useState(null);
 
   endpoint = "https://enrollmentsystem-b0is.onrender.com" + endpoint;
-  // console.log(endpoint);
 
   // Fetch data
   const getData = useCallback(async () => {
@@ -16,7 +15,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.get(endpoint, { withCredentials: true });
+      const response = await axios.get(endpoint);
       setData(response.data); // Update state with the response data
       setError(null); // Clear any previous error
       return response.data;
@@ -33,7 +32,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.post(endpoint, newData, { withCredentials: true });
+      const response = await axios.post(endpoint, newData);
       setData(response.data); // Update state with the new data
       setError(null); // Clear any previous error
       return response.data; // Return data after creation
@@ -58,7 +57,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      const response = await axios.put(endpoint_param, updatedData, { withCredentials: true });
+      const response = await axios.put(endpoint_param, updatedData);
       setData(response.data); // Update state with the updated data
       setError(null); // Clear any previous error
       return response.data; // Return updated data
@@ -76,7 +75,7 @@ const useData = (endpoint) => {
     }
 
     try {
-      await axios.delete(`${endpoint}/${id}`, { withCredentials: true });
+      await axios.delete(`${endpoint}/${id}`);
       setData(null); // Clear data after deletion
       setError(null); // Clear any previous error
     } catch (err) {

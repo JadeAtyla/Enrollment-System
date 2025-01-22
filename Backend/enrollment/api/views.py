@@ -188,46 +188,39 @@ class CustomTokenRefreshView(TokenRefreshView):
             if not refresh_token:
                 return Response({'detail': 'Refresh token is missing.'}, status=400)
 
-            # Inject the refresh token from the cookie into the request data
             request.data['refresh'] = refresh_token
             response = super().post(request, *args, **kwargs)
 
+            if response.status_code != 200:
+                return Response({'detail': 'Invalid refresh token.'}, status=response.status_code)
+
             tokens = response.data
             access_token = tokens['access']
-
-            # Generate a new refresh token
             new_refresh_token = tokens.get('refresh', refresh_token)
 
-            res = Response()
-            res.data = {'refreshed': True}
-
-            # Update access token cookie
+            res = Response({'refreshed': True})
             res.set_cookie(
                 key='access_token',
                 value=access_token,
                 httponly=True,
                 secure=True,
-                samesite='Lax',  # Changed from 'None' to 'Lax'
+                samesite='Lax',
                 path='/'
             )
-
-            # Update refresh token cookie
             res.set_cookie(
                 key='refresh_token',
                 value=new_refresh_token,
                 httponly=True,
                 secure=True,
-                samesite='Lax',  # Changed from 'None' to 'Lax'
+                samesite='Lax',
                 path='/'
             )
-
             res.data.update(tokens)
-
             return res
 
         except Exception as e:
             print(e)
-            return Response({'refreshed': False}, status=400)
+            return Response({'refreshed': False, 'detail': str(e)}, status=400)
 
 
 # Register View

@@ -53,9 +53,7 @@ function App() {
         username,
         password,
       });
-      if(res.data.success) {
-        triggerAlert("success", "Success", "Login Successfully");
-      }
+      if(res?.data?.success) triggerAlert("success", "Success", "Login Successfully");
       return res.data; // Return the successful response data
     } catch (err) {
       return err.response.data;
