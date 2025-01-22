@@ -5,6 +5,7 @@ const useData = (endpoint) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
+  endpoint = "https://enrollmentsystem-b0is.onrender.com" + endpoint;
   // Fetch data
   const getData = useCallback(async () => {
     if (!endpoint) {
