@@ -1,5 +1,7 @@
 set -o errexit  # Exit on error
 
+cd Backend
+
 # Create a virtual environment (if not already created)
 python -m venv env
 
