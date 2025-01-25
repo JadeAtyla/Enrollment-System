@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,27 +51,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'enrollment.api.authentication.CookiesJWTAuthentication',
-        # ...other authentication classes...
-    ),
-    # ...other settings...
-}
 
 ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 
 # CORS settings to allow frontend to communicate
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://enrollment-system-amber.vercel.app"
+    "https://enrollment-system-amber.vercel.app",
+    "https://enrollment-system-production-f986.up.railway.app"
 ]
-
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
-
-# Ensure cookies are set correctly
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -82,7 +73,6 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
@@ -90,21 +80,21 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
     'AUTH_COOKIE': 'access_token',
     'AUTH_COOKIE_REFRESH': 'refresh_token',
-    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_SECURE': True,  # Set to True for production
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_PATH': '/',
-    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_SAMESITE': 'None',
 }
 
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True  # Set to True for production
+SESSION_COOKIE_SECURE = True  # Set to True for production
 
 ROOT_URLCONF = 'enrollment.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'frontend/src'],  # Modify this path if needed
+        'DIRS': [BASE_DIR / 'Frontend/src'],  # Modify this path if needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,12 +112,12 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 # Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PASSWORD': os.environ.get('DB_PASS'),
-        'PORT': os.environ.get('DB_PORT'),
+        'ENGINE': 'mysql.connector.django',  # Use 'mysql.connector.django' for MySQL connection
+        'NAME': os.environ.get('DB_NAME'),  # Database name
+        'USER': os.environ.get('DB_USER'),  # Database user
+        'PASSWORD': os.environ.get('DB_PASS'),  # Database password
+        'HOST': os.environ.get('DB_HOST'),  # Database host
+        'PORT': os.environ.get('DB_PORT'),  # Database port
     }
 }
 
@@ -138,10 +128,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://enrollment-system-production-f986.up.railway.app",
+    "https://enrollment-system-amber.vercel.app",
+]
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -154,7 +151,7 @@ JAZZMIN_SETTINGS = {
     "search_model": "auth.User",  # Model to search by default
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Enrollment System", "url": "http://localhost:3000/", "new_window": True},
+        {"name": "Enrollment System", "url": "https://enrollment-system-amber.vercel.app/", "new_window": True},
     ],
     "usermenu_links": [
         {"name": "Support", "url": "https://support.example.com", "new_window": True},
@@ -190,6 +187,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Email settings for sending reset emails
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -200,5 +203,3 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Your email address
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # Your email password or app password
 
 # DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'  # The sender email address
-
-
