@@ -2,7 +2,11 @@
 
 set -o errexit  # Exit on error
 
-cd Backend
+# Install MySQL development libraries (for Ubuntu/Debian)
+sudo apt-get update
+sudo apt-get install -y default-libmysqlclient-dev
+
+cd ../Backend
 
 # Create a virtual environment (if not already created)
 python -m venv env
