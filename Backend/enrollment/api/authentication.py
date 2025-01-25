@@ -12,7 +12,9 @@ class CookiesJWTAuthentication(JWTAuthentication):
 
         try:
             user = self.get_user(validated_token)
+            print("User with authenticated token: ", access_token)
         except AuthenticationFailed:
+            print("User without authenticated token: ", access_token)
             return None
 
         return (user, validated_token)

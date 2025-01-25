@@ -50,15 +50,27 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'enrollment.api.authentication.CookiesJWTAuthentication',
+        # ...other authentication classes...
+    ),
+    # ...other settings...
+}
 
 ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 
 # CORS settings to allow frontend to communicate
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://enrollment-system-amber.vercel.app"
 ]
+
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 
+# Ensure cookies are set correctly
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

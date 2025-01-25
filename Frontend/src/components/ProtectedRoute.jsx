@@ -52,7 +52,5 @@ export default function ProtectedRoute({ children, group }) {
     return <div>Loading...</div>;
   }
 
-  console.log(group)
-
   return isAuthorized ? children : <Navigate to={`/${group}/`} />; // Redirect to login if not authorized
 }

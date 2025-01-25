@@ -88,7 +88,10 @@ const useData = (endpoint) => {
       setError(err?.response);
       console.log(err);
     } else {
-      setError({ status: null, message: "Network error, please try again later." });
+      setError({
+        status: null,
+        message: "Network error, please try again later.",
+      });
     }
     setData(null); // Clear data if an error occurs
   };

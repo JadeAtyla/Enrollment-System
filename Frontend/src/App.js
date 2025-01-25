@@ -32,20 +32,18 @@ import DepartmentStudentList from "./pages/Department/DepartmentStudentList";
 import DepartmentAccount from "./pages/Department/DepartmentAccount";
 import DepartmentMasterList from "./pages/Department/DepartmentMasterlist"; // Import the new component
 
-import AdminUserList from "./StaticFunctions/AdminUserList";
-
-import { validateCredentials } from "./StaticFunctions/staticFunctions";
-
 import PageNotFound from "./pages/404page/PageNotFound"; // Import the custom 404 component
 import axios from "axios";
 import ResetPassword from "./components/ResetPassword";
 import ForgetPassword from "./components/ForgetPassword";
 import { useAlert } from "./components/Alert";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
   const [user, setUser] = useState(null); // Holds user information
   const [role, setRole] = useState(null); // Tracks user role
-  const {triggerAlert} = useAlert();
+  const { triggerAlert } = useAlert();
 
   const handleLogin = async (username, password, group) => {
     if (!username || !password) {
@@ -53,11 +51,12 @@ function App() {
     }
 
     try {
-      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/login/${group}/`, {
+      const res = await axios.post(`/api/login/${group}/`, {
         username,
         password,
       });
-      if(res?.data?.success) triggerAlert("success", "Success", "Login Successfully");
+      if (res?.data?.success)
+        triggerAlert("success", "Success", "Login Successfully");
       return res.data; // Return the successful response data
     } catch (err) {
       return err.response.data;
@@ -67,7 +66,7 @@ function App() {
   // For logging out all users
   const handleLogout = async () => {
     try {
-      const logoutUrl = `https://enrollmentsystem-b0is.onrender.com/api/logout/`;
+      const logoutUrl = `/api/logout/`;
 
       const res = await axios.post(logoutUrl);
 
@@ -84,13 +83,17 @@ function App() {
         "Logout Failed:",
         error.response?.data?.detail || error.message
       );
-      triggerAlert("error", "Logout Failed", error.response?.data?.detail || error?.message || "An error occured");
+      triggerAlert(
+        "error",
+        "Logout Failed",
+        error.response?.data?.detail || error?.message || "An error occured"
+      );
     }
   };
 
   // Redirect Component
   const RedirectToAdmin = () => {
-    window.location.href = "https://enrollmentsystem-b0is.onrender.com/admin/login/";
+    window.location.href = "/admin/login/";
     return null; // Return null since we don't render anything
   };
 
@@ -109,25 +112,38 @@ function App() {
           path="/reset-password/:userId/:token/"
           element={<ResetPassword />}
         />
-        <Route
-          path="/forget-password"
-          element={<ForgetPassword />}
-        />
+        <Route path="/forget-password" element={<ForgetPassword />} />
         <Route
           path="/student/dashboard"
-          element={<Dashboard onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="student">
+              <Dashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/student/cor"
-          element={<COR onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="student">
+              <COR onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/student/checklist"
-          element={<Checklist onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="student">
+              <Checklist onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/student/profile"
-          element={<StudentProfile onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="student">
+              <StudentProfile onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route path="/student/register" element={<RegisterForm />} />
 
@@ -138,35 +154,67 @@ function App() {
         />
         <Route
           path="/registrar/dashboard"
-          element={<RegistrarDashboard onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <RegistrarDashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/enrollmentList"
-          element={<EnrollmentList onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <EnrollmentList onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/studentList"
-          element={<ListOfStudents onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <ListOfStudents onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/account"
-          element={<RegistrarAccounts onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <RegistrarAccounts onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/enroll-student/:studentId?"
-          element={<EnrollStudent onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <EnrollStudent onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/billing/:studentId?"
-          element={<Billing onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <Billing onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/evaluate-payment"
-          element={<EvaluatePayment onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <EvaluatePayment onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/registrar/certificate-of-registration/:studentId?"
-          element={<CertificateOfRegistration onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="registrar">
+              <CertificateOfRegistration onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
 
         {/* Department Routes */}
@@ -176,31 +224,59 @@ function App() {
         />
         <Route
           path="/department/dashboard"
-          element={<DepartmentDashboard onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <DepartmentDashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/departmentInstructorList"
-          element={<DepartmentInstructorList onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <DepartmentInstructorList onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/departmentStudentList"
-          element={<DepartmentStudentList onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <DepartmentStudentList onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/evaluate-student/:studentId?"
-          element={<EvaluateStudent onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <EvaluateStudent onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/departmentMasterList"
-          element={<DepartmentMasterList onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <DepartmentMasterList onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/departmentAccount"
-          element={<DepartmentAccount onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <DepartmentAccount onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/department/advisingStudent/:studentId?"
-          element={<AdvisingStudent onLogout={handleLogout} />}
+          element={
+            <ProtectedRoute group="department">
+              <AdvisingStudent onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
 
         {/* Admin User List */}
