@@ -6,6 +6,10 @@ set -o errexit
 # Navigate to the Backend directory
 cd ../Backend
 
+# Create and activate a Python virtual environment
+python -m venv env
+source env/bin/activate
+
 # Install MySQL client development libraries
 apt-get update && apt-get install -y libmysqlclient-dev
 
@@ -13,15 +17,8 @@ apt-get update && apt-get install -y libmysqlclient-dev
 export MYSQLCLIENT_CFLAGS="-I/usr/include/mysql"
 export MYSQLCLIENT_LDFLAGS="-L/usr/lib/mysql -lmysqlclient"
 
-# Create and activate a Python virtual environment
-python -m venv env
-source env/bin/activate
-
 # Install Python dependencies from the requirements.txt file
 pip install -r requirements.txt
-
-# Load environment variables from .env file
-export $(grep -v '^#' .env | xargs)
 
 # Navigate to the Django project directory
 cd enrollment
