@@ -10,29 +10,12 @@ if [ -d "env" ]; then
     rm -rf env
 fi
 
-# Update package list and install MySQL development libraries
-echo "Installing MySQL development libraries..."
-sudo apt-get update
-sudo apt-get install -y default-libmysqlclient-dev
-
 # Navigate to the Backend directory
 cd ../Backend
 
-# Create a new virtual environment
-echo "Creating a new virtual environment..."
-python -m venv env
-
-# Activate the virtual environment
-echo "Activating the virtual environment..."
-source env/bin/activate
-
-# Upgrade pip to the latest version
-echo "Upgrading pip..."
-pip install --upgrade pip
-
-# Install dependencies from requirements.txt
-echo "Installing dependencies from requirements.txt..."
-pip install -r requirements.txt
+# Enter the Nix shell to set up the environment
+echo "Entering Nix shell..."
+nix-shell --run "bash -c 'python -m venv env && source env/bin/activate && pip install -r requirements.txt'"
 
 # Navigate to the enrollment directory
 cd enrollment

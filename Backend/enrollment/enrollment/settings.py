@@ -201,7 +201,4 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # Your email passwo
 
 # DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'  # The sender email address
 
-mysqlclient_cflags = os.getenv('MYSQLCLIENT_CFLAGS')
-mysqlclient_ldflags = os.getenv('MYSQLCLIENT_LDFLAGS')
-
 
