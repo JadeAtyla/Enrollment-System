@@ -19,7 +19,7 @@ const PDFGenerator = forwardRef(
               element,
               originalDisplay: element.style.display,
             });
-            element.style.display = "none";
+            element.style.display = "none"; // makes the element invisible
           }
         });
 

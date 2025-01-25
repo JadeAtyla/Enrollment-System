@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children, group }) {
   const auth = async () => {
     try {
       // Send a request to the Protected API to validate the user's group and token
-      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/protect/${group}/`);
+      const res = await axios.post(`/api/protect/${group}/`);
 
       if (res.data.success) {
         setIsAuthorized(true);
@@ -16,7 +16,10 @@ export default function ProtectedRoute({ children, group }) {
         setIsAuthorized(false);
       }
     } catch (error) {
-      console.log("Authorization Error:", error.response?.data?.detail || error.message);
+      console.log(
+        "Authorization Error:",
+        error.response?.data?.detail || error.message
+      );
 
       // Check if the error is related to token expiration
       if (error) {
@@ -30,7 +33,7 @@ export default function ProtectedRoute({ children, group }) {
   const refresh = async () => {
     try {
       // Send a request to the Protected API to validate the refresh token
-      const res = await axios.post(`https://enrollmentsystem-b0is.onrender.com/api/refresh/`);
+      const res = await axios.post(`/api/refresh/`);
 
       if (res.data.refreshed) {
         setIsAuthorized(true);
@@ -38,7 +41,10 @@ export default function ProtectedRoute({ children, group }) {
         setIsAuthorized(false);
       }
     } catch (error) {
-      console.log("Refresh Error:", error.response?.data?.detail || error.message);
+      console.log(
+        "Refresh Error:",
+        error.response?.data?.detail || error.message
+      );
       setIsAuthorized(false);
     }
   };
@@ -51,8 +57,6 @@ export default function ProtectedRoute({ children, group }) {
     // Optionally, you can show a loading spinner or placeholder until the auth check is complete
     return <div>Loading...</div>;
   }
-
-  console.log(group)
 
   return isAuthorized ? children : <Navigate to={`/${group}/`} />; // Redirect to login if not authorized
 }

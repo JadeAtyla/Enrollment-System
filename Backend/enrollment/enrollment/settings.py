@@ -50,15 +50,27 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'enrollment.api.authentication.CookiesJWTAuthentication',
+        # ...other authentication classes...
+    ),
+    # ...other settings...
+}
 
 ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 
 # CORS settings to allow frontend to communicate
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://enrollment-system-amber.vercel.app"
 ]
+
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 
+# Ensure cookies are set correctly
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -92,7 +104,7 @@ ROOT_URLCONF = 'enrollment.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'Frontend/src'],  # Modify this path if needed
+        'DIRS': [BASE_DIR / 'frontend/src'],  # Modify this path if needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -116,11 +128,6 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PASSWORD': os.environ.get('DB_PASS'),
         'PORT': os.environ.get('DB_PORT'),
-        'OPTIONS': {
-            'ssl': {
-                'ca': os.path.join(BASE_DIR, os.environ.get('DB_SSL_CA')),
-            },
-        },
     }
 }
 
@@ -135,8 +142,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

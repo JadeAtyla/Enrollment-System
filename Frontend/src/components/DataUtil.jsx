@@ -5,7 +5,7 @@ const useData = (endpoint) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  endpoint = "https://enrollmentsystem-b0is.onrender.com" + endpoint;
+  endpoint = "" + endpoint;
   // Fetch data
   const getData = useCallback(async () => {
     if (!endpoint) {
@@ -88,7 +88,10 @@ const useData = (endpoint) => {
       setError(err?.response);
       console.log(err);
     } else {
-      setError({ status: null, message: "Network error, please try again later." });
+      setError({
+        status: null,
+        message: "Network error, please try again later.",
+      });
     }
     setData(null); // Clear data if an error occurs
   };
