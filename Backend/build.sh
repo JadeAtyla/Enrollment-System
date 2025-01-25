@@ -7,7 +7,7 @@ set -o errexit
 cd ../Backend
 
 # Install MySQL client development libraries
-# apt-get update && apt-get install -y libmysqlclient-dev
+apt-get update && apt-get install -y libmysqlclient-dev
 
 # Set MySQL client flags if necessary (adjust paths according to your system)
 export MYSQLCLIENT_CFLAGS="-I/usr/include/mysql"
