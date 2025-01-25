@@ -20,6 +20,9 @@ source env/bin/activate
 # Install Python dependencies from the requirements.txt file
 pip install -r requirements.txt
 
+# Load environment variables from .env file
+export $(grep -v '^#' .env | xargs)
+
 # Navigate to the Django project directory
 cd enrollment
 
