@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = False
-ALLOWED_HOSTS = ["enrollment-system-amber.vercel.app", "enrollment-system-production-eb7d.up.railway.app"]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'jazzmin',
