@@ -15,9 +15,6 @@ from datetime import timedelta
 from dotenv import load_dotenv  # imports env
 import os  # helps to access environment variables
 import datetime
-import pymysql # MySQL backend
-
-pymysql.install_as_MySQLdb() # Use pymysql as MySQLdb
 
 load_dotenv()  # initialize env
 
@@ -115,17 +112,12 @@ WSGI_APPLICATION = 'enrollment.wsgi.application'
 # Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Use the default MySQL backend
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASS'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-        'OPTIONS': {
-            'ssl': {
-                'ca': os.path.join(BASE_DIR, os.environ.get('DB_SSL_CA')),
-            },
-        },
+        'ENGINE': 'mysql.connector.django',  # Use 'mysql.connector.django' for MySQL connection
+        'NAME': os.environ.get('DB_NAME'),  # Database name
+        'USER': os.environ.get('DB_USER'),  # Database user
+        'PASSWORD': os.environ.get('DB_PASS'),  # Database password
+        'HOST': os.environ.get('DB_HOST'),  # Database host
+        'PORT': os.environ.get('DB_PORT'),  # Database port
     }
 }
 
