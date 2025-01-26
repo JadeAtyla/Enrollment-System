@@ -61,7 +61,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://enrollment-system-production-f986.up.railway.app"
 ]
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
+# CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -129,6 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
     "https://enrollment-system-production-f986.up.railway.app",
     "https://enrollment-system-amber.vercel.app",
 ]

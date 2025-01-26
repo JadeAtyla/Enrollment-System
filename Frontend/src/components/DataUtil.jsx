@@ -5,7 +5,7 @@ const useData = (endpoint) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  endpoint = "" + endpoint;
+  endpoint = "https://enrollment-system-production-eb7d.up.railway.app" + endpoint;
   // Fetch data
   const getData = useCallback(async () => {
     if (!endpoint) {

@@ -51,11 +51,10 @@ function App() {
     }
 
     try {
-      const res = await axios.post(`/api/login/${group}/`, {
+      const res = await axios.post(`https://enrollment-system-production-eb7d.up.railway.app/api/login/${group}/`, {
         username,
         password,
       });
-      if (res?.data?.success)
         triggerAlert("success", "Success", "Login Successfully");
       return res.data; // Return the successful response data
     } catch (err) {
@@ -66,7 +65,7 @@ function App() {
   // For logging out all users
   const handleLogout = async () => {
     try {
-      const logoutUrl = `/api/logout/`;
+      const logoutUrl = `https://enrollment-system-production-eb7d.up.railway.app/api/logout/`;
 
       const res = await axios.post(logoutUrl);
 
@@ -93,7 +92,7 @@ function App() {
 
   // Redirect Component
   const RedirectToAdmin = () => {
-    window.location.href = "/admin/login/";
+    window.location.href = "https://enrollment-system-production-eb7d.up.railway.app/admin/login/";
     return null; // Return null since we don't render anything
   };
 
