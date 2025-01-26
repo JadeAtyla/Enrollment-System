@@ -2,8 +2,6 @@
 
 set -o errexit  # Exit on error
 
-cd ../Backend
-
 # Update package lists and install dependencies
 apt-get update && apt-get install -y libmysqlclient-dev
 
@@ -15,7 +13,7 @@ source env/bin/activate
 pip install -r requirements.txt
 
 # Navigate to the Django project directory
-cd enrollment
+cd Backend/enrollment
 
 # Collect static files and apply database migrations
 python manage.py collectstatic --no-input
