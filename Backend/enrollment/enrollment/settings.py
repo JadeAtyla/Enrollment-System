@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = False
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["https://enrollment-system-amber.vercel.app", "https://enrollment-system-production-eb7d.up.railway.app"]
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -58,7 +58,7 @@ ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://enrollment-system-amber.vercel.app",
-    "https://enrollment-system-production-f986.up.railway.app"
+    "https://enrollment-system-production-eb7d.up.railway.app"
 ]
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 # CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
@@ -204,3 +204,31 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Your email address
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # Your email password or app password
 
 # DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'  # The sender email address
+
+# Security settings for production
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000  # Force HTTPS for one year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = True  # Ensure HTTPS is enforced
+
+# Logging settings for error logs in production
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'error.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
