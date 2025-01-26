@@ -205,14 +205,6 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # Your email passwo
 
 # DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'  # The sender email address
 
-# Security settings for production
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 31536000  # Force HTTPS for one year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True  # Ensure HTTPS is enforced
-
 # Logging settings for error logs in production
 LOGGING = {
     'version': 1,
