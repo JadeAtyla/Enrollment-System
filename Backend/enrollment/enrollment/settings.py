@@ -58,7 +58,9 @@ ASGI_APPLICATION = 'enrollment.asgi.application'  # For asynchronous support
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://enrollment-system-amber.vercel.app",
-    "https://enrollment-system-production-eb7d.up.railway.app"
+    "http://enrollment-system-amber.vercel.app",
+    "https://enrollment-system-production-eb7d.up.railway.app",
+    "http://enrollment-system-production-eb7d.up.railway.app"
 ]
 CORS_ALLOW_CREDENTIALS = True  # Enable credentials (cookies)
 # CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
