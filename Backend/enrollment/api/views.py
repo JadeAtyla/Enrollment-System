@@ -183,13 +183,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try:
-            # Extract the refresh token from the cookies
+            # Extract the refresh token from cookies
             refresh_token = request.COOKIES.get('refresh_token')
             if not refresh_token:
                 return Response({'detail': 'Refresh token is missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Manually inject the refresh token into the request data
-            request.data['refresh'] = refresh_token
+            # Create a mutable copy of the request data
+            mutable_data = request.data.copy()
+            mutable_data['refresh'] = refresh_token
+
+            # Inject the modified data into the request object
+            request._full_data = mutable_data
 
             # Call the parent class method to handle token refreshing
             response = super().post(request, *args, **kwargs)

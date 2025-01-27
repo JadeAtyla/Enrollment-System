@@ -9,3 +9,4 @@ media
 env/
 **/env/
 *.env
+staticfiles/
