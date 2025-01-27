@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children, group }) {
   const auth = async () => {
     try {
       // Send a request to the Protected API to validate the user's group and token
-      const res = await axios.post(`https://enrollment-system-production-eb7d.up.railway.app/api/protect/${group}/`);
+      const res = await axios.post(`https://enrollment-system-production-eb7d.up.railway.app/api/protect/${group}/`, withCredentials=true);
 
       if (res.data.success) {
         setIsAuthorized(true);

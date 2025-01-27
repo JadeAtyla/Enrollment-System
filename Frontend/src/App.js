@@ -54,7 +54,7 @@ function App() {
       const res = await axios.post(`https://enrollment-system-production-eb7d.up.railway.app/api/login/${group}/`, {
         username,
         password,
-      });
+      }, withCredentials=true);
         triggerAlert("success", "Success", "Login Successfully");
       return res.data; // Return the successful response data
     } catch (err) {
@@ -67,7 +67,7 @@ function App() {
     try {
       const logoutUrl = `https://enrollment-system-production-eb7d.up.railway.app/api/logout/`;
 
-      const res = await axios.post(logoutUrl);
+      const res = await axios.post(logoutUrl, withCredentials=true);
 
       // Redirect after successful logout
       if (res?.data?.success) {
