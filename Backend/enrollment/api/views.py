@@ -183,25 +183,26 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try:
+            # Extract the refresh token from the cookies
             refresh_token = request.COOKIES.get('refresh_token')
-
             if not refresh_token:
-                return Response({'detail': 'Refresh token is missing.'}, status=400)
+                return Response({'detail': 'Refresh token is missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Inject the refresh token from the cookie into the request data
+            # Manually inject the refresh token into the request data
             request.data['refresh'] = refresh_token
+
+            # Call the parent class method to handle token refreshing
             response = super().post(request, *args, **kwargs)
 
+            # Extract new tokens from the parent response
             tokens = response.data
-            access_token = tokens['access']
-
-            # Generate a new refresh token
+            access_token = tokens.get('access')
             new_refresh_token = tokens.get('refresh', refresh_token)
 
-            res = Response()
-            res.data = {'refreshed': True}
+            # Prepare a new response with the updated tokens
+            res = Response({'refreshed': True, 'access': access_token}, status=status.HTTP_200_OK)
 
-            # Update access token cookie
+            # Set secure cookies for both tokens
             res.set_cookie(
                 key='access_token',
                 value=access_token,
@@ -210,8 +211,6 @@ class CustomTokenRefreshView(TokenRefreshView):
                 samesite='None',
                 path='/'
             )
-
-            # Update refresh token cookie
             res.set_cookie(
                 key='refresh_token',
                 value=new_refresh_token,
@@ -221,13 +220,12 @@ class CustomTokenRefreshView(TokenRefreshView):
                 path='/'
             )
 
-            res.data.update(tokens)
-
             return res
 
         except Exception as e:
-            print(e)
-            return Response({'refreshed': False}, status=400)
+            # Log the error for debugging (avoid exposing sensitive info to the user)
+            print(f"Error in CustomTokenRefreshView: {str(e)}")
+            return Response({'refreshed': False, 'detail': 'An error occurred while refreshing tokens.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Register View
